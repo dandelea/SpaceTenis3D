@@ -100,6 +100,8 @@ public class MainMenuState extends GameState {
 		table.row();
 		table.add(btnStart);
 		table.row();
+		table.add(btnDemo);
+		table.row();
 		table.add(btnOptions);
 		table.row();
 		table.add(btnRules);
@@ -129,6 +131,7 @@ public class MainMenuState extends GameState {
 		Timeline.createSequence()
 				.beginSequence()
 				.push(Tween.set(btnStart, ActorAccessor.ALPHA).target(0))
+				.push(Tween.set(btnDemo, ActorAccessor.ALPHA).target(0))
 				.push(Tween.set(btnOptions, ActorAccessor.ALPHA).target(0))
 				.push(Tween.set(btnRules, ActorAccessor.ALPHA).target(0))
 				.push(Tween.set(btnExit, ActorAccessor.ALPHA).target(0))
