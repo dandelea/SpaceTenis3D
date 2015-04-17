@@ -1,5 +1,7 @@
 package tenis.screens;
 
+import cbd.asteroides.managers.GameKeys;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
@@ -88,6 +90,24 @@ public class SettingsScreen implements Screen {
 		
 		stage.act(delta);
 		stage.draw();
+		
+		handleInput();
+	}
+
+	private void handleInput() {
+		if (GameKeys.isPressed(GameKeys.UP)) {
+			if (currentItem > 0) {
+				currentItem--;
+			}
+		}
+		if (GameKeys.isPressed(GameKeys.DOWN)) {
+			if (currentItem < menuItems.length - 1) {
+				currentItem++;
+			}
+		}
+		if (GameKeys.isPressed(GameKeys.ENTER)) {
+			select();
+		}
 	}
 
 	@Override
