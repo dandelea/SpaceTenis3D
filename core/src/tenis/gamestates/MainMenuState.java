@@ -59,15 +59,13 @@ public class MainMenuState extends GameState {
 		btnStart.addListener(new ClickListener() {
 			public void clicked(InputEvent event, float x, float y) {
 				gsm.setState(State.GAME);
-				;
 			}
 		});
 		btnStart.pad(20);
-		btnDemo = new TextButton("Start", skin);
+		btnDemo = new TextButton("Demo", skin);
 		btnDemo.addListener(new ClickListener() {
 			public void clicked(InputEvent event, float x, float y) {
-				gsm.setState(State.GAME);
-				;
+				gsm.setState(State.DEMO);
 			}
 		});
 		btnDemo.pad(20);
@@ -75,7 +73,6 @@ public class MainMenuState extends GameState {
 		btnOptions.addListener(new ClickListener() {
 			public void clicked(InputEvent event, float x, float y) {
 				gsm.setState(State.SETTINGS);
-				;
 			}
 		});
 		btnOptions.pad(20);
@@ -137,6 +134,7 @@ public class MainMenuState extends GameState {
 				.push(Tween.set(btnExit, ActorAccessor.ALPHA).target(0))
 				.push(Tween.from(heading, ActorAccessor.ALPHA, .25f).target(0))
 				.push(Tween.to(btnStart, ActorAccessor.ALPHA, .25f).target(1))
+				.push(Tween.to(btnDemo, ActorAccessor.ALPHA, .25f).target(1))
 				.push(Tween.to(btnOptions, ActorAccessor.ALPHA, .25f).target(1))
 				.push(Tween.to(btnRules, ActorAccessor.ALPHA, .25f).target(1))
 				.push(Tween.to(btnExit, ActorAccessor.ALPHA, .25f).target(1))
