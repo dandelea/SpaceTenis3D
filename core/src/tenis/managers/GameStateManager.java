@@ -1,5 +1,6 @@
 package tenis.managers;
 
+import tenis.gamestates.DemoState;
 import tenis.gamestates.GameState;
 import tenis.gamestates.MainMenuState;
 import tenis.gamestates.PlayState;
@@ -33,6 +34,9 @@ public class GameStateManager {
 		}
 		if(state == State.GAME) {
 			gameState = new PlayState(this);
+		}
+		if(state == State.DEMO) {
+			gameState = new DemoState(this);
 		}
 	}
 	
