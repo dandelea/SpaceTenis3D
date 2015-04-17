@@ -1,53 +1,49 @@
 package tenis.gamestates;
 
-import java.util.ArrayList;
-
-import cbd.asteroides.Asteroides;
-import cbd.asteroides.managers.GameKeys;
-import cbd.asteroides.managers.GameStateManager;
-import cbd.asteroides.managers.Jukebox;
-import cbd.asteroides.managers.State;
-import cbd.asteroides.objects.Asteroid;
-import cbd.asteroides.objects.Bullet;
-import cbd.asteroides.objects.FlyingSaucer;
-import cbd.asteroides.objects.Particle;
-import cbd.asteroides.objects.Player;
+import tenis.managers.GameStateManager;
+import tenis.managers.State;
+import tenis.objects.GameObject;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.graphics.g3d.Environment;
+import com.badlogic.gdx.graphics.g3d.Model;
+import com.badlogic.gdx.graphics.g3d.ModelBatch;
+import com.badlogic.gdx.graphics.g3d.ModelInstance;
+import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
+import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
+import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.utils.Array;
 
 public class PlayState extends GameState {
-
-	private SpriteBatch sb;
-	private ShapeRenderer sr;
-
+	private Stage stage;
+	private Label label;
 	private BitmapFont font;
-	private Player hudPlayer;
+	
+	private PerspectiveCamera cam;
 
-	private Player player;
-	private ArrayList<Bullet> bullets;
-	private ArrayList<Asteroid> asteroids;
-	private ArrayList<Bullet> enemyBullets;
+	private ModelBatch modelBatch;
+	private AssetManager assets;
+	private Array<GameObject> instances = new Array<GameObject>();
+	private boolean loading;
 
-	private FlyingSaucer flyingSaucer;
-	private float fsTimer;
-	private float fsTime;
+	private Environment environment;
 
-	private ArrayList<Particle> particles;
+	private CameraInputController camController;
 
-	private int level;
-	private int totalAsteroids;
-	private int numAsteroidsLeft;
-
-	private float maxDelay;
-	private float minDelay;
-	private float currentDelay;
-	private float bgTimer;
-	private boolean playLowPulse;
+	private GameObject table;
+	private ModelInstance ambient;
+	
+	private StringBuilder stringBuilder;
 
 	public PlayState(GameStateManager gsm) {
 		super(gsm);
@@ -55,378 +51,111 @@ public class PlayState extends GameState {
 
 	public void init() {
 
-		sb = new SpriteBatch();
-		sr = new ShapeRenderer();
+		stage = new Stage();
+		font = new BitmapFont();
+        label = new Label(" ", new Label.LabelStyle(font, Color.WHITE));
+        stage.addActor(label);
+        stringBuilder = new StringBuilder();
+		
+		modelBatch = new ModelBatch();
 
-		FreeTypeFontGenerator gen = new FreeTypeFontGenerator(
-				Gdx.files.internal("fonts/space age.ttf"));
-		font = gen.generateFont(20);
-		bullets = new ArrayList<Bullet>();
+		environment = new Environment();
+		environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f,
+				0.4f, 0.4f, 1f));
+		environment.add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, -1f,
+				-0.8f, -0.2f));
 
-		player = new Player(bullets);
+		cam = new PerspectiveCamera(67, Gdx.graphics.getWidth(),
+				Gdx.graphics.getHeight());
+		cam.position.set(1.17f, 2f, 0f);
+		cam.lookAt(0, 0, 0);
+		cam.near = 1f;
+		cam.far = 300f;
+		cam.update();
 
-		asteroids = new ArrayList<Asteroid>();
+		camController = new CameraInputController(cam);
+		Gdx.input.setInputProcessor(camController);
 
-		particles = new ArrayList<Particle>();
-
-		level = 1;
-		spawnAsteroids();
-
-		hudPlayer = new Player(null);
-
-		fsTimer = 0;
-		fsTime = 15;
-		enemyBullets = new ArrayList<Bullet>();
-
-		// set up bg music
-		maxDelay = 1;
-		minDelay = 0.25f;
-		currentDelay = maxDelay;
-		bgTimer = maxDelay;
-		playLowPulse = true;
-
-	}
-
-	private void createParticles(float x, float y) {
-		for (int i = 0; i < 6; i++) {
-			particles.add(new Particle(x, y));
-		}
-	}
-
-	private void splitAsteroids(Asteroid a) {
-		createParticles(a.getx(), a.gety());
-		numAsteroidsLeft--;
-		currentDelay = ((maxDelay - minDelay) * numAsteroidsLeft / totalAsteroids)
-				+ minDelay;
-		if (a.getType() == Asteroid.LARGE) {
-			asteroids.add(new Asteroid(a.getx(), a.gety(), Asteroid.MEDIUM));
-			asteroids.add(new Asteroid(a.getx(), a.gety(), Asteroid.MEDIUM));
-		}
-		if (a.getType() == Asteroid.MEDIUM) {
-			asteroids.add(new Asteroid(a.getx(), a.gety(), Asteroid.SMALL));
-			asteroids.add(new Asteroid(a.getx(), a.gety(), Asteroid.SMALL));
-		}
-	}
-
-	private void spawnAsteroids() {
-
-		asteroids.clear();
-
-		int numToSpawn = 4 + level - 1;
-		totalAsteroids = numToSpawn * 7;
-		numAsteroidsLeft = totalAsteroids;
-		currentDelay = maxDelay;
-
-		for (int i = 0; i < numToSpawn; i++) {
-
-			float x = MathUtils.random(Asteroides.WIDTH);
-			float y = MathUtils.random(Asteroides.HEIGHT);
-
-			float dx = x - player.getx();
-			float dy = y - player.gety();
-			float dist = (float) Math.sqrt(dx * dx + dy * dy);
-
-			while (dist < 100) {
-				x = MathUtils.random(Asteroides.WIDTH);
-				y = MathUtils.random(Asteroides.HEIGHT);
-				dx = x - player.getx();
-				dy = y - player.gety();
-				dist = (float) Math.sqrt(dx * dx + dy * dy);
-			}
-
-			asteroids.add(new Asteroid(x, y, Asteroid.LARGE));
-
-		}
+		assets = new AssetManager();
+		assets.load("models/table/table2.g3dj", Model.class);
+		assets.load("models/ambient/ambient1.obj", Model.class);
+		loading = true;
 
 	}
 
+	private void doneLoading() {
+		table = new GameObject(assets.get("models/table/table2.g3dj",
+				Model.class));
+		table.transform.rotate(Vector3.Y, 180);
+		instances.add(table);
+
+		ambient = new ModelInstance(assets.get("models/ambient/ambient1.obj",
+				Model.class));
+		ambient.transform.rotate(Vector3.Z, 180);
+		loading = false;
+	}
+	
+	private Vector3 position = new Vector3();
+	public boolean isVisible(final Camera cam, final GameObject instance){
+		instance.transform.getTranslation(position);
+	    position.add(instance.center);
+	    return cam.frustum.sphereInFrustum(position, instance.radius);
+	}
+
+	
+	@Override
 	public void update(float dt) {
-
-		// get user input
 		handleInput();
-
-		// next level
-		if (asteroids.size() == 0) {
-			level++;
-			spawnAsteroids();
-		}
-
-		// update player
-		player.update(dt);
-		if (player.isDead()) {
-			if (player.getLives() == 0) {
-				Jukebox.stopAll();
-				Asteroides.score = player.getScore();
-				gsm.setState(State.GAMEOVER);
-				return;
-			}
-			player.reset();
-			player.loseLife();
-			flyingSaucer = null;
-			Jukebox.stop("smallsaucer");
-			Jukebox.stop("largesaucer");
-			return;
-		}
-
-		// update player bullets
-		for (int i = 0; i < bullets.size(); i++) {
-			bullets.get(i).update(dt);
-			if (bullets.get(i).shouldRemove()) {
-				bullets.remove(i);
-				i--;
-			}
-		}
-
-		// update flying saucer
-		if (flyingSaucer == null) {
-			fsTimer += dt;
-			if (fsTimer >= fsTime) {
-				fsTimer = 0;
-				int type = MathUtils.random() < 0.5 ? FlyingSaucer.SMALL
-						: FlyingSaucer.LARGE;
-				int direction = MathUtils.random() < 0.5 ? FlyingSaucer.RIGHT
-						: FlyingSaucer.LEFT;
-				flyingSaucer = new FlyingSaucer(type, direction, player,
-						enemyBullets);
-			}
-		}
-		// if there is a flying saucer already
-		else {
-			flyingSaucer.update(dt);
-			if (flyingSaucer.shouldRemove()) {
-				flyingSaucer = null;
-				Jukebox.stop("smallsaucer");
-				Jukebox.stop("largesaucer");
-			}
-		}
-
-		// update fs bullets
-		for (int i = 0; i < enemyBullets.size(); i++) {
-			enemyBullets.get(i).update(dt);
-			if (enemyBullets.get(i).shouldRemove()) {
-				enemyBullets.remove(i);
-				i--;
-			}
-		}
-
-		// update asteroids
-		for (int i = 0; i < asteroids.size(); i++) {
-			asteroids.get(i).update(dt);
-			if (asteroids.get(i).shouldRemove()) {
-				asteroids.remove(i);
-				i--;
-			}
-		}
-
-		// update particles
-		for (int i = 0; i < particles.size(); i++) {
-			particles.get(i).update(dt);
-			if (particles.get(i).shouldRemove()) {
-				particles.remove(i);
-				i--;
-			}
-		}
-
-		// check collision
-		checkCollisions();
-
-		// play bg music
-		bgTimer += dt;
-		if (!player.isHit() && bgTimer >= currentDelay) {
-			if (playLowPulse) {
-				Jukebox.play("pulselow");
-			} else {
-				Jukebox.play("pulsehigh");
-			}
-			playLowPulse = !playLowPulse;
-			bgTimer = 0;
-		}
-
+		if (loading && assets.update())
+            doneLoading();
+        camController.update();
+        
+        Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 	}
 
-	private void checkCollisions() {
-
-		// player-asteroid collision
-		if (!player.isHit()) {
-			for (int i = 0; i < asteroids.size(); i++) {
-				Asteroid a = asteroids.get(i);
-				if (a.intersects(player)) {
-					player.hit();
-					asteroids.remove(i);
-					i--;
-					splitAsteroids(a);
-					Jukebox.play("explode");
-					break;
-				}
-			}
-		}
-
-		// bullet-asteroid collision
-		for (int i = 0; i < bullets.size(); i++) {
-			Bullet b = bullets.get(i);
-			for (int j = 0; j < asteroids.size(); j++) {
-				Asteroid a = asteroids.get(j);
-				if (a.contains(b.getx(), b.gety())) {
-					bullets.remove(i);
-					i--;
-					asteroids.remove(j);
-					j--;
-					splitAsteroids(a);
-					player.incrementScore(a.getScore());
-					Jukebox.play("explode");
-					break;
-				}
-			}
-		}
-
-		// player-flying saucer collision
-		if (flyingSaucer != null) {
-			if (player.intersects(flyingSaucer)) {
-				player.hit();
-				createParticles(player.getx(), player.gety());
-				createParticles(flyingSaucer.getx(), flyingSaucer.gety());
-				flyingSaucer = null;
-				Jukebox.stop("smallsaucer");
-				Jukebox.stop("largesaucer");
-				Jukebox.play("explode");
-			}
-		}
-
-		// bullet-flying saucer collision
-		if (flyingSaucer != null) {
-			for (int i = 0; i < bullets.size(); i++) {
-				Bullet b = bullets.get(i);
-				if (flyingSaucer.contains(b.getx(), b.gety())) {
-					bullets.remove(i);
-					i--;
-					createParticles(flyingSaucer.getx(), flyingSaucer.gety());
-					player.incrementScore(flyingSaucer.getScore());
-					flyingSaucer = null;
-					Jukebox.stop("smallsaucer");
-					Jukebox.stop("largesaucer");
-					Jukebox.play("explode");
-					break;
-				}
-			}
-		}
-
-		// player-enemy bullets collision
-		if (!player.isHit()) {
-			for (int i = 0; i < enemyBullets.size(); i++) {
-				Bullet b = enemyBullets.get(i);
-				if (player.contains(b.getx(), b.gety())) {
-					player.hit();
-					enemyBullets.remove(i);
-					i--;
-					Jukebox.play("explode");
-					break;
-				}
-			}
-		}
-
-		// flying saucer-asteroid collision
-		if (flyingSaucer != null) {
-			for (int i = 0; i < asteroids.size(); i++) {
-				Asteroid a = asteroids.get(i);
-				if (a.intersects(flyingSaucer)) {
-					asteroids.remove(i);
-					i--;
-					splitAsteroids(a);
-					createParticles(a.getx(), a.gety());
-					createParticles(flyingSaucer.getx(), flyingSaucer.gety());
-					flyingSaucer = null;
-					Jukebox.stop("smallsaucer");
-					Jukebox.stop("largesaucer");
-					Jukebox.play("explode");
-					break;
-				}
-			}
-		}
-
-		// asteroid-enemy bullet collision
-		for (int i = 0; i < enemyBullets.size(); i++) {
-			Bullet b = enemyBullets.get(i);
-			for (int j = 0; j < asteroids.size(); j++) {
-				Asteroid a = asteroids.get(j);
-				if (a.contains(b.getx(), b.gety())) {
-					asteroids.remove(j);
-					j--;
-					splitAsteroids(a);
-					enemyBullets.remove(i);
-					i--;
-					createParticles(a.getx(), a.gety());
-					Jukebox.play("explode");
-					break;
-				}
-			}
-		}
-
-	}
-
+	private int visibleCount;
+	@Override
 	public void draw() {
-
-		sb.setProjectionMatrix(Asteroides.cam.combined);
-		sr.setProjectionMatrix(Asteroides.cam.combined);
-
-		// draw player
-		player.draw(sr);
-
-		// draw bullets
-		for (int i = 0; i < bullets.size(); i++) {
-			bullets.get(i).draw(sr);
-		}
-
-		// draw flying saucer
-		if (flyingSaucer != null) {
-			flyingSaucer.draw(sr);
-		}
-
-		// draw fs bullets
-		for (int i = 0; i < enemyBullets.size(); i++) {
-			enemyBullets.get(i).draw(sr);
-		}
-
-		// draw asteroids
-		for (int i = 0; i < asteroids.size(); i++) {
-			asteroids.get(i).draw(sr);
-		}
-
-		// draw particles
-		for (int i = 0; i < particles.size(); i++) {
-			particles.get(i).draw(sr);
-		}
-
-		// draw score
-		sb.setColor(1, 1, 1, 1);
-		sb.begin();
-		font.draw(sb, Long.toString(player.getScore()), 40, 390);
-		sb.end();
-
-		// draw lives
-		for (int i = 0; i < player.getLives(); i++) {
-			hudPlayer.setPosition(40 + i * 10, 360);
-			hudPlayer.draw(sr);
-		}
-
+		modelBatch.begin(cam);
+        visibleCount = 0;
+        for (final ModelInstance instance : instances) {
+            if (isVisible(cam, (GameObject) instance)) {
+            	visibleCount++;
+                modelBatch.render(instance, environment);
+            }
+        }
+        
+        modelBatch.end();
+        
+        System.out.println(cam.position);
+        
+        if (ambient != null)
+           modelBatch.render(ambient);
+        
+        
+        stringBuilder.setLength(0);
+        stringBuilder.append(" FPS: ").append(Gdx.graphics.getFramesPerSecond());
+        stringBuilder.append(" Visible: ").append(visibleCount);
+        label.setText(stringBuilder);
+        stage.draw();
 	}
 
+	@Override
 	public void handleInput() {
-
-		if (!player.isHit()) {
-			player.setLeft(GameKeys.isDown(GameKeys.LEFT));
-			player.setRight(GameKeys.isDown(GameKeys.RIGHT));
-			player.setUp(GameKeys.isDown(GameKeys.UP));
-			if (GameKeys.isPressed(GameKeys.SPACE)) {
-				player.shoot();
-			}
+		if (Gdx.input.isKeyPressed(Input.Keys.ESCAPE)){
+			gsm.setState(State.MAIN_MENU);
 		}
-
+		
 	}
 
+	@Override
 	public void dispose() {
-		sb.dispose();
-		sr.dispose();
-		font.dispose();
+		modelBatch.dispose();
+        instances.clear();
+        assets.dispose();
 	}
+
+	
 
 }

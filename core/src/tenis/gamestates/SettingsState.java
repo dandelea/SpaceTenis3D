@@ -1,10 +1,7 @@
-package tenis.screens;
-
-import cbd.asteroides.managers.GameKeys;
+package tenis.gamestates;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -16,15 +13,14 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
-public class SettingsScreen implements Screen {
-	// Resources
-	private String backgroundDir = "tennis-court.jpg";
+import tenis.managers.GameStateManager;
+import tenis.managers.State;
 
+public class SettingsState extends GameState {
 	private Stage stage;
 
 	private Skin skin;
 	private Table table;
-	private BitmapFont font;
 	private Label heading;
 	
 	private SelectBox<Object> sb;
@@ -33,9 +29,12 @@ public class SettingsScreen implements Screen {
 
 	private TextureAtlas atlas;
 
+	public SettingsState(GameStateManager gsm) {
+		super(gsm);
+	}
 
 	@Override
-	public void show() {
+	public void init() {
 		stage = new Stage();
 		//stage.setDebugAll(true);
 		Gdx.input.setInputProcessor(stage);
@@ -80,58 +79,24 @@ public class SettingsScreen implements Screen {
 		table.row();
 		table.add(btnSave);
 		stage.addActor(table);
-		
 	}
 
 	@Override
-	public void render(float delta) {
-		Gdx.gl.glClearColor(0, 0, 0, 1);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-		
-		stage.act(delta);
-		stage.draw();
-		
+	public void update(float delta) {
 		handleInput();
+		stage.act(delta);
 	}
 
-	private void handleInput() {
-		if (GameKeys.isPressed(GameKeys.UP)) {
-			if (currentItem > 0) {
-				currentItem--;
-			}
+	@Override
+	public void draw() {
+		stage.draw();
+	}
+
+	@Override
+	public void handleInput() {
+		if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
+			gsm.setState(State.MAIN_MENU);
 		}
-		if (GameKeys.isPressed(GameKeys.DOWN)) {
-			if (currentItem < menuItems.length - 1) {
-				currentItem++;
-			}
-		}
-		if (GameKeys.isPressed(GameKeys.ENTER)) {
-			select();
-		}
-	}
-
-	@Override
-	public void resize(int width, int height) {
-		stage.getViewport().update(width, height, true);
-		table.invalidateHierarchy();
-	}
-
-	@Override
-	public void pause() {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void resume() {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void hide() {
-		//weird but ok
-		dispose();
 	}
 
 	@Override
@@ -139,7 +104,6 @@ public class SettingsScreen implements Screen {
 		stage.dispose();
 		atlas.dispose();
 		skin.dispose();
-		font.dispose();
 	}
 
 }

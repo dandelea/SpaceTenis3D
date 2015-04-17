@@ -1,11 +1,11 @@
 package tenis.managers;
 
-import tenis.gamestates.GameOverState;
 import tenis.gamestates.GameState;
-import tenis.gamestates.HighScoreState;
-import tenis.gamestates.MenuState;
+import tenis.gamestates.MainMenuState;
 import tenis.gamestates.PlayState;
-import tenis.gamestates.ProfileState;
+import tenis.gamestates.SettingsState;
+import tenis.gamestates.SplashDevState;
+import tenis.gamestates.SplashPublisherState;
 
 public class GameStateManager {
 	
@@ -14,25 +14,25 @@ public class GameStateManager {
 	
 	
 	public GameStateManager() {
-		setState(State.MENU);
+		setState(State.SPLASH_DEV);
 	}
 	
 	public void setState(State state) {
 		if(gameState != null) gameState.dispose();
-		if(state == State.MENU) {
-			gameState = new MenuState(this);
+		if(state == State.SPLASH_DEV) {
+			gameState = new SplashDevState(this);
 		}
-		if(state == State.PLAY) {
+		if(state == State.SPLASH_PUBLISHER) {
+			gameState = new SplashPublisherState(this);
+		}
+		if(state == State.MAIN_MENU) {
+			gameState = new MainMenuState(this);
+		}
+		if(state == State.SETTINGS) {
+			gameState = new SettingsState(this);
+		}
+		if(state == State.GAME) {
 			gameState = new PlayState(this);
-		}
-		if(state == State.HIGHSCORE) {
-			gameState = new HighScoreState(this);
-		}
-		if(state == State.GAMEOVER) {
-			gameState = new GameOverState(this);
-		}
-		if(state == State.PROFILE) {
-			gameState = new ProfileState(this);
 		}
 	}
 	

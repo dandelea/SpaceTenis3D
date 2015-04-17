@@ -1,6 +1,6 @@
 package tenis.gamestates;
 
-import cbd.asteroides.managers.GameStateManager;
+import tenis.managers.GameStateManager;
 
 public abstract class GameState {
 	
