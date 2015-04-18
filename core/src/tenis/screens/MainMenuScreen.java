@@ -1,6 +1,7 @@
 package tenis.screens;
 
 import tenis.SpaceTenis3D;
+import tenis.screens.demos.RayPickingTest;
 import tenis.tween.ActorAccessor;
 import aurelienribon.tweenengine.BaseTween;
 import aurelienribon.tweenengine.Timeline;
@@ -71,7 +72,7 @@ public class MainMenuScreen implements Screen {
 		btnDemo.addListener(new ClickListener() {
 			public void clicked(InputEvent event, float x, float y) {
 				((Game) Gdx.app.getApplicationListener())
-						.setScreen(new GameScreen());
+						.setScreen(new RayPickingTest());
 			}
 		});
 		btnDemo.pad(20);
