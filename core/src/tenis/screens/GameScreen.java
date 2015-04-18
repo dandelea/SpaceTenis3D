@@ -36,6 +36,7 @@ public class GameScreen implements Screen {
 	private PerspectiveCamera cam;
 
 	private ModelBatch modelBatch;
+	private ModelBuilder modelBuilder;
 	private AssetManager assets;
 	private Array<GameObject> instances = new Array<GameObject>();
 	private boolean loading;
@@ -46,14 +47,18 @@ public class GameScreen implements Screen {
 
 	private GameObject table;
 	private GameObject ball;
-	private Vector3 ballPosition = new Vector3(0, 1000000, 0);
-	private Vector3 ballScale = new Vector3(0.2f, 0.2f, 0.2f);
+	private Vector3 ballPosition = new Vector3(0, 0, 0);
+	private Vector3 ballScale = new Vector3(0.05f, 0.05f, 0.05f);
+	private float speed;
 	private ModelInstance ambient;
+
+	private boolean collision = false;;
 
 	private StringBuilder stringBuilder;
 
 	@Override
 	public void show() {
+		modelBuilder = new ModelBuilder();
 		stage = new Stage();
 		font = new BitmapFont();
 		label = new Label(" ", new Label.LabelStyle(font, Color.WHITE));
@@ -70,8 +75,8 @@ public class GameScreen implements Screen {
 
 		cam = new PerspectiveCamera(67, Gdx.graphics.getWidth(),
 				Gdx.graphics.getHeight());
-		cam.position.set(1.17f, 2f, 0f);
-		cam.lookAt(0, 0, 0);
+		cam.position.set(1.3f, 1f, 0f);
+		cam.lookAt(-0.5f, -0.75f, 0);
 		cam.near = 1f;
 		cam.far = 300f;
 		cam.update();
@@ -79,35 +84,49 @@ public class GameScreen implements Screen {
 		camController = new CameraInputController(cam);
 		Gdx.input.setInputProcessor(camController);
 
+		speed=4;
+		
 		assets = new AssetManager();
 		assets.load("models/table/table2.g3dj", Model.class);
 		assets.load("models/ambient/ambient1.obj", Model.class);
 		loading = true;
+
+		
+
 	}
 
 	private void doneLoading() {
-		// Table
-		table = new GameObject(assets.get("models/table/table2.g3dj",
+		// TABLE
+		table = new GameObject("table", assets.get("models/table/table2.g3dj",
 				Model.class));
 		table.transform.rotate(Vector3.Y, 180);
-		instances.add(table);
+		table.transform.setToTranslation(new Vector3(0, -table.transform
+				.getScaleY(), 0));
 
-		// Ball
+		// BALL
 		ModelBuilder modelBuilder = new ModelBuilder();
 		Model model = modelBuilder.createSphere(2f, 2f, 2f, 20, 20,
 				new Material(), Usage.Position | Usage.Normal
 						| Usage.TextureCoordinates);
-		ball = new GameObject(model);
+		ball = new GameObject("ball", model);
 		Attribute attribute = ColorAttribute.createSpecular(Color.BLUE);
 		Attribute attribute2 = ColorAttribute.createDiffuse(Color.RED);
 		ball.materials.get(0).set(attribute, attribute2);
-		ball.transform.setToTranslation(ballPosition);
-		ball.transform.setToScaling(ballScale);
-		instances.add(ball);
+		ball.transform.translate(ballPosition).scale(ballScale.x, ballScale.y,
+				ballScale.z);
 
+		// AMBIENT
 		ambient = new ModelInstance(assets.get("models/ambient/ambient1.obj",
 				Model.class));
 		ambient.transform.rotate(Vector3.Z, 180);
+
+
+		// Table
+		instances.add(table);
+
+		// Ball
+		instances.add(ball);
+
 		loading = false;
 	}
 
@@ -123,6 +142,7 @@ public class GameScreen implements Screen {
 
 	@Override
 	public void render(float delta) {
+
 		handleInput();
 
 		if (loading && assets.update())
@@ -135,16 +155,16 @@ public class GameScreen implements Screen {
 
 		modelBatch.begin(cam);
 		visibleCount = 0;
-		for (final ModelInstance instance : instances) {
-			if (isVisible(cam, (GameObject) instance)) {
+		for (GameObject instance : instances) {
+			if (isVisible(cam, instance)) {
 				visibleCount++;
-				modelBatch.render(instance, environment);
+				if (instance.name == "ball" && !collision){
+					instance.transform.translate(0, -speed * delta, 0);
+				}
+				modelBatch.render((ModelInstance) instance, environment);
 			}
 		}
-
 		modelBatch.end();
-
-		System.out.println(cam.position);
 
 		if (ambient != null)
 			modelBatch.render(ambient);
@@ -156,6 +176,10 @@ public class GameScreen implements Screen {
 		label.setText(stringBuilder);
 		stage.draw();
 
+	}
+
+	private boolean checkCollision() {
+		return false;
 	}
 
 	public void handleInput() {
