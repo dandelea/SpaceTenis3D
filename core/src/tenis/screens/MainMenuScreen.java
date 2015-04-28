@@ -64,7 +64,7 @@ public class MainMenuScreen implements Screen {
 		btnStart.addListener(new ClickListener() {
 			public void clicked(InputEvent event, float x, float y) {
 				((Game) Gdx.app.getApplicationListener())
-						.setScreen(new GameScreen());
+						.setScreen(new GameScreen2());
 			}
 		});
 		btnStart.pad(20);
