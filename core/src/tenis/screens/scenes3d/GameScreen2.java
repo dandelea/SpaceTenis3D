@@ -1,10 +1,14 @@
-package tenis.screens;
+package tenis.screens.scenes3d;
+
+import tenis.managers.Assets;
+import tenis.references.Models;
+import tenis.screens.MainMenuScreen;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.ModelLoader;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
@@ -52,21 +56,15 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.badlogic.gdx.utils.Disposable;
 
-public class GameScreen2 implements Screen {
+public class GameScreen2 extends InputAdapter implements Screen {
 
 	class MyContactListener extends ContactListener {
 		@Override
-		public boolean onContactAdded(int userValue0, int partId0, int index0,
-				boolean match0, int userValue1, int partId1, int index1,
-				boolean match1) {
-			if (match0)
-				((ColorAttribute) instances.get(userValue0).materials.get(0)
-						.get(ColorAttribute.Diffuse)).color.set(Color.WHITE);
-			if (match1)
-				((ColorAttribute) instances.get(userValue1).materials.get(0)
-						.get(ColorAttribute.Diffuse)).color.set(Color.WHITE);
-			return true;
-		}
+		public boolean onContactAdded (int userValue0, int partId0, int index0, int userValue1, int partId1, int index1) {
+	        instances.get(userValue0).moving = false;
+	        instances.get(userValue1).moving = false;
+	        return true;
+	    }
 	}
 
 	static class MyMotionState extends btMotionState {
@@ -86,8 +84,8 @@ public class GameScreen2 implements Screen {
 	static class GameObject extends ModelInstance implements Disposable {
 		public btRigidBody body;
 		public final MyMotionState motionState;
-		public final Vector3 dimensions = new Vector3();
-		public final Vector3 center = new Vector3();
+		public Vector3 dimensions = new Vector3();
+		public Vector3 center = new Vector3();
 		public final float radius;
 		public boolean moving;
 		private final static BoundingBox bounds = new BoundingBox();
@@ -99,7 +97,7 @@ public class GameScreen2 implements Screen {
 			motionState.transform = transform;
 			body = new btRigidBody(constructionInfo);
 			body.setMotionState(motionState);
-			calculateBoundingBox(bounds);
+			this.calculateBoundingBox(bounds);
 			bounds.getCenter(center);
 			bounds.getDimensions(dimensions);
 			radius = dimensions.len() / 2f;
@@ -142,6 +140,8 @@ public class GameScreen2 implements Screen {
 			}
 		}
 	}
+	
+	
 
 	private Stage stage;
 	private Label label;
@@ -155,12 +155,12 @@ public class GameScreen2 implements Screen {
 	private Environment environment;
 
 	private CameraInputController camController;
-	
-	private ModelLoader loader;
+
+	private Assets assets;
 	private Model model;
 	private Model table;
 	private Model ball;
-	private Vector3 ballPosition = new Vector3(0, 0, 0);
+	private Vector3 ballPosition = new Vector3(0, 1, 0);
 	private Vector3 ballScale = new Vector3(0.05f, 0.05f, 0.05f);
 	private ModelInstance ambient;
 
@@ -196,10 +196,12 @@ public class GameScreen2 implements Screen {
 		 * of Bullet related objects.
 		 */
 		Bullet.init();
+		
+		assets = new Assets();
+		assets.loadAll();
 
 		// ENVIRONMENT
 		modelBatch = new ModelBatch();
-		loader = new ObjLoader();
 		environment = new Environment();
 		environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f,
 				0.4f, 0.4f, 1f));
@@ -243,8 +245,7 @@ public class GameScreen2 implements Screen {
 
 	private void doneLoading() {
 		// LOAD ASSETS
-		table = loader
-				.loadModel(Gdx.files.internal("models/table/table2.obj"));
+		table = assets.get(Models.MODEL_TABLE, Model.class);
 		ModelBuilder modelBuilder = new ModelBuilder();
 		ball = modelBuilder.createSphere(2f, 2f, 2f, 20, 20, new Material(),
 				Usage.Position | Usage.Normal | Usage.TextureCoordinates);
@@ -261,15 +262,17 @@ public class GameScreen2 implements Screen {
 		tableShape = new btBoxShape(new Vector3(tableObj.dimensions.x, 0.01f,
 				tableObj.dimensions.z));
 		tableObj.body = new btRigidBody(
-				new btRigidBody.btRigidBodyConstructionInfo(0, null,
-						tableShape, GameObject.Constructor.localInertia));
+				new btRigidBody.btRigidBodyConstructionInfo(0,
+						tableObj.body.getMotionState(), tableShape,
+						GameObject.Constructor.localInertia));
 
 		// CREATING GAME_OBJECTS: ball
 		ballObj = new GameObject.Constructor(ball, "ball", ballShape, 1f)
 				.construct();
 		ballShape = new btSphereShape(ballObj.radius);
 		ballObj.body = new btRigidBody(
-				new btRigidBody.btRigidBodyConstructionInfo(1, null, ballShape,
+				new btRigidBody.btRigidBodyConstructionInfo(1,
+						ballObj.body.getMotionState(), ballShape,
 						GameObject.Constructor.localInertia));
 		Attribute attribute = ColorAttribute.createSpecular(Color.BLUE);
 		Attribute attribute2 = ColorAttribute.createDiffuse(Color.RED);
@@ -295,35 +298,41 @@ public class GameScreen2 implements Screen {
 		ballCollObj = new btCollisionObject();
 		ballCollObj.setCollisionShape(ballShape);
 		ballCollObj.setWorldTransform(ballObj.transform);
-		
+
 		// CONSTRUCTORS
-		constructors = new ArrayMap<String, GameObject.Constructor>(String.class, GameObject.Constructor.class);
-		constructors.put("table", new GameObject.Constructor(table, "table", tableShape, 0f));
-		constructors.put("ball", new GameObject.Constructor(ball, "ball", ballShape, 1f));
+		constructors = new ArrayMap<String, GameObject.Constructor>(
+				String.class, GameObject.Constructor.class);
+		constructors.put("table", new GameObject.Constructor(table, "table",
+				tableShape, 0f));
+		constructors.put("ball", new GameObject.Constructor(ball, "ball",
+				ballShape, 1f));
 
 		// ADD INSTANCES
 		tableObj.body.setCollisionFlags(tableObj.body.getCollisionFlags()
-	  			| btCollisionObject.CollisionFlags.CF_KINEMATIC_OBJECT);
+				| btCollisionObject.CollisionFlags.CF_STATIC_OBJECT);
 		dynamicsWorld.addRigidBody(tableObj.body);
 		tableObj.body.setContactCallbackFlag(GROUND_FLAG);
 		tableObj.body.setContactCallbackFilter(0);
 		tableObj.body.setActivationState(Collision.DISABLE_DEACTIVATION);
 		instances.add(tableObj);
-		
-		
-		ballObj.transform.setFromEulerAngles(MathUtils.random(360f), MathUtils.random(360f), MathUtils.random(360f));
-		ballObj.transform.trn(MathUtils.random(-2.5f, 2.5f), 9f, MathUtils.random(-2.5f, 2.5f));
-		ballObj.body.proceedToTransform(ballObj.transform);
+
+		ballObj.transform.setFromEulerAngles(MathUtils.random(360f),
+				MathUtils.random(360f), MathUtils.random(360f));
+		ballObj.transform.trn(MathUtils.random(-2.5f, 2.5f), 9f,
+				MathUtils.random(-2.5f, 2.5f));
 		ballObj.body.setUserValue(instances.size);
-		ballObj.body.setCollisionFlags(ballObj.body.getCollisionFlags() | btCollisionObject.CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK);
+		ballObj.body.setCollisionFlags(ballObj.body.getCollisionFlags()
+				| btCollisionObject.CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK);
 		dynamicsWorld.addRigidBody(ballObj.body);
 		ballObj.body.setContactCallbackFlag(OBJECT_FLAG);
 		ballObj.body.setContactCallbackFilter(GROUND_FLAG);
+		BoundingBox out = new BoundingBox();
+		ballObj.calculateBoundingBox(out);
+		ballObj.dimensions = out.getDimensions();
 		instances.add(ballObj);
-		
 
 		// AMBIENT
-        model = loader.loadModel(Gdx.files.internal("models/ambient/ambient1.obj"));
+		model = assets.get(Models.MODEL_AMBIENT, Model.class);
 		ambient = new ModelInstance(model);
 		ambient.transform.rotate(Vector3.Z, 180);
 
@@ -345,33 +354,16 @@ public class GameScreen2 implements Screen {
 	public void render(float delta) {
 		// INPUT
 		handleInput();
+	
 
 		// LOADING
 		if (loading)
 			doneLoading();
 
-		// PHYSICS
-		visibleCount = 0;
-		for (GameObject instance : instances) {
-			// MOVEMENT
-			if (instance.moving) {
-				instance.transform.trn(0f, -10f * delta, 0f);
-				instance.body.setWorldTransform(instance.transform);
-			}
-
-			// VISIBLE
-			if (isVisible(cam, instance)) {
-				visibleCount++;
-				modelBatch.render((ModelInstance) instance, environment);
-			}
-		}
-		
-		dynamicsWorld.stepSimulation(delta, 5, 1f/60f);
-
-
-		// AMBIENT
-		if (ambient != null)
-			modelBatch.render(ambient);
+		// VIEWPORT
+		Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(),
+				Gdx.graphics.getHeight());
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
 		// FPS LABEL
 		stringBuilder.setLength(0);
@@ -382,14 +374,31 @@ public class GameScreen2 implements Screen {
 
 		camController.update();
 
-		// VIEWPORT
-		Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(),
-				Gdx.graphics.getHeight());
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
-
 		modelBatch.begin(cam);
+		// AMBIENT
+		if (ambient != null)
+			modelBatch.render(ambient);
+
+		// PHYSICS
+		visibleCount = 0;
+		dynamicsWorld.stepSimulation(delta, 5, 1f / 60f);
 		modelBatch.render(instances, environment);
+		for (GameObject instance : instances) {
+			// MOVEMENT
+			if (instance.moving) {
+				instance.transform.trn(0f, -10f * delta, 0f);
+				instance.body.setWorldTransform(instance.transform);
+			}
+
+			// VISIBLE
+			if (isVisible(cam, instance)) {
+				visibleCount++;
+				modelBatch.render(instance, environment);
+			}
+		}
+		
 		modelBatch.end();
+
 		stage.draw();
 
 	}
@@ -437,7 +446,6 @@ public class GameScreen2 implements Screen {
 
 		ballObj.dispose();
 		ballShape.dispose();
-
 
 		broadphase.dispose();
 		dispatcher.dispose();

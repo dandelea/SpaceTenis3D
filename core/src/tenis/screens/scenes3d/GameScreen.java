@@ -1,10 +1,12 @@
-package tenis.screens;
+package tenis.screens.scenes3d;
+
+import tenis.screens.MainMenuScreen;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.assets.loaders.ModelLoader;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -19,12 +21,15 @@ import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
+import com.badlogic.gdx.graphics.g3d.loader.ObjLoader;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.physics.bullet.Bullet;
+import com.badlogic.gdx.physics.bullet.collision.Collision;
 import com.badlogic.gdx.physics.bullet.collision.ContactListener;
 import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
 import com.badlogic.gdx.physics.bullet.collision.btBroadphaseInterface;
@@ -32,39 +37,79 @@ import com.badlogic.gdx.physics.bullet.collision.btCollisionConfiguration;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionDispatcher;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
-import com.badlogic.gdx.physics.bullet.collision.btCollisionWorld;
 import com.badlogic.gdx.physics.bullet.collision.btDbvtBroadphase;
 import com.badlogic.gdx.physics.bullet.collision.btDefaultCollisionConfiguration;
 import com.badlogic.gdx.physics.bullet.collision.btDispatcher;
 import com.badlogic.gdx.physics.bullet.collision.btSphereShape;
+import com.badlogic.gdx.physics.bullet.dynamics.btConstraintSolver;
+import com.badlogic.gdx.physics.bullet.dynamics.btDiscreteDynamicsWorld;
+import com.badlogic.gdx.physics.bullet.dynamics.btDynamicsWorld;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
+import com.badlogic.gdx.physics.bullet.dynamics.btSequentialImpulseConstraintSolver;
+import com.badlogic.gdx.physics.bullet.linearmath.btMotionState;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.ArrayMap;
 import com.badlogic.gdx.utils.Disposable;
 
 public class GameScreen implements Screen {
 
+	class MyContactListener extends ContactListener {
+		@Override
+		public boolean onContactAdded(int userValue0, int partId0, int index0,
+				boolean match0, int userValue1, int partId1, int index1,
+				boolean match1) {
+			if (match0)
+				((ColorAttribute) instances.get(userValue0).materials.get(0)
+						.get(ColorAttribute.Diffuse)).color.set(Color.WHITE);
+			if (match1)
+				((ColorAttribute) instances.get(userValue1).materials.get(0)
+						.get(ColorAttribute.Diffuse)).color.set(Color.WHITE);
+			return true;
+		}
+	}
+
+	static class MyMotionState extends btMotionState {
+		Matrix4 transform;
+
+		@Override
+		public void getWorldTransform(Matrix4 worldTrans) {
+			worldTrans.set(transform);
+		}
+
+		@Override
+		public void setWorldTransform(Matrix4 worldTrans) {
+			transform.set(worldTrans);
+		}
+	}
+
 	static class GameObject extends ModelInstance implements Disposable {
 		public btRigidBody body;
-		public boolean moving;
-		public final Vector3 center = new Vector3();
-		public final Vector3 dimensions = new Vector3();
+		public final MyMotionState motionState;
+		public Vector3 dimensions = new Vector3();
+		public Vector3 center = new Vector3();
 		public final float radius;
+		public boolean moving;
 		private final static BoundingBox bounds = new BoundingBox();
 
 		public GameObject(Model model, String node,
 				btRigidBody.btRigidBodyConstructionInfo constructionInfo) {
 			super(model, node);
+			motionState = new MyMotionState();
+			motionState.transform = transform;
 			body = new btRigidBody(constructionInfo);
-			calculateBoundingBox(bounds);
+			body.setMotionState(motionState);
+			this.calculateBoundingBox(bounds);
 			bounds.getCenter(center);
 			bounds.getDimensions(dimensions);
 			radius = dimensions.len() / 2f;
 		}
 
+		@Override
 		public void dispose() {
 			body.dispose();
+			motionState.dispose();
 		}
 
 		static class Constructor implements Disposable {
@@ -99,16 +144,6 @@ public class GameScreen implements Screen {
 		}
 	}
 
-	class MyContactListener extends ContactListener {
-		@Override
-		public boolean onContactAdded(int userValue0, int partId0, int index0,
-				int userValue1, int partId1, int index1) {
-			instances.get(userValue0).moving = false;
-			instances.get(userValue1).moving = false;
-			return true;
-		}
-	}
-
 	private Stage stage;
 	private Label label;
 	private BitmapFont font;
@@ -116,18 +151,18 @@ public class GameScreen implements Screen {
 	private PerspectiveCamera cam;
 
 	private ModelBatch modelBatch;
-	private AssetManager assets;
 	private boolean loading;
 
 	private Environment environment;
 
 	private CameraInputController camController;
 
+	private ModelLoader loader;
+	private Model model;
 	private Model table;
 	private Model ball;
 	private Vector3 ballPosition = new Vector3(0, 0, 0);
 	private Vector3 ballScale = new Vector3(0.05f, 0.05f, 0.05f);
-	private float speed;
 	private ModelInstance ambient;
 
 	// FLAGS
@@ -137,6 +172,8 @@ public class GameScreen implements Screen {
 
 	// Collisions
 	private Array<GameObject> instances;
+	ArrayMap<String, GameObject.Constructor> constructors;
+	float spawnTimer;
 	private GameObject ballObj;
 	private btSphereShape ballShape;
 	private btCollisionObject ballCollObj;
@@ -148,7 +185,8 @@ public class GameScreen implements Screen {
 	btDispatcher dispatcher;
 	MyContactListener contactListener;
 	btBroadphaseInterface broadphase;
-	btCollisionWorld collisionWorld;
+	btDynamicsWorld dynamicsWorld;
+	btConstraintSolver constraintSolver;
 
 	private StringBuilder stringBuilder;
 
@@ -162,6 +200,7 @@ public class GameScreen implements Screen {
 
 		// ENVIRONMENT
 		modelBatch = new ModelBatch();
+		loader = new ObjLoader();
 		environment = new Environment();
 		environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f,
 				0.4f, 0.4f, 1f));
@@ -183,8 +222,10 @@ public class GameScreen implements Screen {
 		collisionConfig = new btDefaultCollisionConfiguration();
 		dispatcher = new btCollisionDispatcher(collisionConfig);
 		broadphase = new btDbvtBroadphase();
-		collisionWorld = new btCollisionWorld(dispatcher, broadphase,
-				collisionConfig);
+		constraintSolver = new btSequentialImpulseConstraintSolver();
+		dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase,
+				constraintSolver, collisionConfig);
+		dynamicsWorld.setGravity(new Vector3(0, -10f, 0));
 		contactListener = new MyContactListener();
 
 		// INITIALIZE INSTANCES
@@ -197,22 +238,13 @@ public class GameScreen implements Screen {
 		stage.addActor(label);
 		stringBuilder = new StringBuilder();
 
-		// SPEED
-		speed = 10;
-
-		// LOAD ASSETS
-		assets = new AssetManager();
-		assets.load("models/table/table2.g3dj", Model.class);
-		assets.load("models/ambient/ambient1.obj", Model.class);
-
 		// START LOADING
 		loading = true;
 	}
 
 	private void doneLoading() {
-		// CREATING MODELS
-		table = assets.get("models/table/table2.g3dj", Model.class);
-
+		// LOAD ASSETS
+		table = loader.loadModel(Gdx.files.internal("models/table/table2.obj"));
 		ModelBuilder modelBuilder = new ModelBuilder();
 		ball = modelBuilder.createSphere(2f, 2f, 2f, 20, 20, new Material(),
 				Usage.Position | Usage.Normal | Usage.TextureCoordinates);
@@ -225,18 +257,21 @@ public class GameScreen implements Screen {
 		tableObj = new GameObject.Constructor(table, "table", tableShape, 0f)
 				.construct();
 		tableObj.transform.rotate(Vector3.Y, 180);
+		tableObj.moving = false;
 		tableShape = new btBoxShape(new Vector3(tableObj.dimensions.x, 0.01f,
 				tableObj.dimensions.z));
 		tableObj.body = new btRigidBody(
-				new btRigidBody.btRigidBodyConstructionInfo(0, null,
-						tableShape, GameObject.Constructor.localInertia));
+				new btRigidBody.btRigidBodyConstructionInfo(0,
+						tableObj.body.getMotionState(), tableShape,
+						GameObject.Constructor.localInertia));
 
 		// CREATING GAME_OBJECTS: ball
 		ballObj = new GameObject.Constructor(ball, "ball", ballShape, 1f)
 				.construct();
 		ballShape = new btSphereShape(ballObj.radius);
 		ballObj.body = new btRigidBody(
-				new btRigidBody.btRigidBodyConstructionInfo(1, null, ballShape,
+				new btRigidBody.btRigidBodyConstructionInfo(1,
+						ballObj.body.getMotionState(), ballShape,
 						GameObject.Constructor.localInertia));
 		Attribute attribute = ColorAttribute.createSpecular(Color.BLUE);
 		Attribute attribute2 = ColorAttribute.createDiffuse(Color.RED);
@@ -244,12 +279,15 @@ public class GameScreen implements Screen {
 		ballObj.transform.translate(ballPosition).scale(ballScale.x,
 				ballScale.y, ballScale.z);
 		ballObj.moving = true;
-		ballObj.transform.setFromEulerAngles(MathUtils.random(360f), MathUtils.random(360f), MathUtils.random(360f));
-		ballObj.transform.trn(MathUtils.random(-2.5f, 2.5f), 9f, MathUtils.random(-2.5f, 2.5f));
+		ballObj.transform.setFromEulerAngles(MathUtils.random(360f),
+				MathUtils.random(360f), MathUtils.random(360f));
+		ballObj.transform.trn(MathUtils.random(-2.5f, 2.5f), 9f,
+				MathUtils.random(-2.5f, 2.5f));
 		ballObj.body.setWorldTransform(ballObj.transform);
 		ballObj.body.setUserValue(instances.size);
-		ballObj.body.setCollisionFlags(ballObj.body.getCollisionFlags() | btCollisionObject.CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK);
-		
+		ballObj.body.setCollisionFlags(ballObj.body.getCollisionFlags()
+				| btCollisionObject.CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK);
+
 		// CREATING COLLISION_OBJECTS: table
 		tableCollObj = new btCollisionObject();
 		tableCollObj.setCollisionShape(tableShape);
@@ -260,15 +298,42 @@ public class GameScreen implements Screen {
 		ballCollObj.setCollisionShape(ballShape);
 		ballCollObj.setWorldTransform(ballObj.transform);
 
+		// CONSTRUCTORS
+		constructors = new ArrayMap<String, GameObject.Constructor>(
+				String.class, GameObject.Constructor.class);
+		constructors.put("table", new GameObject.Constructor(table, "table",
+				tableShape, 0f));
+		constructors.put("ball", new GameObject.Constructor(ball, "ball",
+				ballShape, 1f));
+
 		// ADD INSTANCES
+		tableObj.body.setCollisionFlags(tableObj.body.getCollisionFlags()
+				| btCollisionObject.CollisionFlags.CF_STATIC_OBJECT);
+		dynamicsWorld.addRigidBody(tableObj.body);
+		tableObj.body.setContactCallbackFlag(GROUND_FLAG);
+		tableObj.body.setContactCallbackFilter(0);
+		tableObj.body.setActivationState(Collision.DISABLE_DEACTIVATION);
 		instances.add(tableObj);
-		collisionWorld.addCollisionObject(tableObj.body, GROUND_FLAG, ALL_FLAG);
+
+		ballObj.transform.setFromEulerAngles(MathUtils.random(360f),
+				MathUtils.random(360f), MathUtils.random(360f));
+		ballObj.transform.trn(MathUtils.random(-2.5f, 2.5f), 9f,
+				MathUtils.random(-2.5f, 2.5f));
+		ballObj.body.setUserValue(instances.size);
+		ballObj.body.setCollisionFlags(ballObj.body.getCollisionFlags()
+				| btCollisionObject.CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK);
+		dynamicsWorld.addRigidBody(ballObj.body);
+		ballObj.body.setContactCallbackFlag(OBJECT_FLAG);
+		ballObj.body.setContactCallbackFilter(GROUND_FLAG);
+		BoundingBox out = new BoundingBox();
+		ballObj.calculateBoundingBox(out);
+		ballObj.dimensions = out.getDimensions();
 		instances.add(ballObj);
-		collisionWorld.addCollisionObject(ballObj.body, OBJECT_FLAG, ALL_FLAG);
 
 		// AMBIENT
-		ambient = new ModelInstance(assets.get("models/ambient/ambient1.obj",
-				Model.class));
+		model = loader.loadModel(Gdx.files
+				.internal("models/ambient/ambient1.obj"));
+		ambient = new ModelInstance(model);
 		ambient.transform.rotate(Vector3.Z, 180);
 
 		// FINISHED LOADING
@@ -280,8 +345,7 @@ public class GameScreen implements Screen {
 	public boolean isVisible(final Camera cam, final GameObject instance) {
 		instance.transform.getTranslation(position);
 		position.add(instance.center);
-		return true;
-		//return cam.frustum.sphereInFrustum(position, instance.radius);
+		return cam.frustum.sphereInFrustum(position, instance.radius);
 	}
 
 	private int visibleCount;
@@ -292,31 +356,13 @@ public class GameScreen implements Screen {
 		handleInput();
 
 		// LOADING
-		if (loading && assets.update())
+		if (loading)
 			doneLoading();
 
-		// PHYSICS
-		visibleCount = 0;
-		for (GameObject instance : instances) {
-			System.out.println(instance.center);
-			// MOVEMENT
-			if (instance.moving) {
-				instance.transform.trn(0f, -speed * delta, 0f);
-				instance.body.setWorldTransform(instance.transform);
-			}
-
-			// VISIBLE
-			if (isVisible(cam, instance)) {
-				visibleCount++;
-				modelBatch.render((ModelInstance) instance, environment);
-			}
-		}
-
-		collisionWorld.performDiscreteCollisionDetection();
-
-		// AMBIENT
-		if (ambient != null)
-			modelBatch.render(ambient);
+		// VIEWPORT
+		Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(),
+				Gdx.graphics.getHeight());
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
 		// FPS LABEL
 		stringBuilder.setLength(0);
@@ -327,14 +373,31 @@ public class GameScreen implements Screen {
 
 		camController.update();
 
-		// VIEWPORT
-		Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(),
-				Gdx.graphics.getHeight());
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
-		
 		modelBatch.begin(cam);
+		// AMBIENT
+		if (ambient != null)
+			modelBatch.render(ambient);
+
+		// PHYSICS
+		visibleCount = 0;
+		dynamicsWorld.stepSimulation(delta, 5, 1f / 60f);
 		modelBatch.render(instances, environment);
+		for (GameObject instance : instances) {
+			// MOVEMENT
+			if (instance.moving) {
+				instance.transform.trn(0f, -10f * delta, 0f);
+				instance.body.setWorldTransform(instance.transform);
+			}
+
+			// VISIBLE
+			if (isVisible(cam, instance)) {
+				visibleCount++;
+				modelBatch.render(instance, environment);
+			}
+		}
+		
 		modelBatch.end();
+
 		stage.draw();
 
 	}
@@ -371,18 +434,18 @@ public class GameScreen implements Screen {
 
 	@Override
 	public void dispose() {
-		for (GameObject obj: instances){
+		for (GameObject obj : instances) {
 			obj.dispose();
 		}
 		instances.clear();
-		
+		model.dispose();
+
 		tableObj.dispose();
 		tableShape.dispose();
 
 		ballObj.dispose();
 		ballShape.dispose();
 
-		collisionWorld.dispose();
 		broadphase.dispose();
 		dispatcher.dispose();
 		collisionConfig.dispose();
@@ -390,10 +453,6 @@ public class GameScreen implements Screen {
 		contactListener.dispose();
 
 		modelBatch.dispose();
-		assets.dispose();
 
 	}
-
 }
-
-
