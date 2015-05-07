@@ -2,8 +2,7 @@ package tenis.screens;
 
 import tenis.SpaceTenis3D;
 import tenis.screens.demos.BulletTest;
-import tenis.screens.demos.RayPickingTest;
-import tenis.screens.scenes3d.GameScreen2;
+import tenis.screens.scenes3d.GameScreen3;
 import tenis.tween.ActorAccessor;
 import aurelienribon.tweenengine.BaseTween;
 import aurelienribon.tweenengine.Timeline;
@@ -18,7 +17,6 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -66,7 +64,7 @@ public class MainMenuScreen implements Screen {
 		btnStart.addListener(new ClickListener() {
 			public void clicked(InputEvent event, float x, float y) {
 				((Game) Gdx.app.getApplicationListener())
-						.setScreen(new GameScreen2());
+						.setScreen(new GameScreen3());
 			}
 		});
 		btnStart.pad(20);

@@ -9,14 +9,11 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.assets.loaders.ModelLoader;
-import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.VertexAttributes.Usage;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g3d.Attribute;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
@@ -24,7 +21,6 @@ import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
-import com.badlogic.gdx.graphics.g3d.loader.ObjLoader;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.MathUtils;
@@ -60,11 +56,17 @@ public class GameScreen2 extends InputAdapter implements Screen {
 
 	class MyContactListener extends ContactListener {
 		@Override
-		public boolean onContactAdded (int userValue0, int partId0, int index0, int userValue1, int partId1, int index1) {
-	        instances.get(userValue0).moving = false;
-	        instances.get(userValue1).moving = false;
-	        return true;
-	    }
+		public boolean onContactAdded(int userValue0, int partId0, int index0,
+				boolean match0, int userValue1, int partId1, int index1,
+				boolean match1) {
+			GameObject collisioner = instances.get(userValue1);
+			Vector3 inertia = collisioner.body.getLinearVelocity();
+			Vector3 reaction = new Vector3(inertia.x, -tableBouncingFactor
+					* inertia.y, inertia.z);
+			instances.get(userValue1).body.setLinearVelocity(reaction);
+			((ColorAttribute)instances.get(userValue1).materials.get(0).get(ColorAttribute.Diffuse)).color.set(Color.WHITE);
+			return true;
+		}
 	}
 
 	static class MyMotionState extends btMotionState {
@@ -82,29 +84,19 @@ public class GameScreen2 extends InputAdapter implements Screen {
 	}
 
 	static class GameObject extends ModelInstance implements Disposable {
-		public btRigidBody body;
+		public final btRigidBody body;
 		public final MyMotionState motionState;
-		public Vector3 dimensions = new Vector3();
-		public Vector3 center = new Vector3();
-		public final float radius;
-		public boolean moving;
-		private final static BoundingBox bounds = new BoundingBox();
 
-		public GameObject(Model model, String node,
-				btRigidBody.btRigidBodyConstructionInfo constructionInfo) {
+		public GameObject (Model model, String node, btRigidBody.btRigidBodyConstructionInfo constructionInfo) {
 			super(model, node);
 			motionState = new MyMotionState();
 			motionState.transform = transform;
 			body = new btRigidBody(constructionInfo);
 			body.setMotionState(motionState);
-			this.calculateBoundingBox(bounds);
-			bounds.getCenter(center);
-			bounds.getDimensions(dimensions);
-			radius = dimensions.len() / 2f;
 		}
 
 		@Override
-		public void dispose() {
+		public void dispose () {
 			body.dispose();
 			motionState.dispose();
 		}
@@ -116,8 +108,7 @@ public class GameScreen2 extends InputAdapter implements Screen {
 			public final btRigidBody.btRigidBodyConstructionInfo constructionInfo;
 			private static Vector3 localInertia = new Vector3();
 
-			public Constructor(Model model, String node,
-					btCollisionShape shape, float mass) {
+			public Constructor (Model model, String node, btCollisionShape shape, float mass) {
 				this.model = model;
 				this.node = node;
 				this.shape = shape;
@@ -125,61 +116,52 @@ public class GameScreen2 extends InputAdapter implements Screen {
 					shape.calculateLocalInertia(mass, localInertia);
 				else
 					localInertia.set(0, 0, 0);
-				this.constructionInfo = new btRigidBody.btRigidBodyConstructionInfo(
-						mass, null, shape, localInertia);
+				this.constructionInfo = new btRigidBody.btRigidBodyConstructionInfo(mass, null, shape, localInertia);
 			}
 
-			public GameObject construct() {
+			public GameObject construct () {
 				return new GameObject(model, node, constructionInfo);
 			}
 
 			@Override
-			public void dispose() {
+			public void dispose () {
 				shape.dispose();
 				constructionInfo.dispose();
 			}
 		}
 	}
-	
-	
 
-	private Stage stage;
-	private Label label;
-	private BitmapFont font;
+	private static PerspectiveCamera cam;
 
-	private PerspectiveCamera cam;
-
-	private ModelBatch modelBatch;
+	private static ModelBatch modelBatch;
 	private boolean loading;
 
 	private Environment environment;
 
 	private CameraInputController camController;
 
+	// MODELS
 	private Assets assets;
+	private ModelBuilder modelBuilder;
 	private Model model;
 	private Model table;
-	private Model ball;
-	private Vector3 ballPosition = new Vector3(0, 1, 0);
-	private Vector3 ballScale = new Vector3(0.05f, 0.05f, 0.05f);
+	private ModelInstance tableI;
 	private ModelInstance ambient;
+
+	// POSITIONS
+	private Vector3 camPosition = new Vector3(2f, 1.22f, 0f);
+	private Vector3 camDirection = new Vector3();
+	private int camFOV = 67;
+	private float tableBouncingFactor = 0.8f;
+	private Vector3 tablePosition = new Vector3(0, 1, 0);
+	private Vector3 ballScale = new Vector3(0.05f, 0.05f, 0.05f);
 
 	// FLAGS
 	final static short GROUND_FLAG = 1 << 8;
 	final static short OBJECT_FLAG = 1 << 9;
 	final static short ALL_FLAG = -1;
 
-	// Collisions
-	private Array<GameObject> instances;
-	ArrayMap<String, GameObject.Constructor> constructors;
-	float spawnTimer;
-	private GameObject ballObj;
-	private btSphereShape ballShape;
-	private btCollisionObject ballCollObj;
-	private GameObject tableObj;
-	private btBoxShape tableShape;
-	private btCollisionObject tableCollObj;
-
+	// BULLET COLLISION STUFF
 	btCollisionConfiguration collisionConfig;
 	btDispatcher dispatcher;
 	MyContactListener contactListener;
@@ -187,7 +169,13 @@ public class GameScreen2 extends InputAdapter implements Screen {
 	btDynamicsWorld dynamicsWorld;
 	btConstraintSolver constraintSolver;
 
-	private StringBuilder stringBuilder;
+	// COLLISIONS INSTANCES
+	private Array<GameObject> instances;
+	private ArrayMap<String, GameObject.Constructor> constructors;
+	private btSphereShape ballShape;
+	private btBoxShape tableShape;
+
+	float spawnTimer = 1f;
 
 	@Override
 	public void show() {
@@ -196,9 +184,10 @@ public class GameScreen2 extends InputAdapter implements Screen {
 		 * of Bullet related objects.
 		 */
 		Bullet.init();
-		
+
 		assets = new Assets();
 		assets.loadAll();
+		modelBuilder = new ModelBuilder();
 
 		// ENVIRONMENT
 		modelBatch = new ModelBatch();
@@ -209,10 +198,10 @@ public class GameScreen2 extends InputAdapter implements Screen {
 				-0.8f, -0.2f));
 
 		// CAMERA
-		cam = new PerspectiveCamera(67, Gdx.graphics.getWidth(),
+		cam = new PerspectiveCamera(camFOV, Gdx.graphics.getWidth(),
 				Gdx.graphics.getHeight());
-		cam.position.set(1.3f, 0f, 0f);
-		cam.lookAt(-0.5f, -0.75f, 0);
+		cam.position.set(camPosition);
+		cam.lookAt(camDirection);
 		cam.near = 1f;
 		cam.far = 300f;
 		cam.update();
@@ -226,180 +215,109 @@ public class GameScreen2 extends InputAdapter implements Screen {
 		constraintSolver = new btSequentialImpulseConstraintSolver();
 		dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase,
 				constraintSolver, collisionConfig);
-		dynamicsWorld.setGravity(new Vector3(0, -10f, 0));
+		dynamicsWorld.setGravity(new Vector3(0, -10, 0));
 		contactListener = new MyContactListener();
 
 		// INITIALIZE INSTANCES
 		instances = new Array<GameObject>();
-
-		// LABEL FOR FPS
-		stage = new Stage();
-		font = new BitmapFont();
-		label = new Label(" ", new Label.LabelStyle(font, Color.WHITE));
-		stage.addActor(label);
-		stringBuilder = new StringBuilder();
 
 		// START LOADING
 		loading = true;
 	}
 
 	private void doneLoading() {
-		// LOAD ASSETS
-		table = assets.get(Models.MODEL_TABLE, Model.class);
-		ModelBuilder modelBuilder = new ModelBuilder();
-		ball = modelBuilder.createSphere(2f, 2f, 2f, 20, 20, new Material(),
-				Usage.Position | Usage.Normal | Usage.TextureCoordinates);
-
-		// CREATING OBJECTS SHAPES
-		tableShape = new btBoxShape(new Vector3(1, 1, 1));
-		ballShape = new btSphereShape(1);
-
-		// CREATING GAME_OBJECTS: table
-		tableObj = new GameObject.Constructor(table, "table", tableShape, 0f)
-				.construct();
-		tableObj.transform.rotate(Vector3.Y, 180);
-		tableObj.moving = false;
-		tableShape = new btBoxShape(new Vector3(tableObj.dimensions.x, 0.01f,
-				tableObj.dimensions.z));
-		tableObj.body = new btRigidBody(
-				new btRigidBody.btRigidBodyConstructionInfo(0,
-						tableObj.body.getMotionState(), tableShape,
-						GameObject.Constructor.localInertia));
-
-		// CREATING GAME_OBJECTS: ball
-		ballObj = new GameObject.Constructor(ball, "ball", ballShape, 1f)
-				.construct();
-		ballShape = new btSphereShape(ballObj.radius);
-		ballObj.body = new btRigidBody(
-				new btRigidBody.btRigidBodyConstructionInfo(1,
-						ballObj.body.getMotionState(), ballShape,
-						GameObject.Constructor.localInertia));
-		Attribute attribute = ColorAttribute.createSpecular(Color.BLUE);
-		Attribute attribute2 = ColorAttribute.createDiffuse(Color.RED);
-		ballObj.materials.add(new Material(attribute, attribute2));
-		ballObj.transform.translate(ballPosition).scale(ballScale.x,
-				ballScale.y, ballScale.z);
-		ballObj.moving = true;
-		ballObj.transform.setFromEulerAngles(MathUtils.random(360f),
-				MathUtils.random(360f), MathUtils.random(360f));
-		ballObj.transform.trn(MathUtils.random(-2.5f, 2.5f), 9f,
-				MathUtils.random(-2.5f, 2.5f));
-		ballObj.body.setWorldTransform(ballObj.transform);
-		ballObj.body.setUserValue(instances.size);
-		ballObj.body.setCollisionFlags(ballObj.body.getCollisionFlags()
-				| btCollisionObject.CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK);
-
-		// CREATING COLLISION_OBJECTS: table
-		tableCollObj = new btCollisionObject();
-		tableCollObj.setCollisionShape(tableShape);
-		tableCollObj.setWorldTransform(tableObj.transform);
-
-		// CREATING COLLISION_OBJECTS: ball
-		ballCollObj = new btCollisionObject();
-		ballCollObj.setCollisionShape(ballShape);
-		ballCollObj.setWorldTransform(ballObj.transform);
-
-		// CONSTRUCTORS
-		constructors = new ArrayMap<String, GameObject.Constructor>(
-				String.class, GameObject.Constructor.class);
-		constructors.put("table", new GameObject.Constructor(table, "table",
-				tableShape, 0f));
-		constructors.put("ball", new GameObject.Constructor(ball, "ball",
-				ballShape, 1f));
-
-		// ADD INSTANCES
-		tableObj.body.setCollisionFlags(tableObj.body.getCollisionFlags()
-				| btCollisionObject.CollisionFlags.CF_STATIC_OBJECT);
-		dynamicsWorld.addRigidBody(tableObj.body);
-		tableObj.body.setContactCallbackFlag(GROUND_FLAG);
-		tableObj.body.setContactCallbackFilter(0);
-		tableObj.body.setActivationState(Collision.DISABLE_DEACTIVATION);
-		instances.add(tableObj);
-
-		ballObj.transform.setFromEulerAngles(MathUtils.random(360f),
-				MathUtils.random(360f), MathUtils.random(360f));
-		ballObj.transform.trn(MathUtils.random(-2.5f, 2.5f), 9f,
-				MathUtils.random(-2.5f, 2.5f));
-		ballObj.body.setUserValue(instances.size);
-		ballObj.body.setCollisionFlags(ballObj.body.getCollisionFlags()
-				| btCollisionObject.CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK);
-		dynamicsWorld.addRigidBody(ballObj.body);
-		ballObj.body.setContactCallbackFlag(OBJECT_FLAG);
-		ballObj.body.setContactCallbackFilter(GROUND_FLAG);
-		BoundingBox out = new BoundingBox();
-		ballObj.calculateBoundingBox(out);
-		ballObj.dimensions = out.getDimensions();
-		instances.add(ballObj);
 
 		// AMBIENT
-		model = assets.get(Models.MODEL_AMBIENT, Model.class);
-		ambient = new ModelInstance(model);
+		ambient = new ModelInstance(assets.get(Models.MODEL_AMBIENT,
+				Model.class));
 		ambient.transform.rotate(Vector3.Z, 180);
+
+		// CREATE BALL
+		ModelBuilder mb = new ModelBuilder();
+		mb.begin();
+		mb.node().id = "ball";
+		mb.part("ball", GL20.GL_TRIANGLES, Usage.Position | Usage.Normal,
+				new Material(ColorAttribute.createDiffuse(Color.RED))).sphere(
+				0.2f, 0.2f, 0.2f, 10, 10);
+		model = mb.end();
+
+		// CREATE TABLE
+		table = assets.get(Models.MODEL_TABLE, Model.class);
+		BoundingBox box = new BoundingBox();
+		table.calculateBoundingBox(box);
+		tableShape = new btBoxShape(new Vector3(box.getDimensions().x/2, box.getDimensions().y/2, box.getDimensions().z/2));
+		tableI = new ModelInstance(table);
+		tableI.transform.scl(1);
+
+		// FILL CONSTRUCTORS
+		constructors = new ArrayMap<String, GameObject.Constructor>(
+				String.class, GameObject.Constructor.class);
+		constructors.put("ball", new GameObject.Constructor(model, "ball",
+				new btSphereShape(0.5f), 1f));
+		constructors.put("table", new GameObject.Constructor(table, "table",
+				tableShape, 1));
+		// ADD TABLE
+		
+		GameObject object = constructors.get("table").construct();
+		object.body.setCollisionFlags(object.body.getCollisionFlags()
+				| btCollisionObject.CollisionFlags.CF_KINEMATIC_OBJECT);
+		object.body.proceedToTransform(object.transform);
+		object.body.setContactCallbackFlag(GROUND_FLAG);
+		object.body.setContactCallbackFilter(0);
+		object.body.setActivationState(Collision.DISABLE_DEACTIVATION);
+		instances.add(object);
+
+		dynamicsWorld.addRigidBody(object.body);
 
 		// FINISHED LOADING
 		loading = false;
 	}
 
-	private Vector3 position = new Vector3();
-
-	public boolean isVisible(final Camera cam, final GameObject instance) {
-		instance.transform.getTranslation(position);
-		position.add(instance.center);
-		return cam.frustum.sphereInFrustum(position, instance.radius);
+	public void spawn() {
+		GameObject obj = constructors.values[0].construct();
+		obj.transform.trn(MathUtils.random(-2.5f, 2.5f), 1f,
+				MathUtils.random(-2.5f, 2.5f));
+		obj.body.proceedToTransform(obj.transform);
+		obj.body.setUserValue(instances.size);
+		obj.body.setCollisionFlags(obj.body.getCollisionFlags()
+				| btCollisionObject.CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK);
+		instances.add(obj);
+		dynamicsWorld.addRigidBody(obj.body);
+		obj.body.setContactCallbackFlag(OBJECT_FLAG);
+		obj.body.setContactCallbackFilter(GROUND_FLAG);
 	}
-
-	private int visibleCount;
 
 	@Override
 	public void render(float delta) {
 		// INPUT
 		handleInput();
-	
+
+		if ((spawnTimer -= delta) < 0) {
+			spawn();
+			spawnTimer = 1.5f;
+		}
 
 		// LOADING
 		if (loading)
 			doneLoading();
 
 		// VIEWPORT
-		Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(),
-				Gdx.graphics.getHeight());
+		Gdx.gl.glClearColor(0.3f, 0.3f, 0.3f, 1.f);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
-		// FPS LABEL
-		stringBuilder.setLength(0);
-		stringBuilder.append(" FPS: ")
-				.append(Gdx.graphics.getFramesPerSecond());
-		stringBuilder.append(" Visible: ").append(visibleCount);
-		label.setText(stringBuilder);
-
+		dynamicsWorld.stepSimulation(delta, 5, 1f / 60f);
 		camController.update();
 
 		modelBatch.begin(cam);
+
 		// AMBIENT
 		if (ambient != null)
 			modelBatch.render(ambient);
-
 		// PHYSICS
-		visibleCount = 0;
-		dynamicsWorld.stepSimulation(delta, 5, 1f / 60f);
+		modelBatch.render(tableI);
+
 		modelBatch.render(instances, environment);
-		for (GameObject instance : instances) {
-			// MOVEMENT
-			if (instance.moving) {
-				instance.transform.trn(0f, -10f * delta, 0f);
-				instance.body.setWorldTransform(instance.transform);
-			}
-
-			// VISIBLE
-			if (isVisible(cam, instance)) {
-				visibleCount++;
-				modelBatch.render(instance, environment);
-			}
-		}
-		
 		modelBatch.end();
-
-		stage.draw();
 
 	}
 
@@ -412,7 +330,7 @@ public class GameScreen2 extends InputAdapter implements Screen {
 
 	@Override
 	public void resize(int width, int height) {
-		stage.getViewport().update(width, height, true);
+
 	}
 
 	@Override
@@ -441,10 +359,8 @@ public class GameScreen2 extends InputAdapter implements Screen {
 		instances.clear();
 		model.dispose();
 
-		tableObj.dispose();
 		tableShape.dispose();
 
-		ballObj.dispose();
 		ballShape.dispose();
 
 		broadphase.dispose();
