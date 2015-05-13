@@ -1,6 +1,7 @@
 package tenis.screens;
 
 import tenis.SpaceTenis3D;
+import tenis.managers.Assets;
 import tenis.screens.demos.BulletTest;
 import tenis.screens.scenes3d.GameScreen3;
 import tenis.tween.ActorAccessor;
@@ -38,8 +39,7 @@ public class MainMenuScreen implements Screen {
 	private BitmapFont titleFont;
 	private Label heading;
 	
-
-	private TextureAtlas atlas;
+	private Assets assets;
 
 	private TweenManager tweenManager;
 
@@ -48,13 +48,16 @@ public class MainMenuScreen implements Screen {
 	@SuppressWarnings("deprecation")
 	@Override
 	public void show() {
+		assets = new Assets();
+		assets.loadAll();
+		
 		stage = new Stage();
 		// stage.setDebugAll(true);
 		Gdx.input.setInputProcessor(stage);
 
-		atlas = new TextureAtlas("ui/uiskin.atlas");
 		// btnPack = new TextureAtlas("ui/button.pack");
-		skin = new Skin(Gdx.files.internal("ui/uiskin.json"), atlas);
+		skin = Assets.skin;
+				
 		// skin.addRegions(btnPack);
 
 		table = new Table(skin);
@@ -167,8 +170,6 @@ public class MainMenuScreen implements Screen {
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		
-
-
 		stage.act(delta);
 		stage.draw();
 
@@ -222,7 +223,6 @@ public class MainMenuScreen implements Screen {
 	@Override
 	public void dispose() {
 		stage.dispose();
-		atlas.dispose();
 		skin.dispose();
 	}
 

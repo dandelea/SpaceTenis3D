@@ -1,5 +1,7 @@
 package tenis.screens.scenes3d;
 
+import javax.security.auth.callback.TextOutputCallback;
+
 import tenis.managers.Assets;
 import tenis.references.Models;
 import tenis.screens.MainMenuScreen;
@@ -16,6 +18,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.VertexAttributes.Usage;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
@@ -49,11 +52,17 @@ import com.badlogic.gdx.physics.bullet.dynamics.btDynamicsWorld;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.dynamics.btSequentialImpulseConstraintSolver;
 import com.badlogic.gdx.physics.bullet.linearmath.btMotionState;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Window;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.badlogic.gdx.utils.Disposable;
+import com.badlogic.gdx.utils.viewport.StretchViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 
 public class GameScreen3 extends InputAdapter implements Screen {
 
@@ -178,7 +187,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 	}
 
 	private Stage stage;
-	private Stage stagePause;
+	private Window pause;
 	private Label label;
 	private BitmapFont font;
 	private StringBuilder stringBuilder;
@@ -200,10 +209,10 @@ public class GameScreen3 extends InputAdapter implements Screen {
 	private ModelInstance ambient;
 
 	// POSITIONS
-	private Vector3 camPosition = new Vector3(2f, 1.22f, 0f);
+	private Vector3 camPosition = new Vector3(2, 2, 0);
 	private Vector3 camDirection = new Vector3();
 	private int camFOV = 67;
-	private float tableBouncingFactor = 0.8f;
+	private float tableBouncingFactor = 1;
 	private Vector3 tablePosition = new Vector3(0, 1, 0);
 	private Vector3 ballScale = new Vector3(0.05f, 0.05f, 0.05f);
 
@@ -259,16 +268,42 @@ public class GameScreen3 extends InputAdapter implements Screen {
 
 		// UI
 		stage = new Stage();
-		stagePause = new Stage();
+		stage.setDebugAll(true);
 		font = new BitmapFont();
 		label = new Label(" ", new Label.LabelStyle(font, Color.WHITE));
 		stage.addActor(label);
 		stringBuilder = new StringBuilder();
+		
+		// PAUSE SCREEN
+		pause = new Window("PAUSE", Assets.skin);
+		pause.setSize(stage.getWidth() / 1.5f, stage.getHeight() / 1.5f);
+		pause.setPosition(stage.getWidth() / 2 - pause.getWidth() / 2, stage.getHeight() / 2 - pause.getHeight() / 2);
+		TextButton resume = new TextButton("Resume", Assets.skin);
+		resume.pad(20);
+		resume.addListener(new ClickListener() {
+			public void clicked(InputEvent event, float x, float y) {
+				state = GAME_RUNNING;
+				disposePause();
+			}
+		});
+		TextButton quit = new TextButton("Quit", Assets.skin);
+		quit.pad(20);
+		quit.addListener(new ClickListener() {
+			public void clicked(InputEvent event, float x, float y) {
+				((Game) Gdx.app.getApplicationListener())
+				.setScreen(new MainMenuScreen());
+			}
+		});
+		pause.add(resume).row();
+		pause.add(quit).row();
+		pause.setVisible(false);
+		stage.addActor(pause);
 
 		// GAMES
 		state = GAME_READY;
 		points = 0;
 		nextRound = true;
+		
 
 		// ENVIRONMENT
 		modelBatch = new ModelBatch();
@@ -287,7 +322,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		cam.far = 300f;
 		cam.update();
 		camController = new CameraInputController(cam);
-		Gdx.input.setInputProcessor(new InputMultiplexer(this, camController));
+		Gdx.input.setInputProcessor(camController);
 
 		// COLLISION STUFF
 		collisionConfig = new btDefaultCollisionConfiguration();
@@ -359,7 +394,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 
 	public void spawn() {
 		GameObject obj = constructors.values[0].construct();
-		obj.transform.trn(1, 1, -0.7f);
+		obj.transform.trn(1, 3, -0.7f);
 		obj.body.proceedToTransform(obj.transform);
 		obj.body.setUserValue(instances.size);
 		obj.body.setCollisionFlags(obj.body.getCollisionFlags()
@@ -415,7 +450,6 @@ public class GameScreen3 extends InputAdapter implements Screen {
 				modelBatch.render(instance, environment);
 			}
 		}
-
 		modelBatch.end();
 
 		// UI
@@ -425,11 +459,12 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		stringBuilder.append(" Selected: ").append(selected);
 		stringBuilder.append(" Points: ").append(points);
 		label.setText(stringBuilder);
+		stage.act();
 		stage.draw();
 	}
 
 	private void createPauseMenu() {
-
+		pause.setVisible(true);
 	}
 
 	private void updatePaused() {
@@ -437,10 +472,8 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		updateGame();
 	}
 	
-	
-
-	private void disposePause() {
-
+	private void disposePause(){
+		pause.setVisible(false);
 	}
 
 	private void updateRunning(float delta) {
@@ -479,6 +512,11 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		selected = result;
 		return result;
 	}
+	
+	public void moveTo(GameObject instance, Vector3 position, int intensity){
+		Vector3 instPos = instance.getPosition();
+		instance.body.applyCentralForce(new Vector3((position.x - instPos.x)*intensity, 10, (position.z - instPos.z)*intensity));
+	}
 
 	public void point() {
 		points++;
@@ -500,12 +538,20 @@ public class GameScreen3 extends InputAdapter implements Screen {
 	}
 
 	public void handleInput() {
+		if (Gdx.input.isKeyJustPressed(Input.Keys.BACKSPACE)){
+			System.out.println(instances.get(0).getPosition());
+			moveTo(instances.get(1), new Vector3(0,0,0), 50);
+			System.out.println("hey");
+		}
+		
 		if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)
 				&& state == GAME_RUNNING) {
 			state = GAME_PAUSED;
+			createPauseMenu();
 		} else if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)
 				&& state == GAME_PAUSED) {
 			state = GAME_RUNNING;
+			disposePause();
 		}
 	}
 
