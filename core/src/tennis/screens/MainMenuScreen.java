@@ -1,7 +1,10 @@
 package tennis.screens;
 
+import java.io.IOException;
+
 import tennis.SpaceTennis3D;
 import tennis.managers.Assets;
+import tennis.managers.bluetooth.BluetoothServer;
 import tennis.screens.demos.BulletTest;
 import tennis.screens.scenes3d.GameScreen3;
 import tennis.tween.ActorAccessor;
@@ -18,7 +21,6 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -38,7 +40,7 @@ public class MainMenuScreen implements Screen {
 	private Table table;
 	private BitmapFont titleFont;
 	private Label heading;
-	
+
 	private Assets assets;
 
 	private TweenManager tweenManager;
@@ -48,16 +50,24 @@ public class MainMenuScreen implements Screen {
 	@SuppressWarnings("deprecation")
 	@Override
 	public void show() {
+		BluetoothServer server = new BluetoothServer();
+		try {
+			server.startServer();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 		assets = new Assets();
 		assets.loadAll();
-		
+
 		stage = new Stage();
 		// stage.setDebugAll(true);
 		Gdx.input.setInputProcessor(stage);
 
 		// btnPack = new TextureAtlas("ui/button.pack");
 		skin = Assets.skin;
-				
+
 		// skin.addRegions(btnPack);
 
 		table = new Table(skin);
@@ -103,7 +113,7 @@ public class MainMenuScreen implements Screen {
 		FreeTypeFontGenerator gen = new FreeTypeFontGenerator(
 				Gdx.files.internal("fonts/space age.ttf"));
 		titleFont = gen.generateFont(56);
-		
+
 		heading = new Label(SpaceTennis3D.TITLE, skin);
 		heading.setStyle(new LabelStyle(titleFont, Color.WHITE));
 
@@ -169,7 +179,7 @@ public class MainMenuScreen implements Screen {
 		handleInput();
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-		
+
 		stage.act(delta);
 		stage.draw();
 
@@ -191,7 +201,7 @@ public class MainMenuScreen implements Screen {
 							}
 						})).end().start(tweenManager);
 	}
-	
+
 	public void handleInput() {
 		if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
 			exitFadeOut();
