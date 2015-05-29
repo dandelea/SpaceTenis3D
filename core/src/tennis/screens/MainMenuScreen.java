@@ -1,7 +1,5 @@
 package tennis.screens;
 
-import java.io.IOException;
-
 import tennis.SpaceTennis3D;
 import tennis.managers.Assets;
 import tennis.managers.bluetooth.BluetoothServer;
@@ -50,14 +48,6 @@ public class MainMenuScreen implements Screen {
 	@SuppressWarnings("deprecation")
 	@Override
 	public void show() {
-		BluetoothServer server = new BluetoothServer();
-		try {
-			server.startServer();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
 		assets = new Assets();
 		assets.loadAll();
 

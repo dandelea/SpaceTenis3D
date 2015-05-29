@@ -1,5 +1,6 @@
 package tennis;
 
+import tennis.managers.bluetooth.BluetoothServer;
 import tennis.screens.MainMenuScreen;
 
 import com.badlogic.gdx.Game;
@@ -14,6 +15,9 @@ public class SpaceTennis3D extends Game {
 
 	@Override
 	public void create() {
+		BluetoothServer server = new BluetoothServer();
+		Thread serverThread = new Thread(server);
+		serverThread.start();
 		WIDTH = Gdx.graphics.getWidth();
 		HEIGHT = Gdx.graphics.getHeight();
 		setScreen(new MainMenuScreen());

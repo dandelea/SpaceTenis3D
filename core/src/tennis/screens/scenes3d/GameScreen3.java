@@ -3,6 +3,7 @@ package tennis.screens.scenes3d;
 import javax.security.auth.callback.TextOutputCallback;
 
 import tennis.managers.Assets;
+import tennis.managers.bluetooth.BluetoothServer;
 import tennis.references.Models;
 import tennis.screens.MainMenuScreen;
 
@@ -273,11 +274,12 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		label = new Label(" ", new Label.LabelStyle(font, Color.WHITE));
 		stage.addActor(label);
 		stringBuilder = new StringBuilder();
-		
+
 		// PAUSE SCREEN
 		pause = new Window("PAUSE", Assets.skin);
 		pause.setSize(stage.getWidth() / 1.5f, stage.getHeight() / 1.5f);
-		pause.setPosition(stage.getWidth() / 2 - pause.getWidth() / 2, stage.getHeight() / 2 - pause.getHeight() / 2);
+		pause.setPosition(stage.getWidth() / 2 - pause.getWidth() / 2,
+				stage.getHeight() / 2 - pause.getHeight() / 2);
 		TextButton resume = new TextButton("Resume", Assets.skin);
 		resume.pad(20);
 		resume.addListener(new ClickListener() {
@@ -291,7 +293,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		quit.addListener(new ClickListener() {
 			public void clicked(InputEvent event, float x, float y) {
 				((Game) Gdx.app.getApplicationListener())
-				.setScreen(new MainMenuScreen());
+						.setScreen(new MainMenuScreen());
 			}
 		});
 		pause.add(resume).row();
@@ -303,7 +305,6 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		state = GAME_READY;
 		points = 0;
 		nextRound = true;
-		
 
 		// ENVIRONMENT
 		modelBatch = new ModelBatch();
@@ -403,7 +404,6 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		dynamicsWorld.addRigidBody(obj.body);
 		obj.body.setContactCallbackFlag(OBJECT_FLAG);
 		obj.body.setContactCallbackFilter(GROUND_FLAG);
-
 		point();
 	}
 
@@ -435,8 +435,8 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		}
 
 	}
-	
-	private void updateGame(){
+
+	private void updateGame() {
 		modelBatch.begin(cam);
 
 		// AMBIENT
@@ -471,17 +471,21 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		handleInput();
 		updateGame();
 	}
-	
-	private void disposePause(){
+
+	private void disposePause() {
 		pause.setVisible(false);
 	}
+
+	boolean firstBall = true;
 
 	private void updateRunning(float delta) {
 		handleInput();
 
-		if (instances.size == 1) {
+		if (firstBall)
 			spawn();
-		}
+		firstBall = false;
+		
+		System.out.println(instances.size);
 
 		nextRound = outOfTable(instances.get(0), instances.get(1));
 		dynamicsWorld.stepSimulation(delta, 5, 1f / 60f);
@@ -512,10 +516,11 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		selected = result;
 		return result;
 	}
-	
-	public void moveTo(GameObject instance, Vector3 position, int intensity){
+
+	public void moveTo(GameObject instance, Vector3 position, int intensity) {
 		Vector3 instPos = instance.getPosition();
-		instance.body.applyCentralForce(new Vector3((position.x - instPos.x)*intensity, 10, (position.z - instPos.z)*intensity));
+		instance.body.applyCentralForce(new Vector3((position.x - instPos.x)
+				* intensity, 10, (position.z - instPos.z) * intensity));
 	}
 
 	public void point() {
@@ -523,30 +528,31 @@ public class GameScreen3 extends InputAdapter implements Screen {
 	}
 
 	public boolean outOfTable(GameObject table, GameObject ball) {
+		boolean res;
 		Vector3 ballPosition = ball.getPosition();
 		BoundingBox tableBounds = GameObject.bounds;
 		Vector3 min = new Vector3();
 		tableBounds.getCorner000(min);
 		Vector3 max = new Vector3();
 		tableBounds.getCorner111(max);
-		return ballPosition.y < min.y;
-		/*
-		 * || ballPosition.z < min.z*2 || ballPosition.z > max.z*2 ||
-		 * ballPosition.x < min.x*2 || ballPosition.x > max.x*2;
-		 */
-
+		res = ballPosition.y < min.y;
+		if (res) {
+			GameObject obj = instances.get(1);
+			instances.removeValue(obj, false);
+			dynamicsWorld.removeRigidBody(obj.body);
+			spawn();
+		}
+		return res;
 	}
-	
-	
-	
 
 	public void handleInput() {
-		if (Gdx.input.isKeyJustPressed(Input.Keys.BACKSPACE)){
-			System.out.println(instances.get(0).getPosition());
-			moveTo(instances.get(1), new Vector3(0,0,0), 50);
-			System.out.println("hey");
+		float lastAccelerometerZ = 0;
+		// STARTED TO SWING
+		if (BluetoothServer.accelerometerZ > 12 && lastAccelerometerZ < 12) {
+			lastAccelerometerZ = BluetoothServer.accelerometerZ;
+			moveTo(instances.get(1), new Vector3(0, 0, 0), 50);
 		}
-		
+
 		if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)
 				&& state == GAME_RUNNING) {
 			state = GAME_PAUSED;
