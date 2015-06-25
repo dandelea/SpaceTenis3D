@@ -105,6 +105,8 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		private final static Vector3 position = new Vector3();
 		public final btRigidBody body;
 		public final MyMotionState motionState;
+		public int lastPlayer;
+		public boolean bounced;
 
 		public GameObject(Model model, String rootNode,
 				btRigidBody.btRigidBodyConstructionInfo constructionInfo) {
@@ -396,6 +398,9 @@ public class GameScreen3 extends InputAdapter implements Screen {
 	public void spawn() {
 		GameObject obj = constructors.values[0].construct();
 		obj.transform.trn(1, 3, -0.7f);
+		obj.bounced = false;
+		obj.lastPlayer = 1;
+		// obj.transform.trn(0, 0, 0);
 		obj.body.proceedToTransform(obj.transform);
 		obj.body.setUserValue(instances.size);
 		obj.body.setCollisionFlags(obj.body.getCollisionFlags()
@@ -404,7 +409,6 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		dynamicsWorld.addRigidBody(obj.body);
 		obj.body.setContactCallbackFlag(OBJECT_FLAG);
 		obj.body.setContactCallbackFilter(GROUND_FLAG);
-		point();
 	}
 
 	@Override
@@ -451,6 +455,8 @@ public class GameScreen3 extends InputAdapter implements Screen {
 			}
 		}
 		modelBatch.end();
+		
+		System.out.println(instances.get(1).lastPlayer);
 
 		// UI
 		stringBuilder.setLength(0);
@@ -484,8 +490,6 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		if (firstBall)
 			spawn();
 		firstBall = false;
-		
-		System.out.println(instances.size);
 
 		nextRound = outOfTable(instances.get(0), instances.get(1));
 		dynamicsWorld.stepSimulation(delta, 5, 1f / 60f);
@@ -524,9 +528,37 @@ public class GameScreen3 extends InputAdapter implements Screen {
 	}
 
 	public void point() {
-		points++;
+		GameObject table = instances.get(0);
+		GameObject ball = instances.get(1);
+		// ball fell on players table
+		if (onPlayerSide(table, ball)) {
+			points--;
+		} else {
+			// ball hit by player
+			if (ball.lastPlayer == 1) {
+				// ball did bounced on opponent table
+				if (ball.bounced == true){
+					points ++;
+				// ball out
+				} else {
+					points--;
+				}
+				
+			// ball hit by opponent
+			} else if (ball.lastPlayer == 2) {
+				points--;
+			}
+		}
+
 	}
 
+	/**
+	 * Dice que esta fuera del Eje Y de la tabla.
+	 * 
+	 * @param table
+	 * @param ball
+	 * @return
+	 */
 	public boolean outOfTable(GameObject table, GameObject ball) {
 		boolean res;
 		Vector3 ballPosition = ball.getPosition();
@@ -537,6 +569,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		tableBounds.getCorner111(max);
 		res = ballPosition.y < min.y;
 		if (res) {
+			point();
 			GameObject obj = instances.get(1);
 			instances.removeValue(obj, false);
 			dynamicsWorld.removeRigidBody(obj.body);
@@ -545,12 +578,35 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		return res;
 	}
 
+	/**
+	 * Dice si esta en la primera mitad de la tabla del jugador.
+	 * 
+	 * @param table
+	 * @param ball
+	 * @return
+	 */
+	public boolean onPlayerSide(GameObject table, GameObject ball) {
+		boolean res;
+		Vector3 ballPosition = ball.getPosition();
+		res = ballPosition.x > 0;
+		return res;
+	}
+	
+	public void hit() {
+		GameObject table = instances.get(0);
+		GameObject ball = instances.get(1);
+		ball.bounced = false;
+		ball.lastPlayer = onPlayerSide(table, ball) ? 1:2;
+		moveTo(ball, new Vector3(0, 0, 0), 50);
+	}
+
 	public void handleInput() {
 		float lastAccelerometerZ = 0;
 		// STARTED TO SWING
-		if (BluetoothServer.accelerometerZ > 12 && lastAccelerometerZ < 12) {
+		if ((BluetoothServer.accelerometerZ > 12 && lastAccelerometerZ < 12)
+				|| Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
 			lastAccelerometerZ = BluetoothServer.accelerometerZ;
-			moveTo(instances.get(1), new Vector3(0, 0, 0), 50);
+			hit();
 		}
 
 		if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)
