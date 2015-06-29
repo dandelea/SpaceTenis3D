@@ -6,7 +6,6 @@ import tennis.managers.bluetooth.BluetoothServer;
 import tennis.objects.Scoreboard;
 import tennis.references.Models;
 import tennis.screens.MainMenuScreen;
-import tennis.screens.ScoreScreen;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -23,10 +22,17 @@ import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
+import com.badlogic.gdx.graphics.g3d.Renderable;
+import com.badlogic.gdx.graphics.g3d.Shader;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
+import com.badlogic.gdx.graphics.g3d.model.NodePart;
+import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
+import com.badlogic.gdx.graphics.g3d.utils.DefaultTextureBinder;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
+import com.badlogic.gdx.graphics.g3d.utils.RenderContext;
+import com.badlogic.gdx.math.CatmullRomSpline;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
@@ -75,6 +81,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 			instances.get(userValue1).body.setLinearVelocity(reaction);
 			((ColorAttribute) instances.get(userValue1).materials.get(0).get(
 					ColorAttribute.Diffuse)).color.set(Color.WHITE);
+			
 			return true;
 		}
 	}
@@ -214,6 +221,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 	private float tableBouncingFactor = 1;
 	private Vector3 tablePosition = new Vector3(0, 1, 0);
 	private Vector3 ballScale = new Vector3(0.05f, 0.05f, 0.05f);
+	private Vector3 ballPosition = new Vector3(1, 1, -0.7f);
 
 	// FLAGS
 	final static short GROUND_FLAG = 1 << 8;
@@ -235,6 +243,10 @@ public class GameScreen3 extends InputAdapter implements Screen {
 	private btBoxShape tableShape;
 
 	float spawnTimer = 1f;
+	
+	// SPLINES FOR TRAYECTORY
+	CatmullRomSpline path;
+	
 
 	// SELECTION
 	private int selected, selecting = -1;
@@ -333,6 +345,13 @@ public class GameScreen3 extends InputAdapter implements Screen {
 
 		// INITIALIZE INSTANCES
 		instances = new Array<GameObject>();
+		
+		// spline
+		path = new CatmullRomSpline(new Vector3[] {
+		new Vector3(ballPosition),
+		new Vector3(0.5f, 2,-0.3f),
+		new Vector3(0, 0, 0)
+		}, true);
 
 		// START LOADING
 		loading = true;
@@ -391,7 +410,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 
 	public void spawn() {
 		GameObject obj = constructors.values[0].construct();
-		obj.transform.trn(1, 3, -0.7f);
+		obj.transform.trn(ballPosition);
 		obj.bounced = false;
 		obj.lastPlayer = 1;
 		// obj.transform.trn(0, 0, 0);
@@ -493,16 +512,37 @@ public class GameScreen3 extends InputAdapter implements Screen {
 	}
 
 	boolean firstBall = true;
-
+	float t = 0;
+	Vector3 position = new Vector3();
+	Vector3 direction = new Vector3();
+	Vector3 right = new Vector3();
+	Vector3 up = new Vector3();
+	boolean directionOnly = false;
 	private void updateRunning(float delta) {
 		handleInput();
-
+		
+		if (instances.size > 1) {
+			t = (t + delta * 0.25f) % 1f;
+			path.derivativeAt(direction, t);
+			path.valueAt(position, t);
+			direction.nor();
+			if (directionOnly) {
+				instances.get(1).transform.setToRotation(Vector3.X, direction);
+				instances.get(1).transform.setTranslation(position);
+			} else {
+				right.set(Vector3.Y).crs(direction).nor();
+				up.set(right).crs(direction).nor();
+				instances.get(1).transform.set(direction, up, right, position).rotate(Vector3.X, 180);
+			}
+		}
+		
+		
 		if (firstBall)
 			spawn();
 		firstBall = false;
 
 		nextRound = outOfTable(instances.get(0), instances.get(1));
-		dynamicsWorld.stepSimulation(delta, 5, 1f / 60f);
+		//dynamicsWorld.stepSimulation(delta, 5, 1f / 60f);
 		camController.update();
 
 		updateGame();

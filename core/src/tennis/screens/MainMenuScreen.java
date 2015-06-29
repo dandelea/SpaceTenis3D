@@ -4,6 +4,7 @@ import tennis.SpaceTennis3D;
 import tennis.managers.Assets;
 import tennis.managers.bluetooth.BluetoothServer;
 import tennis.screens.demos.BulletTest;
+import tennis.screens.demos.PathRotationTest;
 import tennis.screens.scenes3d.GameScreen3;
 import tennis.tween.ActorAccessor;
 import aurelienribon.tweenengine.BaseTween;
@@ -73,7 +74,7 @@ public class MainMenuScreen implements Screen {
 		btnDemo = new TextButton("Demo", skin);
 		btnDemo.addListener(new ClickListener() {
 			public void clicked(InputEvent event, float x, float y) {
-				SpaceTennis3D.goTo(new BulletTest());
+				SpaceTennis3D.goTo(new PathRotationTest());
 			}
 		});
 		btnDemo.pad(20);
