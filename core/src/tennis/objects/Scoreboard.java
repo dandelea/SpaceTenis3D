@@ -8,15 +8,19 @@ public class Scoreboard {
 	private boolean isAdvantaged1;
 	private boolean isAdvantaged2;
 	private boolean finished;
+	private int winner;
+	private static final int MAX_SETS = 1;
+	private static final int MAX_GAMES = 1;
 	
 	public Scoreboard(){
 		score1 = score2 = 0;
 		game = set = 0;
 		isAdvantaged1 = isAdvantaged2 = finished = false;
+		winner = 0;
 	}
 
 	public Scoreboard(int score1, int score2, int game, int set,
-			boolean isAdvantaged1, boolean isAdvantaged2, boolean finished) {
+			boolean isAdvantaged1, boolean isAdvantaged2, boolean finished, Integer winner) {
 		super();
 		this.score1 = score1;
 		this.score2 = score2;
@@ -25,6 +29,7 @@ public class Scoreboard {
 		this.isAdvantaged1 = isAdvantaged1;
 		this.isAdvantaged2 = isAdvantaged2;
 		this.finished = finished;
+		this.winner = winner;
 	}
 
 	public int getScore1() {
@@ -82,6 +87,14 @@ public class Scoreboard {
 	public void setFinished(boolean finished) {
 		this.finished = finished;
 	}
+	
+	public Integer getWinner() {
+		return winner;
+	}
+
+	public void setWinner(Integer winner) {
+		this.winner = winner;
+	}
 
 	public boolean isDeuce(){
 		return getScore1() == getScore2() && getScore1() == 40;
@@ -111,7 +124,11 @@ public class Scoreboard {
 			if (isAdvantaged1()){
 				updateGamesAndSet();
 			} else {
-				setAdvantaged1(true);
+				if (isAdvantaged2()){
+					setAdvantaged2(false);
+				} else {
+					setAdvantaged1(true);
+				}
 			}
 		} else {
 			if (getScore1()==40) {
@@ -120,6 +137,7 @@ public class Scoreboard {
 				setScore1(nextNumber(getScore1()));
 			}
 		}
+		setWinner(1);
 	}
 	
 	public void point2(){
@@ -127,7 +145,11 @@ public class Scoreboard {
 			if (isAdvantaged2()){
 				updateGamesAndSet();
 			} else {
-				setAdvantaged2(true);
+				if (isAdvantaged1()){
+					setAdvantaged1(false);
+				} else {
+					setAdvantaged2(true);
+				}
 			}
 		} else {
 			if (getScore2()==40) {
@@ -136,15 +158,16 @@ public class Scoreboard {
 				setScore2(nextNumber(getScore2()));
 			}
 		}
+		setWinner(2);
 	}
 	
 	public void updateGamesAndSet(){
 		// WIN ALL
-		if (getSet()==3 & getGame()==6){
+		if (getSet()==MAX_SETS & getGame()==MAX_GAMES){
 			setFinished(true);
 		} else{
 			// WIN A SET
-			if (getGame()==6){
+			if (getGame()==MAX_GAMES){
 				setSet(getSet() + 1);
 				setGame(1);
 			} else {
@@ -165,7 +188,8 @@ public class Scoreboard {
 				+ getScore2() + ", getGame()=" + getGame() + ", getSet()="
 				+ getSet() + ", isAdvantaged1()=" + isAdvantaged1()
 				+ ", isAdvantaged2()=" + isAdvantaged2() + ", isFinished()="
-				+ isFinished() + ", isDeuce()=" + isDeuce() + "]";
+				+ isFinished() + ", getWinner()=" + getWinner()
+				+ ", isDeuce()=" + isDeuce() + "]";
 	}
 	
 	

@@ -1,5 +1,6 @@
 package tennis.screens.splash;
 
+import tennis.SpaceTennis3D;
 import tennis.screens.MainMenuScreen;
 import tennis.tween.SpriteAccessor;
 import aurelienribon.tweenengine.BaseTween;
@@ -53,7 +54,7 @@ public class SplashDeveloperScreen implements Screen {
 			
 			@Override
 			public void onEvent(int arg0, BaseTween<?> arg1) {
-				((Game) Gdx.app.getApplicationListener()).setScreen(new MainMenuScreen());
+				SpaceTennis3D.goTo(new MainMenuScreen());
 				
 			}
 		}).start(tweenManager);

@@ -1,17 +1,16 @@
 package tennis.screens.scenes3d;
 
-import javax.security.auth.callback.TextOutputCallback;
-
+import tennis.SpaceTennis3D;
 import tennis.managers.Assets;
 import tennis.managers.bluetooth.BluetoothServer;
+import tennis.objects.Scoreboard;
 import tennis.references.Models;
 import tennis.screens.MainMenuScreen;
+import tennis.screens.ScoreScreen;
 
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
-import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
@@ -19,7 +18,6 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.VertexAttributes.Usage;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
@@ -29,7 +27,6 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
@@ -62,8 +59,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.badlogic.gdx.utils.Disposable;
-import com.badlogic.gdx.utils.viewport.StretchViewport;
-import com.badlogic.gdx.utils.viewport.Viewport;
 
 public class GameScreen3 extends InputAdapter implements Screen {
 
@@ -76,6 +71,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 			Vector3 inertia = collisioner.body.getLinearVelocity();
 			Vector3 reaction = new Vector3(inertia.x, -tableBouncingFactor
 					* inertia.y, inertia.z);
+			collisioner.bounced = true;
 			instances.get(userValue1).body.setLinearVelocity(reaction);
 			((ColorAttribute) instances.get(userValue1).materials.get(0).get(
 					ColorAttribute.Diffuse)).color.set(Color.WHITE);
@@ -235,7 +231,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 	// COLLISIONS INSTANCES
 	private Array<GameObject> instances;
 	private ArrayMap<String, GameObject.Constructor> constructors;
-	private btSphereShape ballShape;
+
 	private btBoxShape tableShape;
 
 	float spawnTimer = 1f;
@@ -253,7 +249,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 	public int state;
 
 	// GAME
-	private int points;
+	private Scoreboard scoreBoard = new Scoreboard();
 	private boolean nextRound;
 
 	@Override
@@ -294,8 +290,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		quit.pad(20);
 		quit.addListener(new ClickListener() {
 			public void clicked(InputEvent event, float x, float y) {
-				((Game) Gdx.app.getApplicationListener())
-						.setScreen(new MainMenuScreen());
+				SpaceTennis3D.goTo(new MainMenuScreen());
 			}
 		});
 		pause.add(resume).row();
@@ -305,7 +300,6 @@ public class GameScreen3 extends InputAdapter implements Screen {
 
 		// GAMES
 		state = GAME_READY;
-		points = 0;
 		nextRound = true;
 
 		// ENVIRONMENT
@@ -441,6 +435,9 @@ public class GameScreen3 extends InputAdapter implements Screen {
 	}
 
 	private void updateGame() {
+		
+		
+		
 		modelBatch.begin(cam);
 
 		// AMBIENT
@@ -455,18 +452,31 @@ public class GameScreen3 extends InputAdapter implements Screen {
 			}
 		}
 		modelBatch.end();
-		
-		System.out.println(instances.get(1).lastPlayer);
 
 		// UI
 		stringBuilder.setLength(0);
 		stringBuilder.append(" FPS: ")
 				.append(Gdx.graphics.getFramesPerSecond());
 		stringBuilder.append(" Selected: ").append(selected);
-		stringBuilder.append(" Points: ").append(points);
+		stringBuilder.append(" Set: ").append(scoreBoard.getSet());
+		stringBuilder.append(" Game: ").append(scoreBoard.getGame());
+		if (scoreBoard.isDeuce()) {
+			if (scoreBoard.isAdvantaged1()) {
+				stringBuilder.append(" ADV. ");
+			}
+			stringBuilder.append(" DEUCE ");
+			if (scoreBoard.isAdvantaged2()) {
+				stringBuilder.append(" ADV. ");
+			}
+		} else {
+			stringBuilder.append(" Player: ").append(scoreBoard.getScore1());
+			stringBuilder.append(" Enemy: ").append(scoreBoard.getScore2());
+		}
+		
 		label.setText(stringBuilder);
 		stage.act();
 		stage.draw();
+		
 	}
 
 	private void createPauseMenu() {
@@ -532,21 +542,21 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		GameObject ball = instances.get(1);
 		// ball fell on players table
 		if (onPlayerSide(table, ball)) {
-			points--;
+			scoreBoard.point2();
 		} else {
 			// ball hit by player
 			if (ball.lastPlayer == 1) {
 				// ball did bounced on opponent table
 				if (ball.bounced == true){
-					points ++;
+					scoreBoard.point1();
 				// ball out
 				} else {
-					points--;
+					scoreBoard.point2();
 				}
 				
 			// ball hit by opponent
 			} else if (ball.lastPlayer == 2) {
-				points--;
+				scoreBoard.point2();
 			}
 		}
 
@@ -674,8 +684,6 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		model.dispose();
 
 		tableShape.dispose();
-
-		ballShape.dispose();
 
 		broadphase.dispose();
 		dispatcher.dispose();

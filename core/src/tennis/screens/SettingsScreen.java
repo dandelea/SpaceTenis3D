@@ -1,5 +1,7 @@
 package tennis.screens;
 
+import tennis.SpaceTennis3D;
+
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -65,6 +67,7 @@ public class SettingsScreen implements Screen {
 				int width = Integer.parseInt(parts[0]);
 				int height = Integer.parseInt(parts[1]);
 				Gdx.graphics.setDisplayMode(width, height, true);
+				SpaceTennis3D.goTo(new SettingsScreen());
 			}
 		});
 		
@@ -91,8 +94,7 @@ public class SettingsScreen implements Screen {
 	
 	public void handleInput() {
 		if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
-			((Game) Gdx.app.getApplicationListener())
-			.setScreen(new MainMenuScreen());
+			SpaceTennis3D.goTo(new MainMenuScreen());
 		}
 	}
 

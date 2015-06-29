@@ -66,24 +66,21 @@ public class MainMenuScreen implements Screen {
 		btnStart = new TextButton("Start", skin);
 		btnStart.addListener(new ClickListener() {
 			public void clicked(InputEvent event, float x, float y) {
-				((Game) Gdx.app.getApplicationListener())
-						.setScreen(new GameScreen3());
+				SpaceTennis3D.goTo(new GameScreen3());
 			}
 		});
 		btnStart.pad(20);
 		btnDemo = new TextButton("Demo", skin);
 		btnDemo.addListener(new ClickListener() {
 			public void clicked(InputEvent event, float x, float y) {
-				((Game) Gdx.app.getApplicationListener())
-						.setScreen(new BulletTest());
+				SpaceTennis3D.goTo(new BulletTest());
 			}
 		});
 		btnDemo.pad(20);
 		btnOptions = new TextButton("Options", skin);
 		btnOptions.addListener(new ClickListener() {
 			public void clicked(InputEvent event, float x, float y) {
-				((Game) Gdx.app.getApplicationListener())
-						.setScreen(new SettingsScreen());
+				SpaceTennis3D.goTo(new SettingsScreen());
 			}
 		});
 		btnOptions.pad(20);

@@ -1,10 +1,12 @@
 package tennis;
 
 import tennis.managers.bluetooth.BluetoothServer;
+import tennis.objects.Scoreboard;
 import tennis.screens.MainMenuScreen;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 
 public class SpaceTennis3D extends Game {
@@ -12,6 +14,7 @@ public class SpaceTennis3D extends Game {
 	public static final String VERSION = "ver 0.1";
 	public static int WIDTH;
 	public static int HEIGHT;
+	public static Scoreboard lastScoreboard;
 
 	@Override
 	public void create() {
@@ -43,6 +46,11 @@ public class SpaceTennis3D extends Game {
 
 	public void resume() {
 		super.resume();
+	}
+	
+	public static void goTo(Screen screen){
+		Game game = (Game) Gdx.app.getApplicationListener();
+		game.setScreen(screen);
 	}
 	
 	
