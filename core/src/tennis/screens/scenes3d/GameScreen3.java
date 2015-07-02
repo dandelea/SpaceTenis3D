@@ -2,10 +2,12 @@ package tennis.screens.scenes3d;
 
 import tennis.SpaceTennis3D;
 import tennis.managers.Assets;
+import tennis.managers.Utils;
 import tennis.managers.bluetooth.BluetoothServer;
 import tennis.objects.Scoreboard;
 import tennis.references.Models;
 import tennis.screens.MainMenuScreen;
+import tennis.screens.ScoreScreen;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -79,8 +81,6 @@ public class GameScreen3 extends InputAdapter implements Screen {
 					* inertia.y, inertia.z);
 			collisioner.bounced = true;
 			instances.get(userValue1).body.setLinearVelocity(reaction);
-			((ColorAttribute) instances.get(userValue1).materials.get(0).get(
-					ColorAttribute.Diffuse)).color.set(Color.WHITE);
 			
 			return true;
 		}
@@ -100,7 +100,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		}
 	}
 
-	static class GameObject extends ModelInstance implements Disposable {
+	public static class GameObject extends ModelInstance implements Disposable {
 		public final Vector3 center = new Vector3();
 		public final Vector3 dimensions = new Vector3();
 		public final float radius;
@@ -217,7 +217,6 @@ public class GameScreen3 extends InputAdapter implements Screen {
 	// POSITIONS
 	private Vector3 camPosition = new Vector3(2, 2, 0);
 	private Vector3 camDirection = new Vector3();
-	private int camFOV = 67;
 	private float tableBouncingFactor = 1;
 	private Vector3 tablePosition = new Vector3(0, 1, 0);
 	private Vector3 ballScale = new Vector3(0.05f, 0.05f, 0.05f);
@@ -243,9 +242,6 @@ public class GameScreen3 extends InputAdapter implements Screen {
 	private btBoxShape tableShape;
 
 	float spawnTimer = 1f;
-	
-	// SPLINES FOR TRAYECTORY
-	CatmullRomSpline path;
 	
 
 	// SELECTION
@@ -323,7 +319,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 				-0.8f, -0.2f));
 
 		// CAMERA
-		cam = new PerspectiveCamera(camFOV, Gdx.graphics.getWidth(),
+		cam = new PerspectiveCamera(Gdx.app.getPreferences(SpaceTennis3D.TITLE).getInteger("FOV"), Gdx.graphics.getWidth(),
 				Gdx.graphics.getHeight());
 		cam.position.set(camPosition);
 		cam.lookAt(camDirection);
@@ -346,13 +342,6 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		// INITIALIZE INSTANCES
 		instances = new Array<GameObject>();
 		
-		// spline
-		path = new CatmullRomSpline(new Vector3[] {
-		new Vector3(ballPosition),
-		new Vector3(0.5f, 2,-0.3f),
-		new Vector3(0, 0, 0)
-		}, true);
-
 		// START LOADING
 		loading = true;
 	}
@@ -369,7 +358,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		mb.begin();
 		mb.node().id = "ball";
 		mb.part("ball", GL20.GL_TRIANGLES, Usage.Position | Usage.Normal,
-				new Material(ColorAttribute.createDiffuse(Color.RED))).sphere(
+				new Material(ColorAttribute.createDiffuse(Color.WHITE))).sphere(
 				0.1f, 0.1f, 0.1f, 10, 10);
 		model = mb.end();
 
@@ -422,6 +411,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		dynamicsWorld.addRigidBody(obj.body);
 		obj.body.setContactCallbackFlag(OBJECT_FLAG);
 		obj.body.setContactCallbackFilter(GROUND_FLAG);
+		hit();
 	}
 
 	@Override
@@ -470,6 +460,15 @@ public class GameScreen3 extends InputAdapter implements Screen {
 				modelBatch.render(instance, environment);
 			}
 		}
+		if (Utils.allObjectsLoaded(instances)) {
+			if (Utils.onPlayerHittable(instances.get(0), instances.get(1))) {
+				((ColorAttribute) instances.get(1).materials.get(0).get(
+						ColorAttribute.Diffuse)).color.set(Color.RED);
+			} else {
+				((ColorAttribute) instances.get(1).materials.get(0).get(
+						ColorAttribute.Diffuse)).color.set(Color.WHITE);
+			}
+		}
 		modelBatch.end();
 
 		// UI
@@ -512,37 +511,16 @@ public class GameScreen3 extends InputAdapter implements Screen {
 	}
 
 	boolean firstBall = true;
-	float t = 0;
-	Vector3 position = new Vector3();
-	Vector3 direction = new Vector3();
-	Vector3 right = new Vector3();
-	Vector3 up = new Vector3();
-	boolean directionOnly = false;
 	private void updateRunning(float delta) {
 		handleInput();
 		
-		if (instances.size > 1) {
-			t = (t + delta * 0.25f) % 1f;
-			path.derivativeAt(direction, t);
-			path.valueAt(position, t);
-			direction.nor();
-			if (directionOnly) {
-				instances.get(1).transform.setToRotation(Vector3.X, direction);
-				instances.get(1).transform.setTranslation(position);
-			} else {
-				right.set(Vector3.Y).crs(direction).nor();
-				up.set(right).crs(direction).nor();
-				instances.get(1).transform.set(direction, up, right, position).rotate(Vector3.X, 180);
-			}
-		}
-		
-		
-		if (firstBall)
+		if (firstBall){
 			spawn();
+		}
 		firstBall = false;
-
-		nextRound = outOfTable(instances.get(0), instances.get(1));
-		//dynamicsWorld.stepSimulation(delta, 5, 1f / 60f);
+		
+		nextRound = Utils.allObjectsLoaded(instances) && outOfTable(instances.get(0), instances.get(1));
+		dynamicsWorld.stepSimulation(delta, 5, 1f / 60f);
 		camController.update();
 
 		updateGame();
@@ -581,7 +559,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		GameObject table = instances.get(0);
 		GameObject ball = instances.get(1);
 		// ball fell on players table
-		if (onPlayerSide(table, ball)) {
+		if (Utils.onPlayerSide(table, ball)) {
 			scoreBoard.point2();
 		} else {
 			// ball hit by player
@@ -599,7 +577,10 @@ public class GameScreen3 extends InputAdapter implements Screen {
 				scoreBoard.point2();
 			}
 		}
-
+		if (scoreBoard.isFinished()){
+			SpaceTennis3D.lastScoreboard = scoreBoard;
+			SpaceTennis3D.goTo(new ScoreScreen());
+		}
 	}
 
 	/**
@@ -627,34 +608,19 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		}
 		return res;
 	}
-
-	/**
-	 * Dice si esta en la primera mitad de la tabla del jugador.
-	 * 
-	 * @param table
-	 * @param ball
-	 * @return
-	 */
-	public boolean onPlayerSide(GameObject table, GameObject ball) {
-		boolean res;
-		Vector3 ballPosition = ball.getPosition();
-		res = ballPosition.x > 0;
-		return res;
-	}
 	
 	public void hit() {
 		GameObject table = instances.get(0);
 		GameObject ball = instances.get(1);
 		ball.bounced = false;
-		ball.lastPlayer = onPlayerSide(table, ball) ? 1:2;
+		ball.lastPlayer = Utils.onPlayerSide(table, ball) ? 1:2;
 		moveTo(ball, new Vector3(0, 0, 0), 50);
 	}
 
 	public void handleInput() {
 		float lastAccelerometerZ = 0;
 		// STARTED TO SWING
-		if ((BluetoothServer.accelerometerZ > 12 && lastAccelerometerZ < 12)
-				|| Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+		if (Utils.allObjectsLoaded(instances) && Utils.onPlayerHittable(instances.get(0), instances.get(1)) && BluetoothServer.accelerometerZ > 12) {
 			lastAccelerometerZ = BluetoothServer.accelerometerZ;
 			hit();
 		}

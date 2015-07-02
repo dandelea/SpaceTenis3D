@@ -23,6 +23,7 @@ public class SpaceTennis3D extends Game {
 		serverThread.start();
 		WIDTH = Gdx.graphics.getWidth();
 		HEIGHT = Gdx.graphics.getHeight();
+		Gdx.app.getPreferences(TITLE).putInteger("FOV", 67);
 		setScreen(new MainMenuScreen());
 	}
 

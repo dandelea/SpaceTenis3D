@@ -1,6 +1,7 @@
 package tennis.screens;
 
 import tennis.SpaceTennis3D;
+import tennis.managers.Utils;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
@@ -10,6 +11,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.SelectBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -25,9 +27,11 @@ public class SettingsScreen implements Screen {
 	private Table table;
 	private Label heading;
 	
-	private SelectBox<Object> sb;
+	private CheckBox vSyncCheckBox, fullscreenCheckBox;
+	private SelectBox<String> resolution;
+	private SelectBox<String> fov;
 	
-	private TextButton btnSave;
+	private TextButton btnSave, btnExit;
 
 	private TextureAtlas atlas;
 
@@ -42,32 +46,82 @@ public class SettingsScreen implements Screen {
 		skin = new Skin(Gdx.files.internal("ui/uiskin.json"), atlas);
 
 		table = new Table(skin);
-		table.setBounds(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-
+		table.setFillParent(true);
 		
 		// Creating heading
 		heading = new Label("Settings", skin);
 		
-		// resolution
-		sb = new SelectBox<Object>(skin);
-		Object[] a = new Object[6];
-		a[0] = "800 x 600";
-		a[1] = "1024 x 768";
-		a[2] = "1280 x 800";
-		a[3] = "1280 x 1024";
-		a[4] = "1366 x 768";
-		a[5] = "1920 x 1080";
-		sb.setItems(a);
+		vSyncCheckBox = new CheckBox("vSync", skin);
+		vSyncCheckBox.setChecked(Utils.vSync());
+		vSyncCheckBox.addListener(new ClickListener() {
+			@Override
+			public void clicked(InputEvent event, float x, float y) {
+				// save vSync
+				Gdx.app.getPreferences(SpaceTennis3D.TITLE).putBoolean("vsync", vSyncCheckBox.isChecked());
+				// set vSync
+				Gdx.graphics.setVSync(Utils.vSync());
+				Gdx.app.log(SpaceTennis3D.TITLE, "vSync " + (Utils.vSync() ? "enabled" : "disabled"));
+			}
+		});
 		
+		fullscreenCheckBox = new CheckBox("Full Screen", skin);
+		fullscreenCheckBox.setChecked(Utils.vSync());
+		fullscreenCheckBox.addListener(new ClickListener() {
+			@Override
+			public void clicked(InputEvent event, float x, float y) {
+				// save Fullscreen
+				Gdx.app.getPreferences(SpaceTennis3D.TITLE).putBoolean("fullscreen", fullscreenCheckBox.isChecked());
+				// Set Fullscreen
+				Gdx.graphics.setDisplayMode(SpaceTennis3D.WIDTH, SpaceTennis3D.HEIGHT, fullscreenCheckBox.isChecked());
+				Gdx.app.log(SpaceTennis3D.TITLE, "fullscreen " + (Utils.vSync() ? "enabled" : "disabled"));
+			}
+		});
+		
+		// resolution
+		resolution = new SelectBox<String>(skin);
+		String[] resolutions = new String[6];
+		resolutions[0] = "800 x 600";
+		resolutions[1] = "1024 x 768";
+		resolutions[2] = "1280 x 800";
+		resolutions[3] = "1280 x 1024";
+		resolutions[4] = "1366 x 768";
+		resolutions[5] = "1920 x 1080";
+		resolution.setItems(resolutions);
+
+		// FOV
+		fov = new SelectBox<String>(skin);
+		String[] fovs = new String[6];
+		fovs[0] = "45";
+		fovs[1] = "60";
+		fovs[2] = "67";
+		fovs[3] = "75";
+		fovs[4] = "90";
+		fovs[5] = "100";
+		fov.setItems(fovs);
 
 		btnSave = new TextButton("Save", skin);
 		btnSave.addListener(new ClickListener(){
 			public void clicked(InputEvent event, float x, float y){
-				String[] parts = ((String) sb.getSelected()).split(" x ");
+				
+				// CHANGE WIDTH AND HEIGHT
+				String[] parts = ((String) resolution.getSelected()).split(" x ");
 				int width = Integer.parseInt(parts[0]);
 				int height = Integer.parseInt(parts[1]);
-				Gdx.graphics.setDisplayMode(width, height, true);
+				Gdx.graphics.setDisplayMode(width, height, Utils.fullscreen());
+				
+				// Save FOV
+				Gdx.app.getPreferences(SpaceTennis3D.TITLE).putInteger("FOV", new Integer(fov.getSelected()));
+				Gdx.app.log(SpaceTennis3D.TITLE, "FOV changed to " + fov.getSelected());
+				
 				SpaceTennis3D.goTo(new SettingsScreen());
+			}
+		});
+		
+		btnExit = new TextButton("Return", skin);
+		btnExit.pad(10);
+		btnExit.addListener(new ClickListener(){
+			public void clicked(InputEvent event, float x, float y){
+				SpaceTennis3D.goTo(new MainMenuScreen());
 			}
 		});
 		
@@ -75,8 +129,10 @@ public class SettingsScreen implements Screen {
 		table.getCell(heading).spaceBottom(100);
 		//table.getCell(actor);
 		table.row();
-		table.add(sb);
-		table.row();
+		table.add(fullscreenCheckBox).row();
+		table.add(vSyncCheckBox).row();
+		table.add(resolution).row();
+		table.add(fov).row();
 		table.add(btnSave);
 		stage.addActor(table);
 		

@@ -14,7 +14,7 @@ public class Scoreboard {
 	
 	public Scoreboard(){
 		score1 = score2 = 0;
-		game = set = 0;
+		game = set = 1;
 		isAdvantaged1 = isAdvantaged2 = finished = false;
 		winner = 0;
 	}
