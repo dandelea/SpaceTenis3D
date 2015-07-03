@@ -40,6 +40,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.physics.bullet.Bullet;
+import com.badlogic.gdx.physics.bullet.DebugDrawer;
 import com.badlogic.gdx.physics.bullet.collision.Collision;
 import com.badlogic.gdx.physics.bullet.collision.ContactListener;
 import com.badlogic.gdx.physics.bullet.collision.btBox2dShape;
@@ -59,6 +60,7 @@ import com.badlogic.gdx.physics.bullet.dynamics.btDiscreteDynamicsWorld;
 import com.badlogic.gdx.physics.bullet.dynamics.btDynamicsWorld;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.dynamics.btSequentialImpulseConstraintSolver;
+import com.badlogic.gdx.physics.bullet.linearmath.btIDebugDraw;
 import com.badlogic.gdx.physics.bullet.linearmath.btMotionState;
 import com.badlogic.gdx.physics.bullet.softbody.btSoftBody;
 import com.badlogic.gdx.physics.bullet.softbody.btSoftBodyCollisionShape;
@@ -75,17 +77,16 @@ import com.badlogic.gdx.utils.Disposable;
 public class GameScreen3 extends InputAdapter implements Screen {
 
 	class MyContactListener extends ContactListener {
-		@Override
+		
 		public boolean onContactAdded(int userValue0, int partId0, int index0,
 				boolean match0, int userValue1, int partId1, int index1,
 				boolean match1) {
-			GameObject collisioner = instances.get(userValue1);
+			GameObject collisioner = instances.get(userValue0);
 			Vector3 inertia = collisioner.body.getLinearVelocity();
-			System.out.println(inertia);
 			Vector3 reaction = new Vector3(inertia.x, -tableBouncingFactor
 					* inertia.y, inertia.z);
 			collisioner.bounced = true;
-			instances.get(userValue1).body.setLinearVelocity(reaction);
+			instances.get(userValue0).body.setLinearVelocity(reaction);
 			
 			return true;
 		}
@@ -225,7 +226,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 	private float tableBouncingFactor = 1;
 	private Vector3 tablePosition = new Vector3(0, 1, 0);
 	private Vector3 ballScale = new Vector3(0.05f, 0.05f, 0.05f);
-	private Vector3 ballPosition = new Vector3(0, 1, -0.7f);
+	private Vector3 ballPosition = new Vector3(1, 1, -0.5f);
 
 	// FLAGS
 	final static short GROUND_FLAG = 1 << 8;
@@ -245,6 +246,9 @@ public class GameScreen3 extends InputAdapter implements Screen {
 	private ArrayMap<String, GameObject.Constructor> constructors;
 
 	private btCollisionShape tableShape;
+	private btCollisionShape gridShape;
+	
+	private DebugDrawer debugDrawer;
 
 	float spawnTimer = 1f;
 	
@@ -342,6 +346,11 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase,
 				constraintSolver, collisionConfig);
 		dynamicsWorld.setGravity(new Vector3(0, -2, 0));
+		
+		// MAKE AND REGISTER RENDERER
+        debugDrawer = new DebugDrawer();
+        debugDrawer.setDebugMode(btIDebugDraw.DebugDrawModes.DBG_MAX_DEBUG_DRAW_MODE);
+        dynamicsWorld.setDebugDrawer(debugDrawer);
 		contactListener = new MyContactListener();
 
 		// INITIALIZE INSTANCES
@@ -362,10 +371,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		table = assets.get(Models.MODEL_TABLE, Model.class);
 		BoundingBox box = new BoundingBox();
 		table.calculateBoundingBox(box);
-		tableShape = new btBoxShape(new Vector3(box.getDimensions().x / 2
-				- box.getDimensions().x / 8, 0.1f, box.getDimensions().z / 2
-				- box.getDimensions().z / 8));
-		
+		tableShape = Bullet.obtainStaticNodeShape(table.nodes);		
 
 		// CREATE BALL
 		ModelBuilder mb = new ModelBuilder();
@@ -374,21 +380,26 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		mb.part("ball", GL20.GL_TRIANGLES, Usage.Position | Usage.Normal,
 				new Material(ColorAttribute.createDiffuse(Color.WHITE))).sphere(
 				0.1f, 0.1f, 0.1f, 10, 10);
+		mb.node().id = "grid";
+		mb.part("grid", GL20.GL_TRIANGLES, Usage.Position | Usage.Normal, new Material(ColorAttribute.createDiffuse(Color.RED)))
+			.box(0.1f, box.getDimensions().y, box.getDimensions().z);
 		model = mb.end();
-		
-
 
 		// FILL CONSTRUCTORS
 		constructors = new ArrayMap<String, GameObject.Constructor>(
 				String.class, GameObject.Constructor.class);
 		constructors.put("ball", new GameObject.Constructor(model, "ball",
-				new btSphereShape(0.5f), 1f));
+				new btSphereShape(0.05f), 1f));
 		constructors.put("table",
 				new GameObject.Constructor(table, table.nodes.get(0).id,
 						tableShape, 0));
+		/*constructors.put("grid",
+				new GameObject.Constructor(model, "grid",
+						gridShape, 0));*/
 
 		// ADD TABLE
 		GameObject finalTable = constructors.get("table").construct();
+		
 		finalTable.body.setCollisionFlags(finalTable.body.getCollisionFlags()
 				| btCollisionObject.CollisionFlags.CF_KINEMATIC_OBJECT);
 		finalTable.body.proceedToTransform(finalTable.transform);
@@ -396,8 +407,19 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		finalTable.body.setContactCallbackFilter(0);
 		finalTable.body.setActivationState(Collision.DISABLE_DEACTIVATION);
 		instances.add(finalTable);
+		
+		/*GameObject finalGrid = constructors.get("grid").construct();
+		finalGrid.transform.trn(new Vector3(0,1,0));
+		finalGrid.body.setCollisionFlags(finalGrid.body.getCollisionFlags()
+				| btCollisionObject.CollisionFlags.CF_KINEMATIC_OBJECT);
+		finalGrid.body.proceedToTransform(finalGrid.transform);
+		finalGrid.body.setContactCallbackFlag(GROUND_FLAG);
+		finalGrid.body.setContactCallbackFilter(0);
+		finalGrid.body.setActivationState(Collision.DISABLE_DEACTIVATION);
+		instances.add(finalGrid);*/
 
 		dynamicsWorld.addRigidBody(finalTable.body);
+		//dynamicsWorld.addRigidBody(finalGrid.body);
 
 		// FINISHED LOADING
 		loading = false;
@@ -452,8 +474,11 @@ public class GameScreen3 extends InputAdapter implements Screen {
 	private void updateGame() {
 		GameObject table = instances.get(0);
 		GameObject ball = instances.get(1);
+		
+		
+		
 		modelBatch.begin(cam);
-
+		
 		// AMBIENT
 		if (ambient != null)
 			modelBatch.render(ambient);
@@ -475,6 +500,10 @@ public class GameScreen3 extends InputAdapter implements Screen {
 			}
 		}
 		modelBatch.end();
+		
+		/*debugDrawer.begin(cam);
+        dynamicsWorld.debugDrawWorld();
+        debugDrawer.end();*/
 
 		// UI
 		stringBuilder.setLength(0);
@@ -627,7 +656,6 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		// STARTED TO SWING
 		if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)){
 			hit();
-			System.out.println(instances.get(1).getPosition());
 		}
 		
 		if (Utils.allObjectsLoaded(instances) && Utils.onPlayerHittable(instances.get(0), instances.get(1)) && BluetoothServer.accelerometerZ > 12) {
@@ -708,6 +736,8 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		contactListener.dispose();
 
 		modelBatch.dispose();
+		
+		debugDrawer.dispose();
 
 	}
 }

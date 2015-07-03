@@ -49,7 +49,6 @@ public class MainMenuScreen implements Screen {
 	@SuppressWarnings("deprecation")
 	@Override
 	public void show() {
-		System.out.println(Gdx.app.getPreferences(SpaceTennis3D.TITLE).getInteger("FOV"));
 		assets = new Assets();
 		assets.loadAll();
 
