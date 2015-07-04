@@ -4,6 +4,8 @@ import tennis.SpaceTennis3D;
 import tennis.managers.Assets;
 import tennis.managers.Utils;
 import tennis.managers.bluetooth.BluetoothServer;
+import tennis.objects.Difficulty;
+import tennis.objects.Opponent;
 import tennis.objects.Scoreboard;
 import tennis.references.Models;
 import tennis.screens.MainMenuScreen;
@@ -81,11 +83,20 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		public boolean onContactAdded(int userValue0, int partId0, int index0,
 				boolean match0, int userValue1, int partId1, int index1,
 				boolean match1) {
-			GameObject collisioner = instances.get(userValue0);
-			Vector3 inertia = collisioner.body.getLinearVelocity();
+			GameObject ball = instances.get(userValue0);
+			GameObject table = instances.get(userValue1);
+			Vector3 inertia = ball.body.getLinearVelocity();
 			Vector3 reaction = new Vector3(inertia.x, -tableBouncingFactor
 					* inertia.y, inertia.z);
-			collisioner.bounced = true;
+			
+			if (ball.lastPlayer == 1 && Utils.onPlayerSide(table, ball) && ball.bounced){
+				// DOBLE BOTE
+				//point();
+				//instances.removeIndex(1);
+				//dynamicsWorld.removeRigidBody(instances.get(1).body);
+				//spawn();
+			}
+			ball.bounced = true;
 			instances.get(userValue0).body.setLinearVelocity(reaction);
 			
 			return true;
@@ -216,7 +227,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 	// MODELS
 	private Assets assets;
 	private ModelBuilder modelBuilder;
-	private Model model;
+	private Model ball;
 	private Model table;
 	private ModelInstance ambient;
 
@@ -227,6 +238,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 	private Vector3 tablePosition = new Vector3(0, 1, 0);
 	private Vector3 ballScale = new Vector3(0.05f, 0.05f, 0.05f);
 	private Vector3 ballPosition = new Vector3(1, 1, -0.5f);
+	private float gravity = -2;
 
 	// FLAGS
 	final static short GROUND_FLAG = 1 << 8;
@@ -267,6 +279,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 
 	// GAME
 	private Scoreboard scoreBoard = new Scoreboard();
+	private Opponent opponent;
 	private boolean nextRound;
 
 	@Override
@@ -345,7 +358,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		constraintSolver = new btSequentialImpulseConstraintSolver();
 		dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase,
 				constraintSolver, collisionConfig);
-		dynamicsWorld.setGravity(new Vector3(0, -2, 0));
+		dynamicsWorld.setGravity(new Vector3(0, gravity, 0));
 		
 		// MAKE AND REGISTER RENDERER
         debugDrawer = new DebugDrawer();
@@ -367,11 +380,14 @@ public class GameScreen3 extends InputAdapter implements Screen {
 				Model.class));
 		ambient.transform.rotate(Vector3.Z, 180);
 		
-		// CREATE TABLE SHAPE
+		// CREATE TABLE
 		table = assets.get(Models.MODEL_TABLE, Model.class);
+		
+		// INITIAL OPPONENT POSITION
+		opponent = new Opponent(Difficulty.EASY);
 		BoundingBox box = new BoundingBox();
 		table.calculateBoundingBox(box);
-		tableShape = Bullet.obtainStaticNodeShape(table.nodes);		
+		opponent.setLastHit(new Vector3(box.getMin().x, 1, 0));
 
 		// CREATE BALL
 		ModelBuilder mb = new ModelBuilder();
@@ -380,22 +396,16 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		mb.part("ball", GL20.GL_TRIANGLES, Usage.Position | Usage.Normal,
 				new Material(ColorAttribute.createDiffuse(Color.WHITE))).sphere(
 				0.1f, 0.1f, 0.1f, 10, 10);
-		mb.node().id = "grid";
-		mb.part("grid", GL20.GL_TRIANGLES, Usage.Position | Usage.Normal, new Material(ColorAttribute.createDiffuse(Color.RED)))
-			.box(0.1f, box.getDimensions().y, box.getDimensions().z);
-		model = mb.end();
+		ball = mb.end();
 
 		// FILL CONSTRUCTORS
 		constructors = new ArrayMap<String, GameObject.Constructor>(
 				String.class, GameObject.Constructor.class);
-		constructors.put("ball", new GameObject.Constructor(model, "ball",
-				new btSphereShape(0.05f), 1f));
+		constructors.put("ball", new GameObject.Constructor(ball, "ball",
+				new btSphereShape(0.05f), 1));
 		constructors.put("table",
 				new GameObject.Constructor(table, table.nodes.get(0).id,
-						tableShape, 0));
-		/*constructors.put("grid",
-				new GameObject.Constructor(model, "grid",
-						gridShape, 0));*/
+						Bullet.obtainStaticNodeShape(table.nodes), 0));
 
 		// ADD TABLE
 		GameObject finalTable = constructors.get("table").construct();
@@ -407,19 +417,8 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		finalTable.body.setContactCallbackFilter(0);
 		finalTable.body.setActivationState(Collision.DISABLE_DEACTIVATION);
 		instances.add(finalTable);
-		
-		/*GameObject finalGrid = constructors.get("grid").construct();
-		finalGrid.transform.trn(new Vector3(0,1,0));
-		finalGrid.body.setCollisionFlags(finalGrid.body.getCollisionFlags()
-				| btCollisionObject.CollisionFlags.CF_KINEMATIC_OBJECT);
-		finalGrid.body.proceedToTransform(finalGrid.transform);
-		finalGrid.body.setContactCallbackFlag(GROUND_FLAG);
-		finalGrid.body.setContactCallbackFilter(0);
-		finalGrid.body.setActivationState(Collision.DISABLE_DEACTIVATION);
-		instances.add(finalGrid);*/
 
 		dynamicsWorld.addRigidBody(finalTable.body);
-		//dynamicsWorld.addRigidBody(finalGrid.body);
 
 		// FINISHED LOADING
 		loading = false;
@@ -430,7 +429,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		GameObject obj = constructors.values[0].construct();
 		obj.transform.trn(ballPosition);
 		obj.bounced = false;
-		obj.lastPlayer = 1;
+		obj.lastPlayer = 0;
 		// obj.transform.trn(0, 0, 0);
 		obj.body.proceedToTransform(obj.transform);
 		obj.body.setUserValue(instances.size);
@@ -501,9 +500,9 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		}
 		modelBatch.end();
 		
-		/*debugDrawer.begin(cam);
+		debugDrawer.begin(cam);
         dynamicsWorld.debugDrawWorld();
-        debugDrawer.end();*/
+        debugDrawer.end();
 
 		// UI
 		stringBuilder.setLength(0);
@@ -725,7 +724,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 			obj.dispose();
 		}
 		instances.clear();
-		model.dispose();
+		ball.dispose();
 
 		tableShape.dispose();
 
