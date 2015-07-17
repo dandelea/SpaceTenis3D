@@ -1,9 +1,10 @@
 package tennis.screens;
 
+import java.io.IOException;
+
 import tennis.SpaceTennis3D;
 import tennis.managers.Assets;
 import tennis.managers.bluetooth.BluetoothServer;
-import tennis.screens.demos.BulletTest;
 import tennis.screens.demos.PathRotationTest;
 import tennis.screens.scenes3d.GameScreen3;
 import tennis.tween.ActorAccessor;
@@ -13,7 +14,6 @@ import aurelienribon.tweenengine.Tween;
 import aurelienribon.tweenengine.TweenCallback;
 import aurelienribon.tweenengine.TweenManager;
 
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
@@ -49,6 +49,7 @@ public class MainMenuScreen implements Screen {
 	@SuppressWarnings("deprecation")
 	@Override
 	public void show() {
+
 		assets = new Assets();
 		assets.loadAll();
 

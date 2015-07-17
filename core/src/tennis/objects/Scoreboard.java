@@ -9,8 +9,8 @@ public class Scoreboard {
 	private boolean isAdvantaged2;
 	private boolean finished;
 	private int winner;
-	private static final int MAX_SETS = 1;
-	private static final int MAX_GAMES = 1;
+	private static final int MAX_SETS = 10;
+	private static final int MAX_GAMES = 10;
 	
 	public Scoreboard(){
 		score1 = score2 = 0;

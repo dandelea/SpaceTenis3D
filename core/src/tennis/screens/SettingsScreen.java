@@ -27,7 +27,7 @@ public class SettingsScreen implements Screen {
 	private Table table;
 	private Label heading;
 	
-	private CheckBox vSyncCheckBox, fullscreenCheckBox;
+	private CheckBox vSyncCheckBox, fullscreenCheckBox, musicCheckBox, soundCheckBox;
 	private SelectBox<String> resolution;
 	private SelectBox<String> fov;
 	
@@ -65,7 +65,7 @@ public class SettingsScreen implements Screen {
 		});
 		
 		fullscreenCheckBox = new CheckBox("Full Screen", skin);
-		fullscreenCheckBox.setChecked(Utils.vSync());
+		fullscreenCheckBox.setChecked(Utils.fullscreen());
 		fullscreenCheckBox.addListener(new ClickListener() {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
@@ -73,7 +73,33 @@ public class SettingsScreen implements Screen {
 				Gdx.app.getPreferences(SpaceTennis3D.TITLE).putBoolean("fullscreen", fullscreenCheckBox.isChecked());
 				// Set Fullscreen
 				Gdx.graphics.setDisplayMode(SpaceTennis3D.WIDTH, SpaceTennis3D.HEIGHT, fullscreenCheckBox.isChecked());
-				Gdx.app.log(SpaceTennis3D.TITLE, "fullscreen " + (Utils.vSync() ? "enabled" : "disabled"));
+				Gdx.app.log(SpaceTennis3D.TITLE, "fullscreen " + (Utils.fullscreen() ? "enabled" : "disabled"));
+			}
+		});
+		
+		musicCheckBox = new CheckBox("Play Music", skin);
+		musicCheckBox.setChecked(Utils.music());
+		musicCheckBox.addListener(new ClickListener() {
+			@Override
+			public void clicked(InputEvent event, float x, float y) {
+				// save Music
+				Gdx.app.getPreferences(SpaceTennis3D.TITLE).putBoolean("music", musicCheckBox.isChecked());
+				// set Music
+				Gdx.graphics.setVSync(Utils.music());
+				Gdx.app.log(SpaceTennis3D.TITLE, "Music " + (Utils.music() ? "enabled" : "disabled"));
+			}
+		});
+		
+		soundCheckBox = new CheckBox("Play Sounds FX", skin);
+		soundCheckBox.setChecked(Utils.sound());
+		soundCheckBox.addListener(new ClickListener() {
+			@Override
+			public void clicked(InputEvent event, float x, float y) {
+				// save Music
+				Gdx.app.getPreferences(SpaceTennis3D.TITLE).putBoolean("sound", musicCheckBox.isChecked());
+				// set Music
+				Gdx.graphics.setVSync(Utils.sound());
+				Gdx.app.log(SpaceTennis3D.TITLE, "Sound " + (Utils.sound() ? "enabled" : "disabled"));
 			}
 		});
 		
@@ -131,6 +157,8 @@ public class SettingsScreen implements Screen {
 		table.row();
 		table.add(fullscreenCheckBox).row();
 		table.add(vSyncCheckBox).row();
+		table.add(musicCheckBox).row();
+		table.add(soundCheckBox).row();
 		table.add(resolution).row();
 		table.add(fov).row();
 		table.add(btnSave);

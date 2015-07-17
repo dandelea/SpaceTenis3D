@@ -1,6 +1,4 @@
-package tennis;
-
-import tennis.managers.Log;
+package tennis.managers;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.MathUtils;
@@ -89,5 +87,11 @@ public class Tools {
 		q.setFromAxis(axis, angle);
 		mtx.set(q);
 		position.prj(mtx);
+	}
+	
+	
+	
+	public static float moduleVector(Vector3 vector){
+		return (float) Math.sqrt(Math.pow(vector.x, 2) + Math.pow(vector.y, 2) + Math.pow(vector.z, 2));
 	}
 }

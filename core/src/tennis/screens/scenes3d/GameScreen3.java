@@ -1,7 +1,10 @@
 package tennis.screens.scenes3d;
 
+import java.io.IOException;
+
 import tennis.SpaceTennis3D;
 import tennis.managers.Assets;
+import tennis.managers.Tools;
 import tennis.managers.Utils;
 import tennis.managers.bluetooth.BluetoothServer;
 import tennis.objects.Difficulty;
@@ -75,26 +78,42 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.badlogic.gdx.utils.Disposable;
+import com.badlogic.gdx.utils.TimeUtils;
 
 public class GameScreen3 extends InputAdapter implements Screen {
 
 	class MyContactListener extends ContactListener {
 		
+		long lastBounceTime = 0;
 		public boolean onContactAdded(int userValue0, int partId0, int index0,
 				boolean match0, int userValue1, int partId1, int index1,
 				boolean match1) {
-			GameObject ball = instances.get(userValue0);
+			final GameObject ball = instances.get(userValue0);
 			GameObject table = instances.get(userValue1);
 			Vector3 inertia = ball.body.getLinearVelocity();
 			Vector3 reaction = new Vector3(inertia.x, -tableBouncingFactor
 					* inertia.y, inertia.z);
+			if (TimeUtils.timeSinceNanos(lastBounceTime) < 500000000){
+				// BALL IN FLOOR.
+				//System.out.println("ERROR");
+			}
+			lastBounceTime = TimeUtils.nanoTime();
 			
 			if (ball.lastPlayer == 1 && Utils.onPlayerSide(table, ball) && ball.bounced){
 				// DOBLE BOTE
-				//point();
-				//instances.removeIndex(1);
-				//dynamicsWorld.removeRigidBody(instances.get(1).body);
-				//spawn();
+				//System.out.println("doble bote");
+				/*new java.util.Timer().schedule( 
+				        new java.util.TimerTask() {
+				            @Override
+				            public void run() {
+				            	point();
+				    			instances.removeValue(ball, false);
+				    			dynamicsWorld.removeRigidBody(ball.body);
+				    			spawn();
+				            }
+				        }, 
+				        1000
+				);*/
 			}
 			ball.bounced = true;
 			instances.get(userValue0).body.setLinearVelocity(reaction);
@@ -126,6 +145,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		public final btRigidBody body;
 		public final MyMotionState motionState;
 		public int lastPlayer;
+		public static Vector3 lastPosition =  new Vector3();
 		public boolean bounced;
 
 		public GameObject(Model model, String rootNode,
@@ -232,12 +252,13 @@ public class GameScreen3 extends InputAdapter implements Screen {
 	private ModelInstance ambient;
 
 	// POSITIONS
-	private Vector3 camPosition = new Vector3(2, 2, 0);
+	//private Vector3 camPosition = new Vector3(2, 2, 0);
+	private Vector3 camPosition = new Vector3(0,2,-2);
 	private Vector3 camDirection = new Vector3();
-	private float tableBouncingFactor = 1;
+	private float tableBouncingFactor = 1.01f;
 	private Vector3 tablePosition = new Vector3(0, 1, 0);
 	private Vector3 ballScale = new Vector3(0.05f, 0.05f, 0.05f);
-	private Vector3 ballPosition = new Vector3(1, 1, -0.5f);
+	private Vector3 ballPosition = new Vector3(-0.5f, 1, -1);
 	private float gravity = -2;
 
 	// FLAGS
@@ -284,6 +305,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 
 	@Override
 	public void show() {
+		
 		/*
 		 * Initialize bullet wrapper. Must be before any call to a constructor
 		 * of Bullet related objects.
@@ -341,8 +363,8 @@ public class GameScreen3 extends InputAdapter implements Screen {
 				-0.8f, -0.2f));
 
 		// CAMERA
-		cam = new PerspectiveCamera(Gdx.app.getPreferences(SpaceTennis3D.TITLE).getInteger("FOV"), Gdx.graphics.getWidth(),
-				Gdx.graphics.getHeight());
+		cam = new PerspectiveCamera(Gdx.app.getPreferences(SpaceTennis3D.TITLE).getInteger("FOV"), SpaceTennis3D.WIDTH,
+				SpaceTennis3D.HEIGHT);
 		cam.position.set(camPosition);
 		cam.lookAt(camDirection);
 		cam.near = 1f;
@@ -387,7 +409,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		opponent = new Opponent(Difficulty.EASY);
 		BoundingBox box = new BoundingBox();
 		table.calculateBoundingBox(box);
-		opponent.setLastHit(new Vector3(box.getMin().x, 1, 0));
+		opponent.setLastHit(new Vector3(box.getMax().z, 1, 0));
 
 		// CREATE BALL
 		ModelBuilder mb = new ModelBuilder();
@@ -409,7 +431,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 
 		// ADD TABLE
 		GameObject finalTable = constructors.get("table").construct();
-		
+		finalTable.transform.rotate(new Vector3(0, 1, 0), 90);
 		finalTable.body.setCollisionFlags(finalTable.body.getCollisionFlags()
 				| btCollisionObject.CollisionFlags.CF_KINEMATIC_OBJECT);
 		finalTable.body.proceedToTransform(finalTable.transform);
@@ -436,9 +458,11 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		obj.body.setCollisionFlags(obj.body.getCollisionFlags()
 				| btCollisionObject.CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK);
 		instances.add(obj);
-		dynamicsWorld.addRigidBody(obj.body);
+		obj.body.setFriction(1);
+        obj.body.setRestitution(0);
 		obj.body.setContactCallbackFlag(OBJECT_FLAG);
 		obj.body.setContactCallbackFilter(GROUND_FLAG);
+		dynamicsWorld.addRigidBody(obj.body);
 	}
 
 	@Override
@@ -500,9 +524,9 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		}
 		modelBatch.end();
 		
-		debugDrawer.begin(cam);
-        dynamicsWorld.debugDrawWorld();
-        debugDrawer.end();
+		//debugDrawer.begin(cam);
+        //dynamicsWorld.debugDrawWorld();
+        //debugDrawer.end();
 
 		// UI
 		stringBuilder.setLength(0);
@@ -527,6 +551,8 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		label.setText(stringBuilder);
 		stage.act();
 		stage.draw();
+		
+		ball.lastPosition = ball.position;
 		
 	}
 
@@ -631,7 +657,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		tableBounds.getCorner000(min);
 		Vector3 max = new Vector3();
 		tableBounds.getCorner111(max);
-		res = ballPosition.y < min.y;
+		res = ballPosition.y < min.y && Math.abs(ballPosition.x) < 5 && Math.abs(ballPosition.z) < 5;
 		if (res) {
 			point();
 			instances.removeValue(ball, false);
@@ -649,16 +675,37 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		moveTo(ball, new Vector3(0, 0, 0), 50);
 	}
 
+	long time = 0;
+	long waitTime = 10000000;
 	public void handleInput() {
-
-		float lastAccelerometerZ = 0;
 		// STARTED TO SWING
-		if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)){
-			hit();
+		
+		if (Utils.allObjectsLoaded(instances) && Utils.onPlayerHittable(instances.get(0), instances.get(1)) && BluetoothServer.accelerometer.z > 0) {
+			GameObject table = instances.get(0);
+			GameObject ball = instances.get(1);
+			if (ball.lastPlayer==0){
+				hit();
+			} else {
+				Vector3 inertia = ball.body.getLinearVelocity().scl(-1);
+				Vector3 normal = BluetoothServer.accelerometer;
+				Vector3 reaction = normal.scl(2*normal.dot(inertia)).sub(inertia).scl(0.2f);
+				reaction.z = Math.abs(reaction.z);
+				System.out.println(reaction);
+				if (TimeUtils.timeSinceNanos(time) > waitTime) {
+					//System.out.println("[" + BluetoothServer.accelerometer.x + ", " + BluetoothServer.accelerometer.y + ", " + BluetoothServer.accelerometer.z + ": " + Tools.moduleVector(BluetoothServer.accelerometer) + "]");
+					ball.bounced = false;
+					ball.lastPlayer = Utils.onPlayerSide(table, ball) ? 1:2;
+					ball.body.applyCentralForce(reaction);
+					time = TimeUtils.nanoTime();
+					
+				}
+			}
+			
+			
+			
 		}
 		
-		if (Utils.allObjectsLoaded(instances) && Utils.onPlayerHittable(instances.get(0), instances.get(1)) && BluetoothServer.accelerometerZ > 12) {
-			lastAccelerometerZ = BluetoothServer.accelerometerZ;
+		if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)){
 			hit();
 		}
 

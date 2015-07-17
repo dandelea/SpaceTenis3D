@@ -3,11 +3,9 @@ package tennis;
 import tennis.managers.bluetooth.BluetoothServer;
 import tennis.objects.Scoreboard;
 import tennis.screens.MainMenuScreen;
-
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.GL20;
 
 public class SpaceTennis3D extends Game {
 	public static final String TITLE = "Space Tennis 3D";
@@ -16,7 +14,12 @@ public class SpaceTennis3D extends Game {
 	public static int HEIGHT;
 	public static Scoreboard lastScoreboard;
 
-	@Override
+	/**
+	 * First method to create the application.
+	 * Initialize the server and start it in a new thread.
+	 * Then initializes the attributes and preferences of the game.
+	 * Starts with Main Menu Screen
+	 */
 	public void create() {
 		BluetoothServer server = new BluetoothServer();
 		Thread serverThread = new Thread(server);
@@ -24,6 +27,8 @@ public class SpaceTennis3D extends Game {
 		WIDTH = Gdx.graphics.getWidth();
 		HEIGHT = Gdx.graphics.getHeight();
 		Gdx.app.getPreferences(TITLE).putInteger("FOV", 67);
+		Gdx.app.getPreferences(TITLE).putBoolean("music", true);
+		Gdx.app.getPreferences(TITLE).putBoolean("sound", true);
 		setScreen(new MainMenuScreen());
 	}
 
@@ -49,6 +54,11 @@ public class SpaceTennis3D extends Game {
 		super.resume();
 	}
 	
+	/**
+	 * Static version of (Game) setScreen (Screen screen)
+	 * Easier to call
+	 * @param screen Screen to display
+	 */
 	public static void goTo(Screen screen){
 		Game game = (Game) Gdx.app.getApplicationListener();
 		game.setScreen(screen);
