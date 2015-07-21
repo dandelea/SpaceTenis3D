@@ -31,18 +31,6 @@ public class Tools {
 		}
 	}
 	
-	// DISPOSE
-	
-	public static void dispose(Disposable disp) {
-		dispose(disp, "");
-	}
-
-	public static void dispose(Disposable disp, String name) {
-		Log.debug("dispose: " + name + " -- " + disp);
-		disp.dispose();
-	}
-	
-	
 	// COLORS
 	
 	/**
@@ -131,7 +119,7 @@ public class Tools {
 	public static boolean allObjectsLoaded(Array<GameObject> instances){
 		return instances.size == 2;
 	}
-	
+
 	// SETTINGS
 	
 	/**

@@ -15,22 +15,37 @@ public class Log {
 	private static final String ERROR_S = "ERROR";
 	private static final String serverLogFileName = "tennis.log";
 
+	/**
+	 * Initialize Log Service
+	 */
 	public static void init() {
 		logFile = Gdx.files.local(serverLogFileName);
 	}
 
+	/**
+	 * Displays a debug message in console and write to file
+	 * @param msg Message to be displayed
+	 */
 	public static void debug(String msg) {
 		Gdx.app.debug(DEBUG_S + " " + TAG, msg);
 		if (Gdx.app.getLogLevel() <= DEBUG)
 			writeToFile(DEBUG_S, TAG, msg);
 	}
 
+	/**
+	 * Displays an info message in console and write to file
+	 * @param msg Message to be displayed
+	 */
 	public static void info(String msg) {
 		Gdx.app.log(INFO_S + " " + TAG, msg);
 		if (Gdx.app.getLogLevel() <= INFO)
 			writeToFile(INFO_S, TAG, msg);
 	}
 
+	/**
+	 * Displays an error message in console and write to file
+	 * @param msg Message to be displayed
+	 */
 	public static void error(String msg) {
 		Gdx.app.log(ERROR_S + " " + TAG, msg);
 		if (Gdx.app.getLogLevel() <= ERROR)

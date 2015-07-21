@@ -9,6 +9,12 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 
+/**
+ * Space Tennis 3D Application Listener
+ * 
+ * @author Daniel de los Reyes Leal
+ * @version 1
+ */
 public class SpaceTennis3D extends Game {
 	public static final String TITLE = "Space Tennis 3D";
 	public static final String VERSION = "ver 0.1";
@@ -17,22 +23,24 @@ public class SpaceTennis3D extends Game {
 	public static Scoreboard lastScoreboard;
 
 	/**
-	 * First method to create the application.
-	 * Initialize the server and start it in a new thread.
-	 * Then initializes the attributes and preferences of the game.
-	 * Starts with Main Menu Screen
+	 * First method to create the application. Initialize the server and start
+	 * it in a new thread. Then initializes the attributes and preferences of
+	 * the game. Starts with Main Menu Screen
 	 */
 	@Override
 	public void create() {
 		Log.init();
+
 		BluetoothServer server = new BluetoothServer();
 		Thread serverThread = new Thread(server);
 		serverThread.start();
+
 		WIDTH = Gdx.graphics.getWidth();
 		HEIGHT = Gdx.graphics.getHeight();
 		Gdx.app.getPreferences(TITLE).putInteger("FOV", 67);
 		Gdx.app.getPreferences(TITLE).putBoolean("music", true);
 		Gdx.app.getPreferences(TITLE).putBoolean("sound", true);
+
 		setScreen(new MainMenuScreen());
 	}
 
@@ -62,17 +70,16 @@ public class SpaceTennis3D extends Game {
 	public void resume() {
 		super.resume();
 	}
-	
+
 	/**
-	 * Static version of (Game) setScreen (Screen screen)
-	 * Easier to call
-	 * @param screen Screen to display
+	 * Static version of {@link #setScreen(Screen)} . Easier to call
+	 * 
+	 * @param screen
+	 *            Screen to display
 	 */
-	public static void goTo(Screen screen){
+	public static void goTo(Screen screen) {
 		Game game = (Game) Gdx.app.getApplicationListener();
 		game.setScreen(screen);
 	}
-	
-	
 
 }

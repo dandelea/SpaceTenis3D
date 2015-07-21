@@ -3,33 +3,29 @@ package tennis.objects;
 public class Scoreboard {
 	private int score1;
 	private int score2;
-	private int game;
 	private int set;
 	private boolean isAdvantaged1;
 	private boolean isAdvantaged2;
 	private boolean finished;
-	private int winner;
-	private static final int MAX_SETS = 10;
-	private static final int MAX_GAMES = 10;
-	
-	public Scoreboard(){
+	private int[] sets;
+	private static final int MAX_SETS = 3;
+
+	public Scoreboard() {
 		score1 = score2 = 0;
-		game = set = 1;
+		set = 1;
 		isAdvantaged1 = isAdvantaged2 = finished = false;
-		winner = 0;
 	}
 
-	public Scoreboard(int score1, int score2, int game, int set,
-			boolean isAdvantaged1, boolean isAdvantaged2, boolean finished, Integer winner) {
+	public Scoreboard(int score1, int score2, int set, boolean isAdvantaged1,
+			boolean isAdvantaged2, boolean finished) {
 		super();
 		this.score1 = score1;
 		this.score2 = score2;
-		this.game = game;
 		this.set = set;
 		this.isAdvantaged1 = isAdvantaged1;
 		this.isAdvantaged2 = isAdvantaged2;
 		this.finished = finished;
-		this.winner = winner;
+		this.sets = new int[MAX_SETS];
 	}
 
 	public int getScore1() {
@@ -48,14 +44,6 @@ public class Scoreboard {
 		this.score2 = score2;
 	}
 
-	public int getGame() {
-		return game;
-	}
-
-	public void setGame(int game) {
-		this.game = game;
-	}
-
 	public int getSet() {
 		return set;
 	}
@@ -63,7 +51,7 @@ public class Scoreboard {
 	public void setSet(int set) {
 		this.set = set;
 	}
-	
+
 	public boolean isAdvantaged1() {
 		return isAdvantaged1;
 	}
@@ -87,22 +75,46 @@ public class Scoreboard {
 	public void setFinished(boolean finished) {
 		this.finished = finished;
 	}
-	
-	public Integer getWinner() {
-		return winner;
+
+	/**
+	 * @return Winner code for player 1 or player 2.
+	 */
+	public int getWinner() {
+		assert isFinished();
+
+		int count = 1, tempCount;
+		int popular = sets[0];
+		int temp = 0;
+		for (int i = 0; i < (sets.length - 1); i++) {
+			temp = sets[i];
+			tempCount = 0;
+			for (int j = 1; j < sets.length; j++) {
+				if (temp == sets[j])
+					tempCount++;
+			}
+			if (tempCount > count) {
+				popular = temp;
+				count = tempCount;
+			}
+		}
+		return popular;
 	}
 
-	public void setWinner(Integer winner) {
-		this.winner = winner;
-	}
-
-	public boolean isDeuce(){
+	/**
+	 * @return If game state is deuce.
+	 */
+	public boolean isDeuce() {
 		return getScore1() == getScore2() && getScore1() == 40;
 	}
-	
-	public int nextNumber(int number){
+
+	/**
+	 * @param number
+	 *            Actual number.
+	 * @return Next value of tennis scoreboard.
+	 */
+	private int nextNumber(int number) {
 		int res = -1;
-		switch(number){
+		switch (number) {
 		case 0:
 			res = 15;
 			break;
@@ -118,62 +130,67 @@ public class Scoreboard {
 		}
 		return res;
 	}
-	
-	public void point1(){
+
+	/**
+	 * Player 1 scores.
+	 */
+	public void point1() {
 		if (isDeuce()) {
-			if (isAdvantaged1()){
-				updateGamesAndSet();
+			if (isAdvantaged1()) {
+				sets[getSet()-1] = 1;
+				updateSets();
 			} else {
-				if (isAdvantaged2()){
+				if (isAdvantaged2()) {
 					setAdvantaged2(false);
 				} else {
 					setAdvantaged1(true);
 				}
 			}
 		} else {
-			if (getScore1()==40) {
-				updateGamesAndSet();
+			if (getScore1() == 40) {
+				sets[getSet()-1] = 1;
+				updateSets();
 			} else {
 				setScore1(nextNumber(getScore1()));
 			}
 		}
-		setWinner(1);
 	}
-	
-	public void point2(){
+
+	/**
+	 * Player 2 scores
+	 */
+	public void point2() {
 		if (isDeuce()) {
-			if (isAdvantaged2()){
-				updateGamesAndSet();
+			if (isAdvantaged2()) {
+				sets[getSet()-1] = 2;
+				updateSets();
 			} else {
-				if (isAdvantaged1()){
+				if (isAdvantaged1()) {
 					setAdvantaged1(false);
 				} else {
 					setAdvantaged2(true);
 				}
 			}
 		} else {
-			if (getScore2()==40) {
-				updateGamesAndSet();
+			if (getScore2() == 40) {
+				sets[getSet()-1] = 2;
+				updateSets();
 			} else {
 				setScore2(nextNumber(getScore2()));
 			}
 		}
-		setWinner(2);
 	}
-	
-	public void updateGamesAndSet(){
+
+	/**
+	 * Auxiliar method. Update scoreboard after a player scores.
+	 */
+	private void updateSets() {
 		// WIN ALL
-		if (getSet()==MAX_SETS & getGame()==MAX_GAMES){
+		if (getSet() == MAX_SETS) {
 			setFinished(true);
-		} else{
+		} else {
 			// WIN A SET
-			if (getGame()==MAX_GAMES){
-				setSet(getSet() + 1);
-				setGame(1);
-			} else {
-				// WIN A GAME
-				setGame(getGame() + 1);
-			}
+			setSet(getSet() + 1);
 			// RESET SCORES
 			setScore1(0);
 			setScore2(0);
@@ -181,21 +198,5 @@ public class Scoreboard {
 			setAdvantaged2(false);
 		}
 	}
-
-	@Override
-	public String toString() {
-		return "Scoreboard [getScore1()=" + getScore1() + ", getScore2()="
-				+ getScore2() + ", getGame()=" + getGame() + ", getSet()="
-				+ getSet() + ", isAdvantaged1()=" + isAdvantaged1()
-				+ ", isAdvantaged2()=" + isAdvantaged2() + ", isFinished()="
-				+ isFinished() + ", getWinner()=" + getWinner()
-				+ ", isDeuce()=" + isDeuce() + "]";
-	}
-	
-	
-	
-	
-	
-	
 
 }

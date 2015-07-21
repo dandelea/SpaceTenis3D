@@ -64,12 +64,18 @@ public class Assets implements Disposable {
 		Log.info("Finished loading assets");
 	}
 	
+	/**
+	 * Only loads models located in assets folder.
+	 */
 	private void loadModels(){
 		for (String model : models) {
 			assetManager.load(model, Model.class);
 		}
 	}
 	
+	/**
+	 * Only loads skin located in assets folder.
+	 */
 	private void loadSkin(){
 		assetManager.load("ui/uiskin.atlas", TextureAtlas.class);
 		assetManager.load("ui/uiskin.json", Skin.class);
@@ -78,11 +84,20 @@ public class Assets implements Disposable {
 		skin = assetManager.get("ui/uiskin.json");
 	}
 	
+	/**
+	 * Only loads textures located in assets folder.
+	 */
 	private void loadTextures(){
 		assetManager.load("img/splash_screen/developer.png", Texture.class);
 		assetManager.load("img/splash_screen/us.png", Texture.class);
 	}
 
+	/**
+	 * Get a previously loaded object with {@link Assets}
+	 * @param direction Related URI of resource in assets folder
+	 * @param type Class of object loaded
+	 * @return Object loaded
+	 */
 	public <T> T get(String direction, Class<T> type) {
 		return assetManager.get(direction, type);
 	}
@@ -91,6 +106,9 @@ public class Assets implements Disposable {
 		assetManager.finishLoading();
 	}
 
+	/**
+	 * Dispose objects loaded by the asset Manager.
+	 */
 	public void dispose() {
 		assetManager.dispose();
 		if (skin != null)
