@@ -13,7 +13,6 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.model.Node;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 
 public class CameraDemoScene implements Screen{
@@ -30,7 +29,8 @@ public class CameraDemoScene implements Screen{
     public ModelInstance ship;
     public ModelInstance space;
      
-    public void show() {
+    @Override
+	public void show() {
         modelBatch = new ModelBatch();
         environment = new Environment();
         environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));
@@ -82,7 +82,8 @@ public class CameraDemoScene implements Screen{
         loading = false;
     }
      
-    public void render(float delta) {
+    @Override
+	public void render(float delta) {
         if (loading && assets.update())
             doneLoading();
         camController.update();

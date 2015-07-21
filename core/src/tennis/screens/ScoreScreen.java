@@ -3,14 +3,12 @@ package tennis.screens;
 import tennis.SpaceTennis3D;
 import tennis.managers.Assets;
 import tennis.objects.Scoreboard;
-import tennis.screens.demos.BulletTest;
 import tennis.screens.scenes3d.GameScreen3;
 import tennis.tween.ActorAccessor;
 import aurelienribon.tweenengine.Timeline;
 import aurelienribon.tweenengine.Tween;
 import aurelienribon.tweenengine.TweenManager;
 
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
@@ -56,10 +54,7 @@ public class ScoreScreen implements Screen {
 		// stage.setDebugAll(true);
 		Gdx.input.setInputProcessor(stage);
 
-		// btnPack = new TextureAtlas("ui/button.pack");
 		skin = Assets.skin;
-
-		// skin.addRegions(btnPack);
 
 		table = new Table(skin);
 		table.setBounds(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -75,6 +70,7 @@ public class ScoreScreen implements Screen {
 		
 		btnPlay = new TextButton(btnPlayText, skin);
 		btnPlay.addListener(new ClickListener() {
+			@Override
 			public void clicked(InputEvent event, float x, float y) {
 				SpaceTennis3D.goTo(new GameScreen3());
 			}
@@ -84,6 +80,7 @@ public class ScoreScreen implements Screen {
 		btnExit = new TextButton("Exit", skin);
 		btnExit.addListener(new ClickListener() {
 
+			@Override
 			public void clicked(InputEvent event, float x, float y) {
 				SpaceTennis3D.goTo(new MainMenuScreen());
 			}
@@ -188,7 +185,7 @@ public class ScoreScreen implements Screen {
 	@Override
 	public void dispose() {
 		stage.dispose();
-		skin.dispose();
+		assets.dispose();
 	}
 
 }

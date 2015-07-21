@@ -1,8 +1,10 @@
 package tennis;
 
+import tennis.managers.Log;
 import tennis.managers.bluetooth.BluetoothServer;
 import tennis.objects.Scoreboard;
 import tennis.screens.MainMenuScreen;
+
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -20,7 +22,9 @@ public class SpaceTennis3D extends Game {
 	 * Then initializes the attributes and preferences of the game.
 	 * Starts with Main Menu Screen
 	 */
+	@Override
 	public void create() {
+		Log.init();
 		BluetoothServer server = new BluetoothServer();
 		Thread serverThread = new Thread(server);
 		serverThread.start();
@@ -32,24 +36,29 @@ public class SpaceTennis3D extends Game {
 		setScreen(new MainMenuScreen());
 	}
 
+	@Override
 	public void dispose() {
 		super.dispose();
 	}
 
+	@Override
 	public void render() {
 		WIDTH = Gdx.graphics.getWidth();
 		HEIGHT = Gdx.graphics.getHeight();
 		super.render();
 	}
 
+	@Override
 	public void resize(int witdh, int height) {
 		super.resize(witdh, height);
 	}
 
+	@Override
 	public void pause() {
 		super.pause();
 	}
 
+	@Override
 	public void resume() {
 		super.resume();
 	}

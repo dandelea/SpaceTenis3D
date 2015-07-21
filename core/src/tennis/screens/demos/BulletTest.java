@@ -1,6 +1,5 @@
 package tennis.screens.demos;
 
-import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
@@ -21,6 +20,7 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.Bullet;
 import com.badlogic.gdx.physics.bullet.collision.Collision;
+import com.badlogic.gdx.physics.bullet.collision.CollisionConstants;
 import com.badlogic.gdx.physics.bullet.collision.ContactListener;
 import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
 import com.badlogic.gdx.physics.bullet.collision.btBroadphaseInterface;
@@ -202,7 +202,7 @@ public class BulletTest implements Screen {
       dynamicsWorld.addRigidBody(object.body);
 		object.body.setContactCallbackFlag(GROUND_FLAG);
 		object.body.setContactCallbackFilter(0);
-		object.body.setActivationState(Collision.DISABLE_DEACTIVATION);
+		object.body.setActivationState(CollisionConstants.DISABLE_DEACTIVATION);
 	}
 
 	public void spawn () {

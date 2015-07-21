@@ -8,6 +8,7 @@ public class ActorAccessor implements TweenAccessor<Actor> {
 
 	public static final int Y = 0, RGB = 1, ALPHA = 2;
 
+	@Override
 	public int getValues(Actor target, int tweenType, float[] returnValues) {
 		switch(tweenType) {
 		case Y:
@@ -27,6 +28,7 @@ public class ActorAccessor implements TweenAccessor<Actor> {
 		}
 	}
 
+	@Override
 	public void setValues(Actor target, int tweenType, float[] newValues) {
 		switch(tweenType) {
 		case Y:

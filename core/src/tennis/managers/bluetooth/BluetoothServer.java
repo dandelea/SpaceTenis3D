@@ -1,7 +1,6 @@
 package tennis.managers.bluetooth;
 
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 
@@ -11,15 +10,14 @@ import javax.microedition.io.Connector;
 import javax.microedition.io.StreamConnection;
 import javax.microedition.io.StreamConnectionNotifier;
 
-import tennis.managers.Tools;
-
 import com.badlogic.gdx.math.Vector3;
 
 public class BluetoothServer implements Runnable {
-	static final String deviceUUID = "0000110100001000800000805F9B34FB";
+	static final String deviceUUID = "8ce255c0200a11e0ac640800200c9a66";
 	public static Vector3 accelerometer;
 	static StreamConnectionNotifier server;
 
+	@Override
 	public void run() {
 		try {
 			accelerometer = new Vector3();

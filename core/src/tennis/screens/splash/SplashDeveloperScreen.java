@@ -1,6 +1,7 @@
 package tennis.screens.splash;
 
 import tennis.SpaceTennis3D;
+import tennis.managers.Assets;
 import tennis.screens.MainMenuScreen;
 import tennis.tween.SpriteAccessor;
 import aurelienribon.tweenengine.BaseTween;
@@ -8,7 +9,6 @@ import aurelienribon.tweenengine.Tween;
 import aurelienribon.tweenengine.TweenCallback;
 import aurelienribon.tweenengine.TweenManager;
 
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
@@ -17,12 +17,14 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class SplashDeveloperScreen implements Screen {
+	private Assets assets;
+	
 	private TweenManager tweenManager;
 
 	private SpriteBatch batch;
 	private Sprite devSplash;
 
-	private String dev = "img/splash_screen/developer.png";
+	private String devDirection = "img/splash_screen/developer.png";
 
 	@Override
 	public void render(float delta) {
@@ -38,12 +40,15 @@ public class SplashDeveloperScreen implements Screen {
 
 	@Override
 	public void show() {
+		assets = new Assets();
+		assets.loadScreen(Assets.SPLASH_SCREEN_DEVELOPER);
+		
 		batch = new SpriteBatch();
 
 		tweenManager = new TweenManager();
 		Tween.registerAccessor(Sprite.class, new SpriteAccessor());
 
-		Texture devTex = new Texture(Gdx.files.internal(dev));
+		Texture devTex = assets.get(devDirection, Texture.class);
 		devSplash = new Sprite(devTex);
 		devSplash.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
@@ -87,6 +92,7 @@ public class SplashDeveloperScreen implements Screen {
 	public void dispose() {
 		batch.dispose();
 		devSplash.getTexture().dispose();
+		assets.dispose();
 	}
 
 }

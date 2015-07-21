@@ -1,11 +1,10 @@
 package tennis.screens.scenes3d;
 
-import java.io.IOException;
+import java.util.Random;
 
 import tennis.SpaceTennis3D;
 import tennis.managers.Assets;
 import tennis.managers.Tools;
-import tennis.managers.Utils;
 import tennis.managers.bluetooth.BluetoothServer;
 import tennis.objects.Difficulty;
 import tennis.objects.Opponent;
@@ -29,17 +28,10 @@ import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
-import com.badlogic.gdx.graphics.g3d.Renderable;
-import com.badlogic.gdx.graphics.g3d.Shader;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
-import com.badlogic.gdx.graphics.g3d.model.NodePart;
-import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
-import com.badlogic.gdx.graphics.g3d.utils.DefaultTextureBinder;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
-import com.badlogic.gdx.graphics.g3d.utils.RenderContext;
-import com.badlogic.gdx.math.CatmullRomSpline;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
@@ -47,9 +39,8 @@ import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.physics.bullet.Bullet;
 import com.badlogic.gdx.physics.bullet.DebugDrawer;
 import com.badlogic.gdx.physics.bullet.collision.Collision;
+import com.badlogic.gdx.physics.bullet.collision.CollisionConstants;
 import com.badlogic.gdx.physics.bullet.collision.ContactListener;
-import com.badlogic.gdx.physics.bullet.collision.btBox2dShape;
-import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
 import com.badlogic.gdx.physics.bullet.collision.btBroadphaseInterface;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionConfiguration;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionDispatcher;
@@ -59,7 +50,6 @@ import com.badlogic.gdx.physics.bullet.collision.btDbvtBroadphase;
 import com.badlogic.gdx.physics.bullet.collision.btDefaultCollisionConfiguration;
 import com.badlogic.gdx.physics.bullet.collision.btDispatcher;
 import com.badlogic.gdx.physics.bullet.collision.btSphereShape;
-import com.badlogic.gdx.physics.bullet.collision.btStaticPlaneShape;
 import com.badlogic.gdx.physics.bullet.dynamics.btConstraintSolver;
 import com.badlogic.gdx.physics.bullet.dynamics.btDiscreteDynamicsWorld;
 import com.badlogic.gdx.physics.bullet.dynamics.btDynamicsWorld;
@@ -67,8 +57,6 @@ import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.dynamics.btSequentialImpulseConstraintSolver;
 import com.badlogic.gdx.physics.bullet.linearmath.btIDebugDraw;
 import com.badlogic.gdx.physics.bullet.linearmath.btMotionState;
-import com.badlogic.gdx.physics.bullet.softbody.btSoftBody;
-import com.badlogic.gdx.physics.bullet.softbody.btSoftBodyCollisionShape;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -85,12 +73,14 @@ public class GameScreen3 extends InputAdapter implements Screen {
 	class MyContactListener extends ContactListener {
 		
 		long lastBounceTime = 0;
+		@Override
 		public boolean onContactAdded(int userValue0, int partId0, int index0,
 				boolean match0, int userValue1, int partId1, int index1,
 				boolean match1) {
 			final GameObject ball = instances.get(userValue0);
 			GameObject table = instances.get(userValue1);
 			Vector3 inertia = ball.body.getLinearVelocity();
+			Vector3 normal = new Vector3(0,1,0);
 			Vector3 reaction = new Vector3(inertia.x, -tableBouncingFactor
 					* inertia.y, inertia.z);
 			if (TimeUtils.timeSinceNanos(lastBounceTime) < 500000000){
@@ -99,7 +89,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 			}
 			lastBounceTime = TimeUtils.nanoTime();
 			
-			if (ball.lastPlayer == 1 && Utils.onPlayerSide(table, ball) && ball.bounced){
+			if (ball.lastPlayer == 1 && Tools.onPlayerSide(table, ball) && ball.bounced){
 				// DOBLE BOTE
 				//System.out.println("doble bote");
 				/*new java.util.Timer().schedule( 
@@ -147,6 +137,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		public int lastPlayer;
 		public static Vector3 lastPosition =  new Vector3();
 		public boolean bounced;
+		public boolean hitted;
 
 		public GameObject(Model model, String rootNode,
 				btRigidBody.btRigidBodyConstructionInfo constructionInfo) {
@@ -167,7 +158,12 @@ public class GameScreen3 extends InputAdapter implements Screen {
 			transform.getTranslation(res);
 			return res;
 		}
-
+		
+		public BoundingBox getBoundingBox(){
+			calculateBoundingBox(bounds);
+			return bounds;
+		}
+		
 		public boolean isVisible(Camera cam) {
 			return cam.frustum.sphereInFrustum(
 					transform.getTranslation(position).add(center), radius);
@@ -255,10 +251,10 @@ public class GameScreen3 extends InputAdapter implements Screen {
 	//private Vector3 camPosition = new Vector3(2, 2, 0);
 	private Vector3 camPosition = new Vector3(0,2,-2);
 	private Vector3 camDirection = new Vector3();
-	private float tableBouncingFactor = 1.01f;
+	private float tableBouncingFactor = 1.05f;
 	private Vector3 tablePosition = new Vector3(0, 1, 0);
 	private Vector3 ballScale = new Vector3(0.05f, 0.05f, 0.05f);
-	private Vector3 ballPosition = new Vector3(-0.5f, 1, -1);
+	private Vector3 ballPosition = new Vector3(-0.5f, .5f, -1);
 	private float gravity = -2;
 
 	// FLAGS
@@ -294,8 +290,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 	public static final int GAME_READY = 0;
 	public static final int GAME_RUNNING = 1;
 	public static final int GAME_PAUSED = 2;
-	public static final int GAME_LEVEL_END = 3;
-	public static final int GAME_OVER = 4;
+	public static final int GAME_OVER = 3;
 	public int state;
 
 	// GAME
@@ -333,6 +328,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		TextButton resume = new TextButton("Resume", Assets.skin);
 		resume.pad(20);
 		resume.addListener(new ClickListener() {
+			@Override
 			public void clicked(InputEvent event, float x, float y) {
 				state = GAME_RUNNING;
 				disposePause();
@@ -341,6 +337,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		TextButton quit = new TextButton("Quit", Assets.skin);
 		quit.pad(20);
 		quit.addListener(new ClickListener() {
+			@Override
 			public void clicked(InputEvent event, float x, float y) {
 				SpaceTennis3D.goTo(new MainMenuScreen());
 			}
@@ -437,7 +434,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		finalTable.body.proceedToTransform(finalTable.transform);
 		finalTable.body.setContactCallbackFlag(GROUND_FLAG);
 		finalTable.body.setContactCallbackFilter(0);
-		finalTable.body.setActivationState(Collision.DISABLE_DEACTIVATION);
+		finalTable.body.setActivationState(CollisionConstants.DISABLE_DEACTIVATION);
 		instances.add(finalTable);
 
 		dynamicsWorld.addRigidBody(finalTable.body);
@@ -451,6 +448,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		GameObject obj = constructors.values[0].construct();
 		obj.transform.trn(ballPosition);
 		obj.bounced = false;
+		obj.hitted = false;
 		obj.lastPlayer = 0;
 		// obj.transform.trn(0, 0, 0);
 		obj.body.proceedToTransform(obj.transform);
@@ -484,11 +482,9 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		case GAME_PAUSED:
 			updatePaused();
 			break;
-		case GAME_LEVEL_END:
-			// updateLevelEnd();
-			break;
 		case GAME_OVER:
-			// updateGameOver();
+			SpaceTennis3D.lastScoreboard = scoreBoard;
+			SpaceTennis3D.goTo(new ScoreScreen());
 			break;
 		}
 
@@ -497,7 +493,6 @@ public class GameScreen3 extends InputAdapter implements Screen {
 	private void updateGame() {
 		GameObject table = instances.get(0);
 		GameObject ball = instances.get(1);
-		
 		
 		
 		modelBatch.begin(cam);
@@ -513,8 +508,8 @@ public class GameScreen3 extends InputAdapter implements Screen {
 				modelBatch.render(instance, environment);
 			}
 		}
-		if (Utils.allObjectsLoaded(instances)) {
-			if (Utils.onPlayerHittable(table, ball)) {
+		if (Tools.allObjectsLoaded(instances)) {
+			if (Tools.onPlayerHittable(table, ball)) {
 				((ColorAttribute) ball.materials.get(0).get(
 						ColorAttribute.Diffuse)).color.set(Color.RED);
 			} else {
@@ -552,7 +547,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		stage.act();
 		stage.draw();
 		
-		ball.lastPosition = ball.position;
+		GameObject.lastPosition = GameObject.position;
 		
 	}
 
@@ -573,12 +568,27 @@ public class GameScreen3 extends InputAdapter implements Screen {
 	private void updateRunning(float delta) {
 		handleInput();
 		
-		if (firstBall){
+		if (firstBall)
 			spawn();
-		}
 		firstBall = false;
 		
-		nextRound = Utils.allObjectsLoaded(instances) && outOfTable(instances.get(0), instances.get(1));
+		nextRound = Tools.allObjectsLoaded(instances) && outOfTable(instances.get(0), instances.get(1));
+		
+		instances.get(1);
+		// Opponent hit the ball
+		if (Tools.allObjectsLoaded(instances) &&
+				Tools.onOpponentHittable(instances.get(0), instances.get(1)) &&
+				instances.get(1).lastPlayer==1) {
+			GameObject ball = instances.get(1);
+			Random random = new Random();
+			float f = random.nextFloat();
+			if (f <= opponent.getHitRate()){
+				hit(opponent.getVelocity());
+			}
+			ball.hitted = true;
+			ball.lastPlayer = 2;
+		}
+		
 		dynamicsWorld.stepSimulation(delta, 5, 1f / 60f);
 		camController.update();
 
@@ -607,7 +617,13 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		selected = result;
 		return result;
 	}
-
+	
+	/**
+	 * Apply force to the instance to move it to a certain location
+	 * @param instance Ball to move
+	 * @param position Location
+	 * @param intensity Force of the movement
+	 */
 	public void moveTo(GameObject instance, Vector3 position, int intensity) {
 		Vector3 instPos = instance.getPosition();
 		instance.body.applyCentralForce(new Vector3((position.x - instPos.x)
@@ -618,7 +634,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		GameObject table = instances.get(0);
 		GameObject ball = instances.get(1);
 		// ball fell on players table
-		if (Utils.onPlayerSide(table, ball)) {
+		if (Tools.onPlayerSide(table, ball)) {
 			scoreBoard.point2();
 		} else {
 			// ball hit by player
@@ -637,8 +653,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 			}
 		}
 		if (scoreBoard.isFinished()){
-			SpaceTennis3D.lastScoreboard = scoreBoard;
-			SpaceTennis3D.goTo(new ScoreScreen());
+			state = GAME_OVER;
 		}
 	}
 
@@ -667,46 +682,40 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		return res;
 	}
 	
-	public void hit() {
+	public void hit(int intensity) {
 		GameObject table = instances.get(0);
 		GameObject ball = instances.get(1);
 		ball.bounced = false;
-		ball.lastPlayer = Utils.onPlayerSide(table, ball) ? 1:2;
-		moveTo(ball, new Vector3(0, 0, 0), 50);
+		ball.hitted = Tools.onPlayerSide(table, ball);
+		ball.lastPlayer = Tools.onPlayerSide(table, ball) ? 1:2;
+		moveTo(ball, new Vector3(0, 0, 0), intensity);
 	}
 
 	long time = 0;
-	long waitTime = 10000000;
 	public void handleInput() {
 		// STARTED TO SWING
 		
-		if (Utils.allObjectsLoaded(instances) && Utils.onPlayerHittable(instances.get(0), instances.get(1)) && BluetoothServer.accelerometer.z > 0) {
-			GameObject table = instances.get(0);
-			GameObject ball = instances.get(1);
-			if (ball.lastPlayer==0){
-				hit();
-			} else {
+		if (Tools.allObjectsLoaded(instances) && Tools.onPlayerHittable(instances.get(0), instances.get(1)) 
+				&& !instances.get(1).hitted && BluetoothServer.accelerometer.z > 10) {
+				GameObject table = instances.get(0);
+				GameObject ball = instances.get(1);
 				Vector3 inertia = ball.body.getLinearVelocity().scl(-1);
-				Vector3 normal = BluetoothServer.accelerometer;
+				Vector3 normal = BluetoothServer.accelerometer.nor();
 				Vector3 reaction = normal.scl(2*normal.dot(inertia)).sub(inertia).scl(0.2f);
-				reaction.z = Math.abs(reaction.z);
+				reaction.z = Math.abs(reaction.z)*10 + 1;
+				ball.bounced = false;
+				ball.hitted = true;
+				ball.lastPlayer = Tools.onPlayerSide(table, ball) ? 1:2;
+				ball.body.applyCentralImpulse(reaction);
 				System.out.println(reaction);
-				if (TimeUtils.timeSinceNanos(time) > waitTime) {
-					//System.out.println("[" + BluetoothServer.accelerometer.x + ", " + BluetoothServer.accelerometer.y + ", " + BluetoothServer.accelerometer.z + ": " + Tools.moduleVector(BluetoothServer.accelerometer) + "]");
-					ball.bounced = false;
-					ball.lastPlayer = Utils.onPlayerSide(table, ball) ? 1:2;
-					ball.body.applyCentralForce(reaction);
-					time = TimeUtils.nanoTime();
-					
-				}
-			}
-			
-			
-			
 		}
 		
 		if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)){
-			hit();
+			hit(50);
+		}
+		
+		if (Gdx.input.isKeyJustPressed(Input.Keys.E)){
+			SpaceTennis3D.goTo(new MainMenuScreen());
 		}
 
 		if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)
@@ -784,6 +793,6 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		modelBatch.dispose();
 		
 		debugDrawer.dispose();
-
+		assets.dispose();
 	}
 }

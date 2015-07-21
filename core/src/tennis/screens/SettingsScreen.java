@@ -1,9 +1,9 @@
 package tennis.screens;
 
 import tennis.SpaceTennis3D;
-import tennis.managers.Utils;
+import tennis.managers.Assets;
+import tennis.managers.Tools;
 
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
@@ -20,6 +20,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
 public class SettingsScreen implements Screen {
+	private Assets assets;
 
 	private Stage stage;
 
@@ -33,18 +34,18 @@ public class SettingsScreen implements Screen {
 	
 	private TextButton btnSave, btnExit;
 
-	private TextureAtlas atlas;
-
 
 	@Override
 	public void show() {
+		assets = new Assets();
+		assets.loadAll();
+		
 		stage = new Stage();
-		//stage.setDebugAll(true);
+		stage.setDebugAll(true);
 		Gdx.input.setInputProcessor(stage);
 
-		atlas = new TextureAtlas("ui/uiskin.atlas");
-		skin = new Skin(Gdx.files.internal("ui/uiskin.json"), atlas);
-
+		skin = Assets.skin;
+		
 		table = new Table(skin);
 		table.setFillParent(true);
 		
@@ -52,20 +53,20 @@ public class SettingsScreen implements Screen {
 		heading = new Label("Settings", skin);
 		
 		vSyncCheckBox = new CheckBox("vSync", skin);
-		vSyncCheckBox.setChecked(Utils.vSync());
+		vSyncCheckBox.setChecked(Tools.vSync());
 		vSyncCheckBox.addListener(new ClickListener() {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
 				// save vSync
 				Gdx.app.getPreferences(SpaceTennis3D.TITLE).putBoolean("vsync", vSyncCheckBox.isChecked());
 				// set vSync
-				Gdx.graphics.setVSync(Utils.vSync());
-				Gdx.app.log(SpaceTennis3D.TITLE, "vSync " + (Utils.vSync() ? "enabled" : "disabled"));
+				Gdx.graphics.setVSync(Tools.vSync());
+				Gdx.app.log(SpaceTennis3D.TITLE, "vSync " + (Tools.vSync() ? "enabled" : "disabled"));
 			}
 		});
 		
 		fullscreenCheckBox = new CheckBox("Full Screen", skin);
-		fullscreenCheckBox.setChecked(Utils.fullscreen());
+		fullscreenCheckBox.setChecked(Tools.fullscreen());
 		fullscreenCheckBox.addListener(new ClickListener() {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
@@ -73,33 +74,33 @@ public class SettingsScreen implements Screen {
 				Gdx.app.getPreferences(SpaceTennis3D.TITLE).putBoolean("fullscreen", fullscreenCheckBox.isChecked());
 				// Set Fullscreen
 				Gdx.graphics.setDisplayMode(SpaceTennis3D.WIDTH, SpaceTennis3D.HEIGHT, fullscreenCheckBox.isChecked());
-				Gdx.app.log(SpaceTennis3D.TITLE, "fullscreen " + (Utils.fullscreen() ? "enabled" : "disabled"));
+				Gdx.app.log(SpaceTennis3D.TITLE, "fullscreen " + (Tools.fullscreen() ? "enabled" : "disabled"));
 			}
 		});
 		
 		musicCheckBox = new CheckBox("Play Music", skin);
-		musicCheckBox.setChecked(Utils.music());
+		musicCheckBox.setChecked(Tools.music());
 		musicCheckBox.addListener(new ClickListener() {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
 				// save Music
 				Gdx.app.getPreferences(SpaceTennis3D.TITLE).putBoolean("music", musicCheckBox.isChecked());
 				// set Music
-				Gdx.graphics.setVSync(Utils.music());
-				Gdx.app.log(SpaceTennis3D.TITLE, "Music " + (Utils.music() ? "enabled" : "disabled"));
+				Gdx.graphics.setVSync(Tools.music());
+				Gdx.app.log(SpaceTennis3D.TITLE, "Music " + (Tools.music() ? "enabled" : "disabled"));
 			}
 		});
 		
 		soundCheckBox = new CheckBox("Play Sounds FX", skin);
-		soundCheckBox.setChecked(Utils.sound());
+		soundCheckBox.setChecked(Tools.sound());
 		soundCheckBox.addListener(new ClickListener() {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
 				// save Music
 				Gdx.app.getPreferences(SpaceTennis3D.TITLE).putBoolean("sound", musicCheckBox.isChecked());
 				// set Music
-				Gdx.graphics.setVSync(Utils.sound());
-				Gdx.app.log(SpaceTennis3D.TITLE, "Sound " + (Utils.sound() ? "enabled" : "disabled"));
+				Gdx.graphics.setVSync(Tools.sound());
+				Gdx.app.log(SpaceTennis3D.TITLE, "Sound " + (Tools.sound() ? "enabled" : "disabled"));
 			}
 		});
 		
@@ -127,13 +128,14 @@ public class SettingsScreen implements Screen {
 
 		btnSave = new TextButton("Save", skin);
 		btnSave.addListener(new ClickListener(){
+			@Override
 			public void clicked(InputEvent event, float x, float y){
 				
 				// CHANGE WIDTH AND HEIGHT
-				String[] parts = ((String) resolution.getSelected()).split(" x ");
+				String[] parts = resolution.getSelected().split(" x ");
 				int width = Integer.parseInt(parts[0]);
 				int height = Integer.parseInt(parts[1]);
-				Gdx.graphics.setDisplayMode(width, height, Utils.fullscreen());
+				Gdx.graphics.setDisplayMode(width, height, Tools.fullscreen());
 				
 				// Save FOV
 				Gdx.app.getPreferences(SpaceTennis3D.TITLE).putInteger("FOV", new Integer(fov.getSelected()));
@@ -146,21 +148,21 @@ public class SettingsScreen implements Screen {
 		btnExit = new TextButton("Return", skin);
 		btnExit.pad(10);
 		btnExit.addListener(new ClickListener(){
+			@Override
 			public void clicked(InputEvent event, float x, float y){
 				SpaceTennis3D.goTo(new MainMenuScreen());
 			}
 		});
 		
-		table.add(heading);
-		table.getCell(heading).spaceBottom(100);
-		//table.getCell(actor);
-		table.row();
-		table.add(fullscreenCheckBox).row();
-		table.add(vSyncCheckBox).row();
-		table.add(musicCheckBox).row();
-		table.add(soundCheckBox).row();
-		table.add(resolution).row();
-		table.add(fov).row();
+		table.add(heading).expand().spaceBottom(100).row();
+		table.add(fullscreenCheckBox).spaceBottom(5).row();
+		table.add(vSyncCheckBox).spaceBottom(5).row();
+		table.add(musicCheckBox).spaceBottom(5).row();
+		table.add(soundCheckBox).spaceBottom(5).row();
+		table.add(new Label("Resolution:", skin));
+		table.add(resolution).spaceBottom(5).row();
+		table.add(new Label("FOV:", skin));
+		table.add(fov).spaceBottom(5).row();
 		table.add(btnSave);
 		stage.addActor(table);
 		
@@ -209,8 +211,7 @@ public class SettingsScreen implements Screen {
 	@Override
 	public void dispose() {
 		stage.dispose();
-		atlas.dispose();
-		skin.dispose();
+		assets.dispose();
 	}
 
 }

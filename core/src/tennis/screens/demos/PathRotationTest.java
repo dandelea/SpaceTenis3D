@@ -3,7 +3,6 @@ package tennis.screens.demos;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.ai.steer.utils.Path;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
@@ -23,7 +22,6 @@ import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.CatmullRomSpline;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.math.*;
 
 public class PathRotationTest implements Screen {
 	PerspectiveCamera cam;
@@ -137,15 +135,18 @@ public class PathRotationTest implements Screen {
 		model.dispose();
 	}
  
+	@Override
 	public void resume () {
 	}
  
+	@Override
 	public void resize (int width, int height) {
 		cam.viewportWidth = width;
 		cam.viewportHeight = height;
 		cam.update();
 	}
  
+	@Override
 	public void pause () {
 	}
 

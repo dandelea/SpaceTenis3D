@@ -8,6 +8,7 @@ public class SpriteAccessor implements TweenAccessor<Sprite> {
 	//Initial ALPHA value : DEACTIVATED
 	public static final int ALPHA = 0;
 
+	@Override
 	public int getValues(Sprite target, int tweenType, float[] returnValues) {
 		switch (tweenType) {
 		case ALPHA:
@@ -21,6 +22,7 @@ public class SpriteAccessor implements TweenAccessor<Sprite> {
 		}
 	}
 
+	@Override
 	public void setValues(Sprite target, int tweenType, float[] newValues) {
 		switch (tweenType) {
 		case ALPHA:

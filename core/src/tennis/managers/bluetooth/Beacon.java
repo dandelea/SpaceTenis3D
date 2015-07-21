@@ -52,6 +52,7 @@ public class Beacon {
 	}
 
 	
+	@Override
 	public String toString() {
 		String res = null;
 		if (beaconType.equals(BeaconType.ACCELEROMETER)) {

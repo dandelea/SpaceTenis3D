@@ -30,6 +30,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.physics.bullet.Bullet;
 import com.badlogic.gdx.physics.bullet.collision.Collision;
+import com.badlogic.gdx.physics.bullet.collision.CollisionConstants;
 import com.badlogic.gdx.physics.bullet.collision.ContactListener;
 import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
 import com.badlogic.gdx.physics.bullet.collision.btBroadphaseInterface;
@@ -312,7 +313,7 @@ public class GameScreen implements Screen {
 		dynamicsWorld.addRigidBody(tableObj.body);
 		tableObj.body.setContactCallbackFlag(GROUND_FLAG);
 		tableObj.body.setContactCallbackFilter(0);
-		tableObj.body.setActivationState(Collision.DISABLE_DEACTIVATION);
+		tableObj.body.setActivationState(CollisionConstants.DISABLE_DEACTIVATION);
 		instances.add(tableObj);
 
 		ballObj.transform.setFromEulerAngles(MathUtils.random(360f),

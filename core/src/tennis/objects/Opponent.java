@@ -4,25 +4,29 @@ import com.badlogic.gdx.math.Vector3;
 
 public class Opponent {
 	private Vector3 lastHit;
-	private float velocity;
+	private int velocity;
+	private float hitRate;
 	private Difficulty difficulty;
 	
 	public Opponent(Difficulty difficulty){
 		lastHit = new Vector3();
 		switch (difficulty){
 		case EASY:
-			velocity = 1;
+			hitRate = 0.3f;
+			velocity = 60;
 			break;
 		case MEDIUM:
-			velocity = 2;
+			hitRate = 0.6f;
+			velocity = 60;
 			break;
 		case HARD:
-			velocity = 3;
+			hitRate = 0.9f;
+			velocity = 90;
 			break;
 		}
 	}
 
-	public Opponent(Vector3 lastHit, float velocity, Difficulty difficulty) {
+	public Opponent(Vector3 lastHit, int velocity, Difficulty difficulty) {
 		super();
 		this.lastHit = lastHit;
 		this.velocity = velocity;
@@ -37,11 +41,19 @@ public class Opponent {
 		this.lastHit = lastHit;
 	}
 
-	public float getVelocity() {
+	public float getHitRate() {
+		return hitRate;
+	}
+
+	public void setHitRate(float hitRate) {
+		this.hitRate = hitRate;
+	}
+
+	public int getVelocity() {
 		return velocity;
 	}
 
-	public void setVelocity(float velocity) {
+	public void setVelocity(int velocity) {
 		this.velocity = velocity;
 	}
 
@@ -52,6 +64,7 @@ public class Opponent {
 	public void setDifficulty(Difficulty difficulty) {
 		this.difficulty = difficulty;
 	}
+	
 
 	@Override
 	public String toString() {

@@ -1,10 +1,7 @@
 package tennis.screens;
 
-import java.io.IOException;
-
 import tennis.SpaceTennis3D;
 import tennis.managers.Assets;
-import tennis.managers.bluetooth.BluetoothServer;
 import tennis.screens.demos.PathRotationTest;
 import tennis.screens.scenes3d.GameScreen3;
 import tennis.tween.ActorAccessor;
@@ -57,16 +54,14 @@ public class MainMenuScreen implements Screen {
 		// stage.setDebugAll(true);
 		Gdx.input.setInputProcessor(stage);
 
-		// btnPack = new TextureAtlas("ui/button.pack");
 		skin = Assets.skin;
-
-		// skin.addRegions(btnPack);
 
 		table = new Table(skin);
 		table.setBounds(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
 		btnStart = new TextButton("Start", skin);
 		btnStart.addListener(new ClickListener() {
+			@Override
 			public void clicked(InputEvent event, float x, float y) {
 				SpaceTennis3D.goTo(new GameScreen3());
 			}
@@ -74,6 +69,7 @@ public class MainMenuScreen implements Screen {
 		btnStart.pad(20);
 		btnDemo = new TextButton("Demo", skin);
 		btnDemo.addListener(new ClickListener() {
+			@Override
 			public void clicked(InputEvent event, float x, float y) {
 				SpaceTennis3D.goTo(new PathRotationTest());
 			}
@@ -81,6 +77,7 @@ public class MainMenuScreen implements Screen {
 		btnDemo.pad(20);
 		btnOptions = new TextButton("Options", skin);
 		btnOptions.addListener(new ClickListener() {
+			@Override
 			public void clicked(InputEvent event, float x, float y) {
 				SpaceTennis3D.goTo(new SettingsScreen());
 			}
@@ -91,6 +88,7 @@ public class MainMenuScreen implements Screen {
 		btnExit = new TextButton("Exit", skin);
 		btnExit.addListener(new ClickListener() {
 
+			@Override
 			public void clicked(InputEvent event, float x, float y) {
 				exitFadeOut();
 			}
@@ -222,7 +220,7 @@ public class MainMenuScreen implements Screen {
 	@Override
 	public void dispose() {
 		stage.dispose();
-		skin.dispose();
+		assets.dispose();
 	}
 
 }
