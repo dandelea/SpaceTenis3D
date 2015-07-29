@@ -14,6 +14,7 @@ public class Scoreboard {
 		score1 = score2 = 0;
 		set = 1;
 		isAdvantaged1 = isAdvantaged2 = finished = false;
+		sets = new int[MAX_SETS];
 	}
 
 	public Scoreboard(int score1, int score2, int set, boolean isAdvantaged1,

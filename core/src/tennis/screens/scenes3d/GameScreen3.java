@@ -1,22 +1,23 @@
 package tennis.screens.scenes3d;
 
-import java.util.Random;
-
 import tennis.SpaceTennis3D;
 import tennis.managers.Assets;
+import tennis.managers.PFXPool;
 import tennis.managers.Tools;
 import tennis.managers.bluetooth.BluetoothServer;
 import tennis.objects.Difficulty;
 import tennis.objects.Opponent;
 import tennis.objects.Scoreboard;
 import tennis.references.Models;
+import tennis.screens.GameOverScreen;
 import tennis.screens.MainMenuScreen;
-import tennis.screens.ScoreScreen;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
@@ -30,15 +31,19 @@ import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
+import com.badlogic.gdx.graphics.g3d.particles.ParticleEffect;
+import com.badlogic.gdx.graphics.g3d.particles.ParticleEffectLoader;
+import com.badlogic.gdx.graphics.g3d.particles.ParticleSystem;
+import com.badlogic.gdx.graphics.g3d.particles.batches.BillboardParticleBatch;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.physics.bullet.Bullet;
 import com.badlogic.gdx.physics.bullet.DebugDrawer;
-import com.badlogic.gdx.physics.bullet.collision.Collision;
 import com.badlogic.gdx.physics.bullet.collision.CollisionConstants;
 import com.badlogic.gdx.physics.bullet.collision.ContactListener;
 import com.badlogic.gdx.physics.bullet.collision.btBroadphaseInterface;
@@ -243,18 +248,15 @@ public class GameScreen3 extends InputAdapter implements Screen {
 
 	// MODELS
 	private Assets assets;
-	private ModelBuilder modelBuilder;
 	private Model ball;
 	private Model table;
 	private ModelInstance ambient;
 
 	// POSITIONS
-	// private Vector3 camPosition = new Vector3(2, 2, 0);
 	private Vector3 camPosition = new Vector3(0, 2, -2);
 	private Vector3 camDirection = new Vector3();
 	private float tableBouncingFactor = 1.05f;
 	private Vector3 tablePosition = new Vector3(0, 1, 0);
-	private Vector3 ballScale = new Vector3(0.05f, 0.05f, 0.05f);
 	private Vector3 ballPosition = new Vector3(-0.5f, .5f, -1);
 	private float gravity = -2;
 
@@ -274,17 +276,17 @@ public class GameScreen3 extends InputAdapter implements Screen {
 	// COLLISIONS INSTANCES
 	private Array<GameObject> instances;
 	private ArrayMap<String, GameObject.Constructor> constructors;
-
 	private btCollisionShape tableShape;
-	private btCollisionShape gridShape;
+	
+	// PARTICLES
+	private AssetManager particleManager;
+	private BillboardParticleBatch particleBatch;
+	private ParticleSystem particleSystem;
+	private ParticleEffect originalEffect;
+	private PFXPool particles;
 
+	// DEBUG
 	private DebugDrawer debugDrawer;
-
-	float spawnTimer = 1f;
-
-	// SELECTION
-	private int selected, selecting = -1;
-	private Vector3 touchPoint;
 
 	// GAME STATES
 	public static final int GAME_READY = 0;
@@ -310,9 +312,30 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		Bullet.init();
 
 		assets = new Assets();
-		assets.loadAll();
-		modelBuilder = new ModelBuilder();
-
+		assets.loadScreen(Assets.GAME_SCREEN);
+		
+		// PARTICLES
+		particleSystem = ParticleSystem.get();
+		particleManager = new AssetManager();
+		particleBatch = new BillboardParticleBatch();
+		particleBatch.setCamera(cam);
+		particleSystem.add(particleBatch);
+		
+		ParticleEffectLoader.ParticleEffectLoadParameter loadParam = new ParticleEffectLoader.ParticleEffectLoadParameter(particleSystem.getBatches());
+		ParticleEffectLoader loader = new ParticleEffectLoader(new InternalFileHandleResolver());
+		particleManager.setLoader(ParticleEffect.class, loader);
+		particleManager.load("particles/enemy_hit.pfx", ParticleEffect.class, loadParam);
+		particleManager.finishLoading();
+		
+		originalEffect = particleManager.get("particles/enemy_hit.pfx");
+		// we cannot use the originalEffect, we must make a copy each time we create new particle effect
+		particles = new PFXPool(originalEffect);
+		
+		ParticleEffect particleEffect = particles.obtain();
+		particleEffect.init();
+		particleEffect.start();
+		particleSystem.add(particleEffect);
+		
 		// UI
 		stage = new Stage();
 		stage.setDebugAll(true);
@@ -394,7 +417,10 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		loading = true;
 	}
 
+	@SuppressWarnings("deprecation")
 	private void doneLoading() {
+		
+		
 
 		// AMBIENT
 		ambient = new ModelInstance(assets.get(Models.MODEL_AMBIENT,
@@ -487,7 +513,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 			break;
 		case GAME_OVER:
 			SpaceTennis3D.lastScoreboard = scoreBoard;
-			SpaceTennis3D.goTo(new ScoreScreen());
+			SpaceTennis3D.goTo(new GameOverScreen());
 			break;
 		}
 
@@ -496,7 +522,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 	private void updateGame() {
 		GameObject table = instances.get(0);
 		GameObject ball = instances.get(1);
-
+		
 		modelBatch.begin(cam);
 
 		// AMBIENT
@@ -520,16 +546,21 @@ public class GameScreen3 extends InputAdapter implements Screen {
 			}
 		}
 		modelBatch.end();
+		
+		
+		modelBatch.begin(cam);
+		renderParticleEffects();
+		modelBatch.end();
+		
 
-		// debugDrawer.begin(cam);
-		// dynamicsWorld.debugDrawWorld();
-		// debugDrawer.end();
+		/*debugDrawer.begin(cam);
+		dynamicsWorld.debugDrawWorld();
+		debugDrawer.end();*/
 
 		// UI
 		stringBuilder.setLength(0);
 		stringBuilder.append(" FPS: ")
 				.append(Gdx.graphics.getFramesPerSecond());
-		stringBuilder.append(" Selected: ").append(selected);
 		stringBuilder.append(" Set: ").append(scoreBoard.getSet());
 		if (scoreBoard.isDeuce()) {
 			if (scoreBoard.isAdvantaged1()) {
@@ -604,20 +635,15 @@ public class GameScreen3 extends InputAdapter implements Screen {
 			state = GAME_RUNNING;
 		}
 	}
-
-	public int getObject(int screenX, int screenY) {
-		Ray ray = cam.getPickRay(screenX, screenY);
-		int result = -1;
-		float distance = -1;
-		for (int i = 0; i < instances.size; ++i) {
-			final float dist2 = instances.get(i).intersects(ray);
-			if (dist2 >= 0f && (distance < 0f || dist2 <= distance)) {
-				result = i;
-				distance = dist2;
-			}
-		}
-		selected = result;
-		return result;
+	
+	private void renderParticleEffects(){
+		particleSystem.update();
+		particleBatch.setCamera(cam);
+	    particleSystem.begin();
+	    particleSystem.draw();
+	    particleSystem.end();
+	    modelBatch.render(particleSystem);
+	    
 	}
 
 	/**
@@ -699,13 +725,14 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		ball.hitted = Tools.onPlayerSide(table, ball);
 		ball.lastPlayer = Tools.onPlayerSide(table, ball) ? 1 : 2;
 		if (ball.lastPlayer == 1) {
-			Random random = new Random();
-			if (random.nextFloat() < opponent.getHitRate()) {
+			if (MathUtils.random(1) < opponent.getHitRate()) {
 				opponentWillHit = true;
 			} else {
 				opponentWillHit = false;
 			}
 		}
+		
+		
 		moveTo(ball, new Vector3(0, 0, 0), intensity);
 	}
 
@@ -713,6 +740,8 @@ public class GameScreen3 extends InputAdapter implements Screen {
 
 	public void handleInput() {
 		// STARTED TO SWING
+		
+		//Log.debug(BluetoothServer.accelerometer.toString());
 
 		if (Tools.allObjectsLoaded(instances)
 				&& Tools.onPlayerHittable(instances.get(0), instances.get(1))
@@ -752,48 +781,24 @@ public class GameScreen3 extends InputAdapter implements Screen {
 	}
 
 	@Override
-	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-		selecting = getObject(screenX, screenY);
-		return selecting >= 0;
-	}
-
-	@Override
-	public boolean touchDragged(int screenX, int screenY, int pointer) {
-		return selecting >= 0;
-	}
-
-	@Override
-	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-		if (selecting >= 0) {
-			if (selecting == getObject(screenX, screenY))
-				// setSelected(selecting);
-				selecting = -1;
-			return true;
-		}
-		return false;
-	}
-
-	@Override
 	public void resize(int width, int height) {
-
+		
 	}
 
 	@Override
 	public void pause() {
-		// TODO Auto-generated method stub
+		
 
 	}
 
 	@Override
 	public void resume() {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public void hide() {
-		// TODO Auto-generated method stub
-
+		
 	}
 
 	@Override
@@ -816,5 +821,6 @@ public class GameScreen3 extends InputAdapter implements Screen {
 
 		debugDrawer.dispose();
 		assets.dispose();
+		particles.clear();
 	}
 }

@@ -657,7 +657,7 @@
 			"textures": [
 				{
 					"id": "lambert2SG", 
-					"filename": "ambient1.jpg", 
+					"filename": "ambient5.jpg", 
 					"type": "DIFFUSE"
 				}
 			]

@@ -1,14 +1,20 @@
 package tennis.managers;
 
+import tennis.references.Models;
+
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g3d.Model;
+import com.badlogic.gdx.graphics.g3d.particles.ParticleEffect;
+import com.badlogic.gdx.graphics.g3d.particles.ParticleEffectLoader;
+import com.badlogic.gdx.graphics.g3d.particles.ParticleSystem;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
-
-import tennis.references.Models;
 
 public class Assets implements Disposable {
 	public static final int MAIN_MENU_SCREEN = 1;
@@ -16,9 +22,11 @@ public class Assets implements Disposable {
 	public static final int SPLASH_SCREEN_US = 3;
 	public static final int SETTINGS_SCREEN = 4;
 	public static final int GAME_SCREEN = 5;
+	public static final int GAME_OVER_SCREEN = 6;
+	public static final int RULES_SCREEN = 7;
 	public Array<String> models;
-	public static TextureAtlas atlas;
 	public static Skin skin;
+	public static FreeTypeFontGenerator titleGenerator;
 	public AssetManager assetManager;
 
 	public Assets() {
@@ -27,18 +35,11 @@ public class Assets implements Disposable {
 	}
 
 	public void loadAll() {
-		for (String model : models) {
-			assetManager.load(model, Model.class);
-		}
+		loadModels();
 
-		assetManager.load("ui/uiskin.atlas", TextureAtlas.class);
+		loadSkin();
 
-		assetManager.load("ui/uiskin.json", Skin.class);
-		assetManager.finishLoading();
-
-		atlas = assetManager.get("ui/uiskin.atlas");
-		skin = assetManager.get("ui/uiskin.json");
-		Log.info("Finished loading assets");
+		finish();
 	}
 
 	public void loadScreen(int screen) {
@@ -59,51 +60,59 @@ public class Assets implements Disposable {
 			loadSkin();
 			loadModels();
 			break;
+		case GAME_OVER_SCREEN:
+			loadSkin();
+			break;
+		case RULES_SCREEN:
+			loadSkin();
+			break;
 		}
 		finish();
-		Log.info("Finished loading assets");
 	}
-	
+
 	/**
 	 * Only loads models located in assets folder.
 	 */
-	private void loadModels(){
+	private void loadModels() {
 		for (String model : models) {
 			assetManager.load(model, Model.class);
 		}
+		
 	}
-	
+
 	/**
 	 * Only loads skin located in assets folder.
 	 */
-	private void loadSkin(){
-		assetManager.load("ui/uiskin.atlas", TextureAtlas.class);
-		assetManager.load("ui/uiskin.json", Skin.class);
-
-		atlas = assetManager.get("ui/uiskin.atlas");
-		skin = assetManager.get("ui/uiskin.json");
+	private void loadSkin() {
+		skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
+		titleGenerator = new FreeTypeFontGenerator(
+				Gdx.files.internal("fonts/space_age.ttf"));
 	}
-	
+
 	/**
 	 * Only loads textures located in assets folder.
 	 */
-	private void loadTextures(){
+	private void loadTextures() {
 		assetManager.load("img/splash_screen/developer.png", Texture.class);
 		assetManager.load("img/splash_screen/us.png", Texture.class);
 	}
 
 	/**
 	 * Get a previously loaded object with {@link Assets}
-	 * @param direction Related URI of resource in assets folder
-	 * @param type Class of object loaded
+	 * 
+	 * @param direction
+	 *            Related URI of resource in assets folder
+	 * @param type
+	 *            Class of object loaded
 	 * @return Object loaded
 	 */
 	public <T> T get(String direction, Class<T> type) {
 		return assetManager.get(direction, type);
 	}
-	
-	private void finish(){
+
+	private void finish() {
 		assetManager.finishLoading();
+		Log.info("Finished loading assets");
 	}
 
 	/**
@@ -113,7 +122,7 @@ public class Assets implements Disposable {
 		assetManager.dispose();
 		if (skin != null)
 			skin.dispose();
-		if (atlas != null)
-			atlas.dispose();
+		if (titleGenerator != null)
+			titleGenerator.dispose();
 	}
 }

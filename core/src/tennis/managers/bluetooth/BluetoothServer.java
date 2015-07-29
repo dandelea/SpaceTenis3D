@@ -13,7 +13,7 @@ import javax.microedition.io.StreamConnectionNotifier;
 import com.badlogic.gdx.math.Vector3;
 
 public class BluetoothServer implements Runnable {
-	static final String deviceUUID = "8ce255c0200a11e0ac640800200c9a66";
+	static final String deviceUUID = "0000110100001000800000805F9B34FB";
 	public static Vector3 accelerometer;
 	static StreamConnectionNotifier server;
 
@@ -48,7 +48,7 @@ public class BluetoothServer implements Runnable {
 				accelerometer.y = dis.readFloat();
 				accelerometer.z = dis.readFloat();
 				
-				//System.out.println(accelerometer);
+				System.out.println(accelerometer);
 			} catch (EOFException e) {
 				break;
 			}

@@ -48,10 +48,10 @@ public class MainMenuScreen implements Screen {
 	public void show() {
 
 		assets = new Assets();
-		assets.loadAll();
+		assets.loadScreen(Assets.MAIN_MENU_SCREEN);
 
 		stage = new Stage();
-		// stage.setDebugAll(true);
+		stage.setDebugAll(true);
 		Gdx.input.setInputProcessor(stage);
 
 		skin = Assets.skin;
@@ -84,6 +84,12 @@ public class MainMenuScreen implements Screen {
 		});
 		btnOptions.pad(20);
 		btnRules = new TextButton("Rules", skin);
+		btnRules.addListener(new ClickListener() {
+			@Override
+			public void clicked(InputEvent event, float x, float y) {
+				SpaceTennis3D.goTo(new RulesScreen());
+			}
+		});
 		btnRules.pad(20);
 		btnExit = new TextButton("Exit", skin);
 		btnExit.addListener(new ClickListener() {
@@ -97,25 +103,18 @@ public class MainMenuScreen implements Screen {
 		btnExit.pad(15);
 
 		// Creating heading
-		FreeTypeFontGenerator gen = new FreeTypeFontGenerator(
-				Gdx.files.internal("fonts/space age.ttf"));
-		titleFont = gen.generateFont(56);
+		titleFont = Assets.titleGenerator.generateFont(50);
 
 		heading = new Label(SpaceTennis3D.TITLE, skin);
 		heading.setStyle(new LabelStyle(titleFont, Color.WHITE));
 
 		table.add(heading);
-		table.getCell(heading).spaceBottom(100);
-		table.row();
-		table.add(btnStart);
-		table.row();
-		table.add(btnDemo);
-		table.row();
-		table.add(btnOptions);
-		table.row();
-		table.add(btnRules);
-		table.row();
-		table.add(btnExit);
+		table.getCell(heading).spaceBottom(100).row();
+		table.add(btnStart).spaceBottom(0.05f * SpaceTennis3D.HEIGHT).row();
+		//table.add(btnDemo).spaceBottom(0.05f * SpaceTennis3D.HEIGHT).row();
+		table.add(btnOptions).spaceBottom(0.05f * SpaceTennis3D.HEIGHT).row();
+		table.add(btnRules).spaceBottom(0.05f * SpaceTennis3D.HEIGHT).row();
+		table.add(btnExit).spaceBottom(0.05f * SpaceTennis3D.HEIGHT).row();
 		stage.addActor(table);
 
 		// Creating animations
@@ -127,13 +126,13 @@ public class MainMenuScreen implements Screen {
 		// Heading color animation
 		Timeline.createSequence()
 				.beginSequence()
-				.push(Tween.to(heading, ActorAccessor.RGB, .5f).target(0, 0, 1))
-				.push(Tween.to(heading, ActorAccessor.RGB, .5f).target(0, 1, 0))
-				.push(Tween.to(heading, ActorAccessor.RGB, .5f).target(1, 0, 0))
-				.push(Tween.to(heading, ActorAccessor.RGB, .5f).target(1, 1, 0))
-				.push(Tween.to(heading, ActorAccessor.RGB, .5f).target(0, 1, 1))
-				.push(Tween.to(heading, ActorAccessor.RGB, .5f).target(1, 0, 1))
-				.push(Tween.to(heading, ActorAccessor.RGB, .5f).target(1, 1, 1))
+				.push(Tween.to(heading, ActorAccessor.RGB, .4f).target(0, 0, 1))
+				.push(Tween.to(heading, ActorAccessor.RGB, .4f).target(0, 1, 0))
+				.push(Tween.to(heading, ActorAccessor.RGB, .4f).target(1, 0, 0))
+				.push(Tween.to(heading, ActorAccessor.RGB, .4f).target(1, 1, 0))
+				.push(Tween.to(heading, ActorAccessor.RGB, .4f).target(0, 1, 1))
+				.push(Tween.to(heading, ActorAccessor.RGB, .4f).target(1, 0, 1))
+				.push(Tween.to(heading, ActorAccessor.RGB, .4f).target(1, 1, 1))
 				.end().repeat(Tween.INFINITY, 0).start(tweenManager);
 
 		// Heading and buttons fade-in
@@ -197,7 +196,8 @@ public class MainMenuScreen implements Screen {
 
 	@Override
 	public void resize(int width, int height) {
-
+		stage.getViewport().update(width, height, true);
+		table.invalidateHierarchy();
 	}
 
 	@Override

@@ -26,7 +26,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
-public class ScoreScreen implements Screen {
+public class GameOverScreen implements Screen {
 	private Scoreboard scoreBoard;
 	
 	private Stage stage;
@@ -46,12 +46,12 @@ public class ScoreScreen implements Screen {
 	@Override
 	public void show() {
 		assets = new Assets();
-		assets.loadAll();
+		assets.loadScreen(Assets.GAME_OVER_SCREEN);
 		
 		scoreBoard = SpaceTennis3D.lastScoreboard;
 
 		stage = new Stage();
-		// stage.setDebugAll(true);
+		stage.setDebugAll(true);
 		Gdx.input.setInputProcessor(stage);
 
 		skin = Assets.skin;
@@ -89,18 +89,13 @@ public class ScoreScreen implements Screen {
 		btnExit.pad(15);
 
 		// Creating heading
-		FreeTypeFontGenerator gen = new FreeTypeFontGenerator(
-				Gdx.files.internal("fonts/space age.ttf"));
-		titleFont = gen.generateFont(56);
+		titleFont = Assets.titleGenerator.generateFont(50);
 
 		heading = new Label(headingText, skin);
 		heading.setStyle(new LabelStyle(titleFont, Color.WHITE));
 
-		table.add(heading);
-		table.getCell(heading).spaceBottom(100);
-		table.row();
-		table.add(btnPlay);
-		table.row();
+		table.add(heading).spaceBottom(100).row();
+		table.add(btnPlay).spaceBottom(0.05f * SpaceTennis3D.HEIGHT).row();
 		table.add(btnExit);
 		stage.addActor(table);
 

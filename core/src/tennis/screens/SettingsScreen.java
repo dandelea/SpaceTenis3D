@@ -3,11 +3,14 @@ package tennis.screens;
 import tennis.SpaceTennis3D;
 import tennis.managers.Assets;
 import tennis.managers.Tools;
+import tennis.references.Models;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -17,6 +20,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.SelectBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
 public class SettingsScreen implements Screen {
@@ -28,9 +32,10 @@ public class SettingsScreen implements Screen {
 	private Table table;
 	private Label heading;
 	
+	private BitmapFont titleFont;
+	
 	private CheckBox vSyncCheckBox, fullscreenCheckBox, musicCheckBox, soundCheckBox;
-	private SelectBox<String> resolution;
-	private SelectBox<String> fov;
+	private SelectBox<String> resolution, fov, ambient;
 	
 	private TextButton btnSave, btnExit;
 
@@ -38,7 +43,7 @@ public class SettingsScreen implements Screen {
 	@Override
 	public void show() {
 		assets = new Assets();
-		assets.loadAll();
+		assets.loadScreen(Assets.SETTINGS_SCREEN);
 		
 		stage = new Stage();
 		stage.setDebugAll(true);
@@ -50,7 +55,10 @@ public class SettingsScreen implements Screen {
 		table.setFillParent(true);
 		
 		// Creating heading
+		titleFont = new BitmapFont();
+		titleFont.setScale(2);
 		heading = new Label("Settings", skin);
+		heading.setStyle(new LabelStyle(titleFont, Tools.randomColor()));;
 		
 		vSyncCheckBox = new CheckBox("vSync", skin);
 		vSyncCheckBox.setChecked(Tools.vSync());
@@ -125,6 +133,16 @@ public class SettingsScreen implements Screen {
 		fovs[4] = "90";
 		fovs[5] = "100";
 		fov.setItems(fovs);
+		
+		// AMBIENT
+		ambient = new SelectBox<String>(skin);
+		String[] ambients = new String[5];
+		ambients[0] = "Clean";
+		ambients[1] = "Office";
+		ambients[2] = "Park";
+		ambients[3] = "Space 1";
+		ambients[4] = "Space 2";
+		ambient.setItems(ambients);
 
 		btnSave = new TextButton("Save", skin);
 		btnSave.addListener(new ClickListener(){
@@ -141,6 +159,9 @@ public class SettingsScreen implements Screen {
 				Gdx.app.getPreferences(SpaceTennis3D.TITLE).putInteger("FOV", new Integer(fov.getSelected()));
 				Gdx.app.log(SpaceTennis3D.TITLE, "FOV changed to " + fov.getSelected());
 				
+				// Save ambient
+				Models.setAmbient(ambient.getSelected());
+				
 				SpaceTennis3D.goTo(new SettingsScreen());
 			}
 		});
@@ -154,15 +175,17 @@ public class SettingsScreen implements Screen {
 			}
 		});
 		
-		table.add(heading).expand().spaceBottom(100).row();
-		table.add(fullscreenCheckBox).spaceBottom(5).row();
-		table.add(vSyncCheckBox).spaceBottom(5).row();
-		table.add(musicCheckBox).spaceBottom(5).row();
-		table.add(soundCheckBox).spaceBottom(5).row();
+		table.add(heading).spaceBottom(0.1f * SpaceTennis3D.HEIGHT).row();
+		table.add(fullscreenCheckBox).spaceBottom(0.05f * SpaceTennis3D.HEIGHT).row();
+		table.add(vSyncCheckBox).spaceBottom(0.05f * SpaceTennis3D.HEIGHT).row();
+		table.add(musicCheckBox).spaceBottom(0.05f * SpaceTennis3D.HEIGHT).row();
+		table.add(soundCheckBox).spaceBottom(0.05f * SpaceTennis3D.HEIGHT).row();
 		table.add(new Label("Resolution:", skin));
-		table.add(resolution).spaceBottom(5).row();
+		table.add(resolution).spaceBottom(0.05f * SpaceTennis3D.HEIGHT).row();
 		table.add(new Label("FOV:", skin));
-		table.add(fov).spaceBottom(5).row();
+		table.add(fov).spaceBottom(0.05f * SpaceTennis3D.HEIGHT).row();
+		table.add(new Label("Game background:", skin));
+		table.add(ambient).spaceBottom(0.05f * SpaceTennis3D.HEIGHT).row();
 		table.add(btnSave);
 		stage.addActor(table);
 		
