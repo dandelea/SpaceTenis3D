@@ -4,14 +4,9 @@ import tennis.references.Models;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g3d.Model;
-import com.badlogic.gdx.graphics.g3d.particles.ParticleEffect;
-import com.badlogic.gdx.graphics.g3d.particles.ParticleEffectLoader;
-import com.badlogic.gdx.graphics.g3d.particles.ParticleSystem;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
@@ -30,11 +25,16 @@ public class Assets implements Disposable {
 	public static final String URL_FONT1 = "fonts/space_age.ttf";
 	public static final String URL_FONT2 = "fonts/Montserrat-Regular.ttf";
 	public static final String URL_FONT3 = "fonts/Montserrat-Bold.ttf";
+	public static final String URL_SPLASH_DEV = "img/splash_screen/developer.png";
+	public static final String URL_SPLASH_US = "img/splash_screen/us.png";
+	public static final String URL_RULES_IMAGE1 = "img/rules/image01.png";
+	public static final String URL_RULES_IMAGE2 = "img/rules/image02.png";
 	
 	
 	public Array<String> models;
 	public static Skin skin;
 	public static FreeTypeFontGenerator titleGenerator;
+	public static FreeTypeFontGenerator fontGenerator;
 	public AssetManager assetManager;
 
 	public Assets() {
@@ -56,17 +56,16 @@ public class Assets implements Disposable {
 			loadSkin();
 			break;
 		case SPLASH_SCREEN_DEVELOPER:
-			loadTextures();
+			loadSplash();
 			break;
 		case SPLASH_SCREEN_US:
-			loadTextures();
+			loadSplash();
 			break;
 		case SETTINGS_SCREEN:
 			loadSkin();
 			break;
 		case GAME_SCREEN:
 			loadSkin();
-			loadTextures();
 			loadModels();
 			break;
 		case GAME_OVER_SCREEN:
@@ -74,6 +73,7 @@ public class Assets implements Disposable {
 			break;
 		case RULES_SCREEN:
 			loadSkin();
+			loadRulesImages();
 			break;
 		}
 		finish();
@@ -93,17 +93,23 @@ public class Assets implements Disposable {
 	 * Only loads skin located in assets folder.
 	 */
 	private void loadSkin() {
-		skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
+		skin = new Skin(Gdx.files.internal(URL_SKIN));
 		titleGenerator = new FreeTypeFontGenerator(
-				Gdx.files.internal("fonts/space_age.ttf"));
+				Gdx.files.internal(URL_FONT1));
+		fontGenerator = new FreeTypeFontGenerator(Gdx.files.internal(URL_FONT2));
 	}
 
 	/**
-	 * Only loads textures located in assets folder.
+	 * Only loads splash images located in assets folder.
 	 */
-	private void loadTextures() {
-		assetManager.load("img/splash_screen/developer.png", Texture.class);
-		assetManager.load("img/splash_screen/us.png", Texture.class);
+	private void loadSplash() {
+		assetManager.load(URL_SPLASH_DEV, Texture.class);
+		assetManager.load(URL_SPLASH_US, Texture.class);
+	}
+	
+	private void loadRulesImages(){
+		assetManager.load(URL_RULES_IMAGE1, Texture.class);
+		assetManager.load(URL_RULES_IMAGE2, Texture.class);
 	}
 
 	/**
@@ -133,5 +139,7 @@ public class Assets implements Disposable {
 			skin.dispose();
 		if (titleGenerator != null)
 			titleGenerator.dispose();
+		if (fontGenerator != null)
+			fontGenerator.dispose();
 	}
 }
