@@ -2,9 +2,12 @@ package tennis.screens.scenes3d;
 
 import tennis.SpaceTennis3D;
 import tennis.managers.Assets;
-import tennis.managers.PFXPool;
 import tennis.managers.Tools;
 import tennis.managers.bluetooth.BluetoothServer;
+import tennis.managers.physics.Constructor;
+import tennis.managers.physics.Flags;
+import tennis.managers.physics.GameObject;
+import tennis.managers.physics.ParticleController;
 import tennis.objects.Difficulty;
 import tennis.objects.Opponent;
 import tennis.objects.Scoreboard;
@@ -14,11 +17,7 @@ import tennis.screens.MainMenuScreen;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
-import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
@@ -31,17 +30,11 @@ import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
-import com.badlogic.gdx.graphics.g3d.particles.ParticleEffect;
-import com.badlogic.gdx.graphics.g3d.particles.ParticleEffectLoader;
-import com.badlogic.gdx.graphics.g3d.particles.ParticleSystem;
-import com.badlogic.gdx.graphics.g3d.particles.batches.BillboardParticleBatch;
 import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
-import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.physics.bullet.Bullet;
 import com.badlogic.gdx.physics.bullet.DebugDrawer;
 import com.badlogic.gdx.physics.bullet.collision.CollisionConstants;
@@ -58,10 +51,8 @@ import com.badlogic.gdx.physics.bullet.collision.btSphereShape;
 import com.badlogic.gdx.physics.bullet.dynamics.btConstraintSolver;
 import com.badlogic.gdx.physics.bullet.dynamics.btDiscreteDynamicsWorld;
 import com.badlogic.gdx.physics.bullet.dynamics.btDynamicsWorld;
-import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.physics.bullet.dynamics.btSequentialImpulseConstraintSolver;
 import com.badlogic.gdx.physics.bullet.linearmath.btIDebugDraw;
-import com.badlogic.gdx.physics.bullet.linearmath.btMotionState;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -70,10 +61,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ArrayMap;
-import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.TimeUtils;
 
-public class GameScreen3 extends InputAdapter implements Screen {
+public class GameScreen3 implements Screen {
 
 	class MyContactListener extends ContactListener {
 
@@ -115,122 +105,6 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		}
 	}
 
-	static class MyMotionState extends btMotionState {
-		Matrix4 transform;
-
-		@Override
-		public void getWorldTransform(Matrix4 worldTrans) {
-			worldTrans.set(transform);
-		}
-
-		@Override
-		public void setWorldTransform(Matrix4 worldTrans) {
-			transform.set(worldTrans);
-		}
-	}
-
-	public static class GameObject extends ModelInstance implements Disposable {
-		
-		// PHYSICS
-		public final Vector3 center = new Vector3();
-		public final Vector3 dimensions = new Vector3();
-		public final float radius;
-		private final static BoundingBox bounds = new BoundingBox();
-		private final static Vector3 position = new Vector3();
-		public final btRigidBody body;
-		public final MyMotionState motionState;
-		
-		// GAME
-		public int lastPlayer;
-		public boolean bounced;
-		public boolean hitted;
-
-		public GameObject(Model model, String rootNode,
-				btRigidBody.btRigidBodyConstructionInfo constructionInfo) {
-			super(model, rootNode);
-			calculateBoundingBox(bounds);
-			bounds.getCenter(center);
-			bounds.getDimensions(dimensions);
-			radius = dimensions.len() / 2f;
-			motionState = new MyMotionState();
-			motionState.transform = transform;
-			body = new btRigidBody(constructionInfo);
-			body.setMotionState(motionState);
-		}
-
-		public Vector3 getPosition() {
-			Vector3 res = new Vector3();
-			transform.getTranslation(position);
-			transform.getTranslation(res);
-			return res;
-		}
-
-		public BoundingBox getBoundingBox() {
-			calculateBoundingBox(bounds);
-			return bounds;
-		}
-
-		public boolean isVisible(Camera cam) {
-			return cam.frustum.sphereInFrustum(
-					transform.getTranslation(position).add(center), radius);
-		}
-
-		/**
-		 * @return -1 on no intersection, or when there is an intersection: the
-		 *         squared distance between the center of this object and the
-		 *         point on the ray closest to this object when there is
-		 *         intersection.
-		 */
-		public float intersects(Ray ray) {
-			transform.getTranslation(position).add(center);
-			final float len = ray.direction.dot(position.x - ray.origin.x,
-					position.y - ray.origin.y, position.z - ray.origin.z);
-			if (len < 0f)
-				return -1f;
-			float dist2 = position.dst2(ray.origin.x + ray.direction.x * len,
-					ray.origin.y + ray.direction.y * len, ray.origin.z
-							+ ray.direction.z * len);
-			return (dist2 <= radius * radius) ? dist2 : -1f;
-		}
-
-		@Override
-		public void dispose() {
-			body.dispose();
-			motionState.dispose();
-		}
-
-		static class Constructor implements Disposable {
-			public final Model model;
-			public final String node;
-			public final btCollisionShape shape;
-			public final btRigidBody.btRigidBodyConstructionInfo constructionInfo;
-			private static Vector3 localInertia = new Vector3();
-
-			public Constructor(Model model, String node,
-					btCollisionShape shape, float mass) {
-				this.model = model;
-				this.node = node;
-				this.shape = shape;
-				if (mass > 0f)
-					shape.calculateLocalInertia(mass, localInertia);
-				else
-					localInertia.set(0, 0, 0);
-				this.constructionInfo = new btRigidBody.btRigidBodyConstructionInfo(
-						mass, null, shape, localInertia);
-			}
-
-			public GameObject construct() {
-				return new GameObject(model, node, constructionInfo);
-			}
-
-			@Override
-			public void dispose() {
-				shape.dispose();
-				constructionInfo.dispose();
-			}
-		}
-	}
-
 	private Stage stage;
 	private Window pause;
 	private Label label;
@@ -256,14 +130,8 @@ public class GameScreen3 extends InputAdapter implements Screen {
 	private Vector3 camPosition = new Vector3(0, 2, -2);
 	private Vector3 camDirection = new Vector3();
 	private float tableBouncingFactor = 1.05f;
-	private Vector3 tablePosition = new Vector3(0, 1, 0);
 	private Vector3 ballPosition = new Vector3(-0.5f, .5f, -1);
 	private float gravity = -2;
-
-	// FLAGS
-	final static short GROUND_FLAG = 1 << 8;
-	final static short OBJECT_FLAG = 1 << 9;
-	final static short ALL_FLAG = -1;
 
 	// BULLET COLLISION STUFF
 	btCollisionConfiguration collisionConfig;
@@ -275,15 +143,8 @@ public class GameScreen3 extends InputAdapter implements Screen {
 
 	// COLLISIONS INSTANCES
 	private Array<GameObject> instances;
-	private ArrayMap<String, GameObject.Constructor> constructors;
+	private ArrayMap<String, Constructor> constructors;
 	private btCollisionShape tableShape;
-	
-	// PARTICLES
-	private AssetManager particleManager;
-	private BillboardParticleBatch particleBatch;
-	private ParticleSystem particleSystem;
-	private ParticleEffect originalEffect;
-	private PFXPool particles;
 
 	// DEBUG
 	private DebugDrawer debugDrawer;
@@ -300,6 +161,8 @@ public class GameScreen3 extends InputAdapter implements Screen {
 	private Opponent opponent;
 	private boolean opponentWillHit;
 	private boolean nextRound;
+	
+	private ParticleController particleController;
 
 	@Override
 	public void show() {
@@ -313,29 +176,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 
 		assets = new Assets();
 		assets.loadScreen(Assets.GAME_SCREEN);
-		
-		// PARTICLES
-		particleSystem = ParticleSystem.get();
-		particleManager = new AssetManager();
-		particleBatch = new BillboardParticleBatch();
-		particleBatch.setCamera(cam);
-		particleSystem.add(particleBatch);
-		
-		ParticleEffectLoader.ParticleEffectLoadParameter loadParam = new ParticleEffectLoader.ParticleEffectLoadParameter(particleSystem.getBatches());
-		ParticleEffectLoader loader = new ParticleEffectLoader(new InternalFileHandleResolver());
-		particleManager.setLoader(ParticleEffect.class, loader);
-		particleManager.load("particles/enemy_hit.pfx", ParticleEffect.class, loadParam);
-		particleManager.finishLoading();
-		
-		originalEffect = particleManager.get("particles/enemy_hit.pfx");
-		// we cannot use the originalEffect, we must make a copy each time we create new particle effect
-		particles = new PFXPool(originalEffect);
-		
-		ParticleEffect particleEffect = particles.obtain();
-		particleEffect.init();
-		particleEffect.start();
-		particleSystem.add(particleEffect);
-		
+
 		// UI
 		stage = new Stage();
 		stage.setDebugAll(true);
@@ -393,6 +234,9 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		cam.update();
 		camController = new CameraInputController(cam);
 		Gdx.input.setInputProcessor(camController);
+		
+		// PARTICLES
+		particleController = new ParticleController(cam, modelBatch);
 
 		// COLLISION STUFF
 		collisionConfig = new btDefaultCollisionConfiguration();
@@ -419,8 +263,6 @@ public class GameScreen3 extends InputAdapter implements Screen {
 
 	@SuppressWarnings("deprecation")
 	private void doneLoading() {
-		
-		
 
 		// AMBIENT
 		ambient = new ModelInstance(assets.get(Models.MODEL_AMBIENT,
@@ -446,14 +288,12 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		ball = mb.end();
 
 		// FILL CONSTRUCTORS
-		constructors = new ArrayMap<String, GameObject.Constructor>(
-				String.class, GameObject.Constructor.class);
-		constructors.put("ball", new GameObject.Constructor(ball, "ball",
+		constructors = new ArrayMap<String, Constructor>(String.class,
+				Constructor.class);
+		constructors.put("ball", new Constructor(ball, "ball",
 				new btSphereShape(0.05f), 1));
-		constructors.put(
-				"table",
-				new GameObject.Constructor(table, table.nodes.get(0).id, Bullet
-						.obtainStaticNodeShape(table.nodes), 0));
+		constructors.put("table", new Constructor(table, table.nodes.get(0).id,
+				Bullet.obtainStaticNodeShape(table.nodes), 0));
 
 		// ADD TABLE
 		GameObject finalTable = constructors.get("table").construct();
@@ -461,7 +301,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		finalTable.body.setCollisionFlags(finalTable.body.getCollisionFlags()
 				| btCollisionObject.CollisionFlags.CF_KINEMATIC_OBJECT);
 		finalTable.body.proceedToTransform(finalTable.transform);
-		finalTable.body.setContactCallbackFlag(GROUND_FLAG);
+		finalTable.body.setContactCallbackFlag(Flags.GROUND_FLAG);
 		finalTable.body.setContactCallbackFilter(0);
 		finalTable.body
 				.setActivationState(CollisionConstants.DISABLE_DEACTIVATION);
@@ -477,6 +317,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 	public void spawn() {
 		GameObject obj = constructors.values[0].construct();
 		obj.transform.trn(ballPosition);
+
 		obj.bounced = false;
 		obj.hitted = false;
 		obj.lastPlayer = 0;
@@ -487,8 +328,8 @@ public class GameScreen3 extends InputAdapter implements Screen {
 		instances.add(obj);
 		obj.body.setFriction(1);
 		obj.body.setRestitution(0);
-		obj.body.setContactCallbackFlag(OBJECT_FLAG);
-		obj.body.setContactCallbackFilter(GROUND_FLAG);
+		obj.body.setContactCallbackFlag(Flags.OBJECT_FLAG);
+		obj.body.setContactCallbackFilter(Flags.GROUND_FLAG);
 		dynamicsWorld.addRigidBody(obj.body);
 	}
 
@@ -522,7 +363,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 	private void updateGame() {
 		GameObject table = instances.get(0);
 		GameObject ball = instances.get(1);
-		
+
 		modelBatch.begin(cam);
 
 		// AMBIENT
@@ -546,16 +387,14 @@ public class GameScreen3 extends InputAdapter implements Screen {
 			}
 		}
 		modelBatch.end();
-		
-		
-		modelBatch.begin(cam);
-		renderParticleEffects();
-		modelBatch.end();
-		
 
-		/*debugDrawer.begin(cam);
-		dynamicsWorld.debugDrawWorld();
-		debugDrawer.end();*/
+		
+		particleController.renderParticleEffects();
+
+		/*
+		 * debugDrawer.begin(cam); dynamicsWorld.debugDrawWorld();
+		 * debugDrawer.end();
+		 */
 
 		// UI
 		stringBuilder.setLength(0);
@@ -611,15 +450,13 @@ public class GameScreen3 extends InputAdapter implements Screen {
 				&& Tools.onOpponentHittable(instances.get(0), instances.get(1))
 				&& instances.get(1).lastPlayer == 1) {
 			GameObject ball = instances.get(1);
-			if (opponentWillHit)
-			{
+			if (opponentWillHit) {
 				hit(opponent.getVelocity());
-				
-				
+
 			}
 			ball.hitted = true;
 			ball.lastPlayer = 2;
-			
+
 		}
 
 		dynamicsWorld.stepSimulation(delta, 5, 1f / 60f);
@@ -635,16 +472,8 @@ public class GameScreen3 extends InputAdapter implements Screen {
 			state = GAME_RUNNING;
 		}
 	}
+
 	
-	private void renderParticleEffects(){
-		particleSystem.update();
-		particleBatch.setCamera(cam);
-	    particleSystem.begin();
-	    particleSystem.draw();
-	    particleSystem.end();
-	    modelBatch.render(particleSystem);
-	    
-	}
 
 	/**
 	 * Apply force to the instance to move it to a certain location
@@ -665,27 +494,27 @@ public class GameScreen3 extends InputAdapter implements Screen {
 	public void point() {
 		GameObject table = instances.get(0);
 		GameObject ball = instances.get(1);
-		
+
 		// BALL FELL ON PLAYERS SIDE
 		if (Tools.onPlayerSide(table, ball)) {
-			
+
 			// OPPONENT FAULT
 			if (ball.lastPlayer == 2 && !ball.bounced) {
 				scoreBoard.point1();
 			} else {
 				scoreBoard.point2();
 			}
-			
-		// BALL FELL ON OPPONENTS SIDE
+
+			// BALL FELL ON OPPONENTS SIDE
 		} else {
-			
+
 			// PLAYER FAULT
 			if (ball.lastPlayer == 1 && !ball.bounced) {
 				scoreBoard.point2();
 			} else {
 				scoreBoard.point1();
 			}
-			
+
 		}
 		if (scoreBoard.isFinished()) {
 			state = GAME_OVER;
@@ -731,8 +560,14 @@ public class GameScreen3 extends InputAdapter implements Screen {
 				opponentWillHit = false;
 			}
 		}
+				
+		if (Tools.onPlayerSide(table, ball)){
+			particleController.explodeParticle(1, ball.position);
+		} else {
+			particleController.explodeParticle(2, ball.position);
+		}
 		
-		
+
 		moveTo(ball, new Vector3(0, 0, 0), intensity);
 	}
 
@@ -740,8 +575,8 @@ public class GameScreen3 extends InputAdapter implements Screen {
 
 	public void handleInput() {
 		// STARTED TO SWING
-		
-		//Log.debug(BluetoothServer.accelerometer.toString());
+
+		// Log.debug(BluetoothServer.accelerometer.toString());
 
 		if (Tools.allObjectsLoaded(instances)
 				&& Tools.onPlayerHittable(instances.get(0), instances.get(1))
@@ -782,12 +617,11 @@ public class GameScreen3 extends InputAdapter implements Screen {
 
 	@Override
 	public void resize(int width, int height) {
-		
+
 	}
 
 	@Override
 	public void pause() {
-		
 
 	}
 
@@ -798,7 +632,7 @@ public class GameScreen3 extends InputAdapter implements Screen {
 
 	@Override
 	public void hide() {
-		
+
 	}
 
 	@Override
@@ -821,6 +655,8 @@ public class GameScreen3 extends InputAdapter implements Screen {
 
 		debugDrawer.dispose();
 		assets.dispose();
-		particles.clear();
+		
+		particleController.dispose();
+		
 	}
 }

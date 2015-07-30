@@ -58,6 +58,7 @@ public class Assets implements Disposable {
 			break;
 		case GAME_SCREEN:
 			loadSkin();
+			loadTextures();
 			loadModels();
 			break;
 		case GAME_OVER_SCREEN:
