@@ -17,6 +17,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 
 public class Assets implements Disposable {
+	
 	public static final int MAIN_MENU_SCREEN = 1;
 	public static final int SPLASH_SCREEN_DEVELOPER = 2;
 	public static final int SPLASH_SCREEN_US = 3;
@@ -24,6 +25,13 @@ public class Assets implements Disposable {
 	public static final int GAME_SCREEN = 5;
 	public static final int GAME_OVER_SCREEN = 6;
 	public static final int RULES_SCREEN = 7;
+	
+	public static final String URL_SKIN = "ui/uiskin.json";
+	public static final String URL_FONT1 = "fonts/space_age.ttf";
+	public static final String URL_FONT2 = "fonts/Montserrat-Regular.ttf";
+	public static final String URL_FONT3 = "fonts/Montserrat-Bold.ttf";
+	
+	
 	public Array<String> models;
 	public static Skin skin;
 	public static FreeTypeFontGenerator titleGenerator;

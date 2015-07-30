@@ -13,11 +13,13 @@ import com.badlogic.gdx.graphics.g3d.particles.batches.BillboardParticleBatch;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Disposable;
 
-public class ParticleController implements Disposable{
+public class ParticleController implements Disposable {
 	private PerspectiveCamera cam;
 	private ModelBatch batch;
-	
-	// PARTICLES
+
+	private static final String URL_PARTICLE1 = "particles/hit.pfx";
+	private static final String URL_PARTICLE2 = "particles/hit2.pfx";
+
 	private AssetManager particleManager;
 	private BillboardParticleBatch particleBatch;
 	private ParticleSystem particleSystem;
@@ -28,7 +30,7 @@ public class ParticleController implements Disposable{
 	public ParticleController(PerspectiveCamera cam, ModelBatch batch) {
 		this.cam = cam;
 		this.batch = batch;
-		
+
 		// PARTICLES
 		particleSystem = ParticleSystem.get();
 		particleManager = new AssetManager();
@@ -41,18 +43,16 @@ public class ParticleController implements Disposable{
 		ParticleEffectLoader loader = new ParticleEffectLoader(
 				new InternalFileHandleResolver());
 		particleManager.setLoader(ParticleEffect.class, loader);
-		particleManager.load("particles/hit.pfx", ParticleEffect.class,
-				loadParam);
-		particleManager.load("particles/hit2.pfx", ParticleEffect.class,
-				loadParam);
+		particleManager.load(URL_PARTICLE1, ParticleEffect.class, loadParam);
+		particleManager.load(URL_PARTICLE2, ParticleEffect.class, loadParam);
 		particleManager.finishLoading();
 
-		originalEffect = particleManager.get("particles/hit.pfx");
+		originalEffect = particleManager.get(URL_PARTICLE1);
 		particles1Hit = new PFXPool(originalEffect);
-		originalEffect = particleManager.get("particles/hit2.pfx");
+		originalEffect = particleManager.get(URL_PARTICLE2);
 		particles2Hit = new PFXPool(originalEffect);
 	}
-	
+
 	public void renderParticleEffects() {
 		batch.begin(cam);
 		particleSystem.update();
@@ -63,19 +63,19 @@ public class ParticleController implements Disposable{
 		batch.render(particleSystem);
 		batch.end();
 	}
-	
-	public void explodeParticle(int player, Vector3 position){
+
+	public void explodeParticle(int player, Vector3 position) {
 		ParticleEffect effect;
-		switch (player){
-			case 1:
-				effect = particles1Hit.obtain();
-				break;
-			case 2:
-				effect = particles2Hit.obtain();
-				break;
-			default:
-				effect = particles1Hit.obtain();
-				break;
+		switch (player) {
+		case 1:
+			effect = particles1Hit.obtain();
+			break;
+		case 2:
+			effect = particles2Hit.obtain();
+			break;
+		default:
+			effect = particles1Hit.obtain();
+			break;
 		}
 		effect.translate(position);
 		effect.init();
@@ -88,6 +88,5 @@ public class ParticleController implements Disposable{
 		particles1Hit.clear();
 		particles2Hit.clear();
 	}
-	
-	
+
 }
