@@ -1,7 +1,11 @@
 package tennis.screens.scenes3d;
 
+import java.util.Arrays;
+
 import tennis.SpaceTennis3D;
 import tennis.managers.Assets;
+import tennis.managers.Jukebox;
+import tennis.managers.Soundbox;
 import tennis.managers.Tools;
 import tennis.managers.bluetooth.BluetoothServer;
 import tennis.managers.physics.Constructor;
@@ -107,8 +111,9 @@ public class GameScreen3 implements Screen {
 
 	private Stage stage;
 	private Window pause;
-	private Label label;
+	private Label setsLabel, pointsLabel;
 	private BitmapFont font;
+	private BitmapFont titleFont;
 	private StringBuilder stringBuilder;
 
 	private static PerspectiveCamera cam;
@@ -146,6 +151,9 @@ public class GameScreen3 implements Screen {
 	private ArrayMap<String, Constructor> constructors;
 	private btCollisionShape tableShape;
 
+	// MUSIC
+	private boolean firstSong;
+
 	// DEBUG
 	private DebugDrawer debugDrawer;
 
@@ -161,7 +169,7 @@ public class GameScreen3 implements Screen {
 	private Opponent opponent;
 	private boolean opponentWillHit;
 	private boolean nextRound;
-	
+
 	private ParticleController particleController;
 
 	@Override
@@ -177,13 +185,7 @@ public class GameScreen3 implements Screen {
 		assets = new Assets();
 		assets.loadScreen(Assets.GAME_SCREEN);
 
-		// UI
-		stage = new Stage();
-		stage.setDebugAll(true);
-		font = new BitmapFont();
-		label = new Label(" ", new Label.LabelStyle(font, Color.WHITE));
-		stage.addActor(label);
-		stringBuilder = new StringBuilder();
+		setupUI();
 
 		// PAUSE SCREEN
 		pause = new Window("PAUSE", Assets.skin);
@@ -207,7 +209,7 @@ public class GameScreen3 implements Screen {
 				SpaceTennis3D.goTo(new MainMenuScreen());
 			}
 		});
-		pause.add(resume).row();
+		pause.add(resume).spaceBottom(SpaceTennis3D.HEIGHT * 0.05f).row();
 		pause.add(quit).row();
 		pause.setVisible(false);
 		stage.addActor(pause);
@@ -234,7 +236,7 @@ public class GameScreen3 implements Screen {
 		cam.update();
 		camController = new CameraInputController(cam);
 		Gdx.input.setInputProcessor(camController);
-		
+
 		// PARTICLES
 		particleController = new ParticleController(cam, modelBatch);
 
@@ -308,6 +310,9 @@ public class GameScreen3 implements Screen {
 		instances.add(finalTable);
 
 		dynamicsWorld.addRigidBody(finalTable.body);
+
+		Jukebox.play("game");
+		firstSong = true;
 
 		// FINISHED LOADING
 		loading = false;
@@ -388,7 +393,6 @@ public class GameScreen3 implements Screen {
 		}
 		modelBatch.end();
 
-		
 		particleController.renderParticleEffects();
 
 		/*
@@ -396,25 +400,80 @@ public class GameScreen3 implements Screen {
 		 * debugDrawer.end();
 		 */
 
-		// UI
-		stringBuilder.setLength(0);
-		stringBuilder.append(" FPS: ")
-				.append(Gdx.graphics.getFramesPerSecond());
-		stringBuilder.append(" Set: ").append(scoreBoard.getSet());
-		if (scoreBoard.isDeuce()) {
-			if (scoreBoard.isAdvantaged1()) {
-				stringBuilder.append(" ADV. ");
-			}
-			stringBuilder.append(" DEUCE ");
-			if (scoreBoard.isAdvantaged2()) {
-				stringBuilder.append(" ADV. ");
-			}
-		} else {
-			stringBuilder.append(" Player: ").append(scoreBoard.getScore1());
-			stringBuilder.append(" Enemy: ").append(scoreBoard.getScore2());
-		}
+		renderUI();
 
-		label.setText(stringBuilder);
+		if (firstSong && !Jukebox.get("game").isPlaying()) {
+			firstSong = false;
+			Jukebox.stop("game");
+			Jukebox.loop("game2");
+		}
+	}
+
+	@SuppressWarnings("deprecation")
+	private void setupUI() {
+		// UI
+		stage = new Stage();
+		stage.setDebugAll(true);
+		// font1 = Assets.
+
+		titleFont = Assets.titleGenerator.generateFont(40);
+		font = Assets.fontGenerator.generateFont(20);
+		setsLabel = new Label("", new Label.LabelStyle(font, Color.WHITE));
+		setsLabel.setPosition(SpaceTennis3D.WIDTH / 10,
+				5 * SpaceTennis3D.HEIGHT / 6);
+		pointsLabel = new Label("",
+				new Label.LabelStyle(titleFont, Color.WHITE));
+		pointsLabel.setY(9 * SpaceTennis3D.HEIGHT / 10);
+		stage.addActor(setsLabel);
+		stage.addActor(pointsLabel);
+		stringBuilder = new StringBuilder();
+	}
+
+	private void renderUI() {
+
+		// SETS MARKER
+		stringBuilder.setLength(0);
+		stringBuilder.append("Player 1: ")
+				.append(scoreBoard.getSetsOfPlayer(1)).append("\n")
+				.append("Player 2: ").append(scoreBoard.getSetsOfPlayer(2));
+		setsLabel.setText(stringBuilder);
+
+		// POINTS MARKER
+		stringBuilder.setLength(0);
+		if (scoreBoard.isDeuce()) {
+			
+			if (!scoreBoard.isAdvantaged1() && !scoreBoard.isAdvantaged2()) {
+				stringBuilder.append("DEUCE");
+			} else {
+				
+				if (scoreBoard.isAdvantaged1()) {
+					stringBuilder.append("ADV");
+				} else {
+					stringBuilder.append(scoreBoard.getScore1() == 0 ? "00"
+							: scoreBoard.getScore1());
+				}
+				stringBuilder.append("-");
+				if (scoreBoard.isAdvantaged2()) {
+					stringBuilder.append("ADV");
+				} else {
+					stringBuilder.append(scoreBoard.getScore2() == 0 ? "00"
+							: scoreBoard.getScore2());
+				}
+			}
+
+		} else {
+			stringBuilder
+					.append(scoreBoard.getScore1() == 0 ? "00" : scoreBoard
+							.getScore1())
+					.append("-")
+					.append(scoreBoard.getScore2() == 0 ? "00" : scoreBoard
+							.getScore2());
+		}
+		pointsLabel.setText(stringBuilder);
+		pointsLabel.setX(SpaceTennis3D.WIDTH / 2
+				- titleFont.getBounds(pointsLabel.getText().toString()).width
+				/ 2);
+
 		stage.act();
 		stage.draw();
 	}
@@ -472,8 +531,6 @@ public class GameScreen3 implements Screen {
 			state = GAME_RUNNING;
 		}
 	}
-
-	
 
 	/**
 	 * Apply force to the instance to move it to a certain location
@@ -560,14 +617,14 @@ public class GameScreen3 implements Screen {
 				opponentWillHit = false;
 			}
 		}
-				
-		if (Tools.onPlayerSide(table, ball)){
+
+		if (Tools.onPlayerSide(table, ball)) {
 			particleController.explodeParticle(1, ball.position);
 		} else {
 			particleController.explodeParticle(2, ball.position);
 		}
-		
 
+		Soundbox.play("laser");
 		moveTo(ball, new Vector3(0, 0, 0), intensity);
 	}
 
@@ -655,8 +712,8 @@ public class GameScreen3 implements Screen {
 
 		debugDrawer.dispose();
 		assets.dispose();
-		
+
 		particleController.dispose();
-		
+
 	}
 }

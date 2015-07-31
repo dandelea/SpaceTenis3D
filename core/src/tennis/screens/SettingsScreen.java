@@ -2,6 +2,7 @@ package tennis.screens;
 
 import tennis.SpaceTennis3D;
 import tennis.managers.Assets;
+import tennis.managers.Soundbox;
 import tennis.managers.Tools;
 import tennis.references.Models;
 
@@ -160,7 +161,7 @@ public class SettingsScreen implements Screen {
 				
 				// Save ambient
 				Models.setAmbient(ambient.getSelected());
-				
+				Soundbox.play("button");
 				SpaceTennis3D.goTo(new SettingsScreen());
 			}
 		});
@@ -170,6 +171,7 @@ public class SettingsScreen implements Screen {
 		btnExit.addListener(new ClickListener(){
 			@Override
 			public void clicked(InputEvent event, float x, float y){
+				Soundbox.play("quit");
 				SpaceTennis3D.goTo(new MainMenuScreen());
 			}
 		});
@@ -203,6 +205,7 @@ public class SettingsScreen implements Screen {
 	
 	public void handleInput() {
 		if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
+			Soundbox.play("quit");
 			SpaceTennis3D.goTo(new MainMenuScreen());
 		}
 	}

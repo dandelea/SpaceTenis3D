@@ -2,6 +2,7 @@ package tennis.screens.rules;
 
 import tennis.SpaceTennis3D;
 import tennis.managers.Assets;
+import tennis.managers.Soundbox;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -51,7 +52,7 @@ public class RulesScreen2 implements Screen {
 		
 		// Creating heading
 		titleFont = Assets.titleGenerator.generateFont(50);
-		heading = new Label("Reglas", skin);
+		heading = new Label("Control", skin);
 		heading.setStyle(new LabelStyle(titleFont, Color.WHITE));
 
 		rulesFont = Assets.fontGenerator.generateFont(20);
@@ -85,7 +86,19 @@ public class RulesScreen2 implements Screen {
 	
 	public void handleInput() {
 		if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
+			Soundbox.play("quit");
 			SpaceTennis3D.goTo(new RulesScreen());
+		}
+		
+		if (Gdx.input.isKeyJustPressed(Input.Keys.UP) ||
+				Gdx.input.isKeyJustPressed(Input.Keys.LEFT)){
+			SpaceTennis3D.goTo(new RulesScreen1());
+		}
+		
+		if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER) ||
+				Gdx.input.isKeyJustPressed(Input.Keys.RIGHT) ||
+				Gdx.input.isKeyJustPressed(Input.Keys.DOWN)){
+			SpaceTennis3D.goTo(new RulesScreen3());
 		}
 	}
 

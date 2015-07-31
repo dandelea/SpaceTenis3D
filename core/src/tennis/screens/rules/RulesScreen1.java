@@ -2,6 +2,7 @@ package tennis.screens.rules;
 
 import tennis.SpaceTennis3D;
 import tennis.managers.Assets;
+import tennis.managers.Soundbox;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -77,7 +78,14 @@ public class RulesScreen1 implements Screen{
 	
 	public void handleInput() {
 		if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
+			Soundbox.play("quit");
 			SpaceTennis3D.goTo(new RulesScreen());
+		}
+		
+		if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || 
+				Gdx.input.isKeyJustPressed(Input.Keys.RIGHT) ||
+				Gdx.input.isKeyJustPressed(Input.Keys.DOWN)){
+			SpaceTennis3D.goTo(new RulesScreen2());
 		}
 	}
 

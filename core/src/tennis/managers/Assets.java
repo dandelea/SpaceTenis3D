@@ -54,6 +54,7 @@ public class Assets implements Disposable {
 		switch (screen) {
 		case MAIN_MENU_SCREEN:
 			loadSkin();
+			loadSounds();
 			break;
 		case SPLASH_SCREEN_DEVELOPER:
 			loadSplash();
@@ -63,10 +64,13 @@ public class Assets implements Disposable {
 			break;
 		case SETTINGS_SCREEN:
 			loadSkin();
+			loadSounds();
 			break;
 		case GAME_SCREEN:
 			loadSkin();
 			loadModels();
+			loadMusic();
+			loadSounds();
 			break;
 		case GAME_OVER_SCREEN:
 			loadSkin();
@@ -107,9 +111,29 @@ public class Assets implements Disposable {
 		assetManager.load(URL_SPLASH_US, Texture.class);
 	}
 	
+	/**
+	 * Only loads the images used in the rules screens
+	 */
 	private void loadRulesImages(){
 		assetManager.load(URL_RULES_IMAGE1, Texture.class);
 		assetManager.load(URL_RULES_IMAGE2, Texture.class);
+	}
+	
+	/**
+	 * Only loads the music
+	 */
+	private void loadMusic(){
+		Jukebox.load("music/mess.ogg", "game");
+		Jukebox.load("music/mess2.ogg", "game2");
+	}
+	
+	/**
+	 * Only loads the sounds
+	 */
+	private void loadSounds(){
+		Soundbox.load("sounds/laser.ogg", "laser");
+		Soundbox.load("sounds/button.ogg", "button");
+		Soundbox.load("sounds/quit.ogg", "quit");
 	}
 
 	/**

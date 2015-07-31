@@ -2,6 +2,7 @@ package tennis.screens;
 
 import tennis.SpaceTennis3D;
 import tennis.managers.Assets;
+import tennis.managers.Soundbox;
 import tennis.screens.demos.PathRotationTest;
 import tennis.screens.rules.RulesScreen;
 import tennis.screens.scenes3d.GameScreen3;
@@ -63,6 +64,7 @@ public class MainMenuScreen implements Screen {
 		btnStart.addListener(new ClickListener() {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
+				Soundbox.play("button");
 				SpaceTennis3D.goTo(new GameScreen3());
 			}
 		});
@@ -71,6 +73,7 @@ public class MainMenuScreen implements Screen {
 		btnDemo.addListener(new ClickListener() {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
+				Soundbox.play("button");
 				SpaceTennis3D.goTo(new PathRotationTest());
 			}
 		});
@@ -79,6 +82,7 @@ public class MainMenuScreen implements Screen {
 		btnOptions.addListener(new ClickListener() {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
+				Soundbox.play("button");
 				SpaceTennis3D.goTo(new SettingsScreen());
 			}
 		});
@@ -87,6 +91,7 @@ public class MainMenuScreen implements Screen {
 		btnRules.addListener(new ClickListener() {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
+				Soundbox.play("button");
 				SpaceTennis3D.goTo(new RulesScreen());
 			}
 		});

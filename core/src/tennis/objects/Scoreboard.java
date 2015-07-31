@@ -77,6 +77,15 @@ public class Scoreboard {
 		this.finished = finished;
 	}
 
+	public int getSetsOfPlayer(int player) {
+		int res = 0;
+		for (int i : sets) {
+			if (i == player)
+				res++;
+		}
+		return res;
+	}
+
 	/**
 	 * @return Winner code for player 1 or player 2.
 	 */
@@ -138,7 +147,7 @@ public class Scoreboard {
 	public void point1() {
 		if (isDeuce()) {
 			if (isAdvantaged1()) {
-				sets[getSet()-1] = 1;
+				sets[getSet() - 1] = 1;
 				updateSets();
 			} else {
 				if (isAdvantaged2()) {
@@ -149,7 +158,7 @@ public class Scoreboard {
 			}
 		} else {
 			if (getScore1() == 40) {
-				sets[getSet()-1] = 1;
+				sets[getSet() - 1] = 1;
 				updateSets();
 			} else {
 				setScore1(nextNumber(getScore1()));
@@ -163,7 +172,7 @@ public class Scoreboard {
 	public void point2() {
 		if (isDeuce()) {
 			if (isAdvantaged2()) {
-				sets[getSet()-1] = 2;
+				sets[getSet() - 1] = 2;
 				updateSets();
 			} else {
 				if (isAdvantaged1()) {
@@ -174,7 +183,7 @@ public class Scoreboard {
 			}
 		} else {
 			if (getScore2() == 40) {
-				sets[getSet()-1] = 2;
+				sets[getSet() - 1] = 2;
 				updateSets();
 			} else {
 				setScore2(nextNumber(getScore2()));

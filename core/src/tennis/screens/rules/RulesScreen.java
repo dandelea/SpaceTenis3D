@@ -2,6 +2,7 @@ package tennis.screens.rules;
 
 import tennis.SpaceTennis3D;
 import tennis.managers.Assets;
+import tennis.managers.Soundbox;
 import tennis.screens.MainMenuScreen;
 
 import com.badlogic.gdx.Gdx;
@@ -58,6 +59,7 @@ public class RulesScreen implements Screen {
 
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
+				Soundbox.play("button");
 				SpaceTennis3D.goTo(new RulesScreen1());
 			}
 
@@ -69,6 +71,7 @@ public class RulesScreen implements Screen {
 
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
+				Soundbox.play("button");
 				SpaceTennis3D.goTo(new RulesScreen2());
 			}
 
@@ -80,6 +83,7 @@ public class RulesScreen implements Screen {
 
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
+				Soundbox.play("button");
 				SpaceTennis3D.goTo(new RulesScreen3());
 			}
 
@@ -104,10 +108,12 @@ public class RulesScreen implements Screen {
 
 	public void handleInput() {
 		if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+			Soundbox.play("quit");
 			SpaceTennis3D.goTo(new MainMenuScreen());
 		}
 		
-		if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) {
+		if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1) || 
+				Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
 			SpaceTennis3D.goTo(new RulesScreen1());
 		}
 		

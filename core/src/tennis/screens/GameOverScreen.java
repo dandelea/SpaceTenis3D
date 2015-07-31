@@ -2,6 +2,7 @@ package tennis.screens;
 
 import tennis.SpaceTennis3D;
 import tennis.managers.Assets;
+import tennis.managers.Soundbox;
 import tennis.objects.Scoreboard;
 import tennis.screens.scenes3d.GameScreen3;
 import tennis.tween.ActorAccessor;
@@ -72,6 +73,7 @@ public class GameOverScreen implements Screen {
 		btnPlay.addListener(new ClickListener() {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
+				Soundbox.play("button");
 				SpaceTennis3D.goTo(new GameScreen3());
 			}
 		});
@@ -82,6 +84,7 @@ public class GameOverScreen implements Screen {
 
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
+				Soundbox.play("quit");
 				SpaceTennis3D.goTo(new MainMenuScreen());
 			}
 
