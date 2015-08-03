@@ -81,26 +81,16 @@ public class GameScreen3 implements Screen {
 			Vector3 normal = new Vector3(0, 1, 0);
 			Vector3 reaction = new Vector3(inertia.x, -tableBouncingFactor
 					* inertia.y, inertia.z);
-			if (TimeUtils.timeSinceNanos(lastBounceTime) < 500000000) {
+			
+			if (TimeUtils.timeSinceNanos(lastBounceTime) < 500000000 && ball.bounces >= GameObject.MAX_ERROR_BOUNCE) {
 				// BALL IN FLOOR.
-				// System.out.println("ERROR");
+				point();
+				Tools.disposeBall(instances, ball, dynamicsWorld);
+				spawn();
 			}
 			lastBounceTime = TimeUtils.nanoTime();
-
-			if (ball.lastPlayer == 1 && Tools.onPlayerSide(table, ball)
-					&& ball.bounced) {
-				// DOBLE BOTE
-				// System.out.println("doble bote");
-				/*
-				 * new java.util.Timer().schedule( new java.util.TimerTask() {
-				 * 
-				 * @Override public void run() { point();
-				 * instances.removeValue(ball, false);
-				 * dynamicsWorld.removeRigidBody(ball.body); spawn(); } }, 1000
-				 * );
-				 */
-			}
-			ball.bounced = true;
+			
+			ball.bounces++;
 			instances.get(userValue0).body.setLinearVelocity(reaction);
 
 			return true;
@@ -166,7 +156,6 @@ public class GameScreen3 implements Screen {
 	private Scoreboard scoreBoard = new Scoreboard();
 	private Opponent opponent;
 	private boolean opponentWillHit;
-	private boolean nextRound;
 
 	private ParticleController particleController;
 
@@ -214,7 +203,6 @@ public class GameScreen3 implements Screen {
 
 		// GAMES
 		state = GAME_READY;
-		nextRound = true;
 
 		// ENVIRONMENT
 		modelBatch = new ModelBatch();
@@ -320,8 +308,7 @@ public class GameScreen3 implements Screen {
 	public void spawn() {
 		GameObject obj = constructors.values[0].construct();
 		obj.transform.trn(ballPosition);
-
-		obj.bounced = false;
+		obj.bounces++;
 		obj.hitted = false;
 		obj.lastPlayer = 0;
 		obj.body.proceedToTransform(obj.transform);
@@ -498,9 +485,6 @@ public class GameScreen3 implements Screen {
 			spawn();
 		firstBall = false;
 
-		nextRound = Tools.allObjectsLoaded(instances)
-				&& outOfTable(instances.get(0), instances.get(1));
-
 		instances.get(1);
 		// Opponent hit the ball
 		if (Tools.allObjectsLoaded(instances)
@@ -555,7 +539,7 @@ public class GameScreen3 implements Screen {
 		if (Tools.onPlayerSide(table, ball)) {
 
 			// OPPONENT FAULT
-			if (ball.lastPlayer == 2 && !ball.bounced) {
+			if (ball.lastPlayer == 2 && ball.bounces == 0) {
 				scoreBoard.point1();
 			} else {
 				scoreBoard.point2();
@@ -565,7 +549,7 @@ public class GameScreen3 implements Screen {
 		} else {
 
 			// PLAYER FAULT
-			if (ball.lastPlayer == 1 && !ball.bounced) {
+			if (ball.lastPlayer == 1 && ball.bounces == 0) {
 				scoreBoard.point2();
 			} else {
 				scoreBoard.point1();
@@ -596,8 +580,7 @@ public class GameScreen3 implements Screen {
 				&& Math.abs(ballPosition.z) < 5;
 		if (res) {
 			point();
-			instances.removeValue(ball, false);
-			dynamicsWorld.removeRigidBody(ball.body);
+			Tools.disposeBall(instances, ball, dynamicsWorld);
 			spawn();
 		}
 		return res;
@@ -606,7 +589,7 @@ public class GameScreen3 implements Screen {
 	public void hit(int intensity) {
 		GameObject table = instances.get(0);
 		GameObject ball = instances.get(1);
-		ball.bounced = false;
+		ball.bounces = 0;
 		ball.hitted = Tools.onPlayerSide(table, ball);
 		ball.lastPlayer = Tools.onPlayerSide(table, ball) ? 1 : 2;
 		if (ball.lastPlayer == 1) {
@@ -645,7 +628,7 @@ public class GameScreen3 implements Screen {
 			Vector3 reaction = normal.scl(2 * normal.dot(inertia)).sub(inertia)
 					.scl(0.2f);
 			reaction.z = Math.abs(reaction.z) * 10 + 1;
-			ball.bounced = false;
+			ball.bounces = 0;
 			ball.hitted = true;
 			ball.lastPlayer = Tools.onPlayerSide(table, ball) ? 1 : 2;
 			ball.body.applyCentralImpulse(reaction);

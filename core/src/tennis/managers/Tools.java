@@ -15,6 +15,7 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
+import com.badlogic.gdx.physics.bullet.dynamics.btDynamicsWorld;
 import com.badlogic.gdx.utils.Array;
 
 public class Tools {
@@ -117,6 +118,13 @@ public class Tools {
 	 */
 	public static boolean allObjectsLoaded(Array<GameObject> instances){
 		return instances.size == 2;
+	}
+	
+	public static void disposeBall(Array<GameObject> instances, GameObject ball,
+			btDynamicsWorld dynamicsWorld){
+		instances.removeValue(ball, false);
+		dynamicsWorld.removeRigidBody(ball.body);
+		ball.dispose();
 	}
 
 	// SETTINGS
