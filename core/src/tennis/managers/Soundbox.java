@@ -2,6 +2,8 @@ package tennis.managers;
 
 import java.util.HashMap;
 
+import tennis.SpaceTennis3D;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Sound;
 
@@ -19,11 +21,17 @@ public class Soundbox {
 	}
 
 	public static void play(String name) {
-		sounds.get(name).play();
+		boolean on = Gdx.app.getPreferences(SpaceTennis3D.TITLE).getBoolean("sound");
+		if (on) {
+			sounds.get(name).play();
+		}
 	}
 
 	public static void loop(String name) {
-		sounds.get(name).loop();
+		boolean on = Gdx.app.getPreferences(SpaceTennis3D.TITLE).getBoolean("sound");
+		if (on) {
+			sounds.get(name).loop();
+		}
 	}
 
 	public static void stop(String name) {

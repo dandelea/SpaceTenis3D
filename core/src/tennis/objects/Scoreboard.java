@@ -1,5 +1,7 @@
 package tennis.objects;
 
+import tennis.managers.Soundbox;
+
 public class Scoreboard {
 	private int score1;
 	private int score2;
@@ -174,6 +176,7 @@ public class Scoreboard {
 			if (isAdvantaged2()) {
 				sets[getSet() - 1] = 2;
 				updateSets();
+				Soundbox.play("error");
 			} else {
 				if (isAdvantaged1()) {
 					setAdvantaged1(false);
@@ -185,6 +188,7 @@ public class Scoreboard {
 			if (getScore2() == 40) {
 				sets[getSet() - 1] = 2;
 				updateSets();
+				Soundbox.play("error");
 			} else {
 				setScore2(nextNumber(getScore2()));
 			}

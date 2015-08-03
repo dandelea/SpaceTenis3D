@@ -2,6 +2,8 @@ package tennis.managers;
 
 import java.util.HashMap;
 
+import tennis.SpaceTennis3D;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 
@@ -23,12 +25,18 @@ public class Jukebox {
 	}
 	
 	public static void play(String name) {
-		musics.get(name).play();
+		boolean on = Gdx.app.getPreferences(SpaceTennis3D.TITLE).getBoolean("music");
+		if (on) {
+			musics.get(name).play();
+		}
 	}
 	
 	public static void loop(String name) {
-		musics.get(name).setLooping(true);
-		musics.get(name).play();
+		boolean on = Gdx.app.getPreferences(SpaceTennis3D.TITLE).getBoolean("music");
+		if (on) {
+			musics.get(name).setLooping(true);
+			musics.get(name).play();
+		}
 	}
 	
 	public static void stop(String name) {

@@ -1,7 +1,5 @@
 package tennis.screens.scenes3d;
 
-import java.util.Arrays;
-
 import tennis.SpaceTennis3D;
 import tennis.managers.Assets;
 import tennis.managers.Jukebox;
@@ -544,6 +542,7 @@ public class GameScreen3 implements Screen {
 	 */
 	public void moveTo(GameObject instance, Vector3 position, int intensity) {
 		Vector3 instPos = instance.getPosition();
+		instance.body.setLinearVelocity(new Vector3());
 		instance.body.applyCentralForce(new Vector3((position.x - instPos.x)
 				* intensity, 10, (position.z - instPos.z) * intensity));
 	}
