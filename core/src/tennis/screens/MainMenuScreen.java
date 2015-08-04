@@ -5,7 +5,7 @@ import tennis.managers.Assets;
 import tennis.managers.Soundbox;
 import tennis.screens.demos.PathRotationTest;
 import tennis.screens.rules.RulesScreen;
-import tennis.screens.scenes3d.GameScreen3;
+import tennis.screens.scenes3d.GameScreen;
 import tennis.tween.ActorAccessor;
 import aurelienribon.tweenengine.BaseTween;
 import aurelienribon.tweenengine.Timeline;
@@ -65,7 +65,7 @@ public class MainMenuScreen implements Screen {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
 				Soundbox.play("button");
-				SpaceTennis3D.goTo(new GameScreen3());
+				SpaceTennis3D.goTo(new GameScreen());
 			}
 		});
 		btnStart.pad(20);

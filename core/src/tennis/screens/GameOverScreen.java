@@ -4,7 +4,7 @@ import tennis.SpaceTennis3D;
 import tennis.managers.Assets;
 import tennis.managers.Soundbox;
 import tennis.objects.Scoreboard;
-import tennis.screens.scenes3d.GameScreen3;
+import tennis.screens.scenes3d.GameScreen;
 import tennis.tween.ActorAccessor;
 import aurelienribon.tweenengine.Timeline;
 import aurelienribon.tweenengine.Tween;
@@ -74,7 +74,7 @@ public class GameOverScreen implements Screen {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
 				Soundbox.play("button");
-				SpaceTennis3D.goTo(new GameScreen3());
+				SpaceTennis3D.goTo(new GameScreen());
 			}
 		});
 		btnPlay.pad(20);

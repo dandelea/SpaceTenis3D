@@ -12,7 +12,7 @@ import tennis.managers.physics.GameObject;
 import tennis.managers.physics.ParticleController;
 import tennis.objects.Opponent;
 import tennis.objects.Scoreboard;
-import tennis.screens.scenes3d.GameScreen3;
+import tennis.screens.scenes3d.GameScreen;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
@@ -189,7 +189,7 @@ public class Tools {
 
 		}
 		if (scoreBoard.isFinished()) {
-			GameScreen3.state = GameScreen3.GAME_OVER;
+			GameScreen.state = GameScreen.GAME_OVER;
 		}
 	}
 
@@ -236,7 +236,7 @@ public class Tools {
 			Tools.point(instances, scoreBoard);
 			particleController.explosion(ball.position);
 			Tools.disposeBall(instances, ball, dynamicsWorld);
-			Tools.spawn(constructors, GameScreen3.ballPosition, instances, dynamicsWorld);
+			Tools.spawn(constructors, GameScreen.ballPosition, instances, dynamicsWorld);
 		}
 		return res;
 	}
