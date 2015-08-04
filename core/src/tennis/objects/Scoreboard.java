@@ -151,6 +151,7 @@ public class Scoreboard {
 			if (isAdvantaged1()) {
 				sets[getSet() - 1] = 1;
 				updateSets();
+				Soundbox.play("success");
 			} else {
 				if (isAdvantaged2()) {
 					setAdvantaged2(false);
@@ -162,6 +163,7 @@ public class Scoreboard {
 			if (getScore1() == 40) {
 				sets[getSet() - 1] = 1;
 				updateSets();
+				Soundbox.play("success");
 			} else {
 				setScore1(nextNumber(getScore1()));
 			}

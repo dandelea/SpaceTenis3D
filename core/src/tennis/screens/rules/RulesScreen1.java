@@ -9,8 +9,10 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -28,9 +30,10 @@ public class RulesScreen1 implements Screen{
 	
 	private Label heading;
 	private Label rules1, rules2;
+	private Image image1;
 	
-	private static final String RULES1 = "";
-	private static final String RULES2 = "";
+	private static final String RULES1 = "Para jugar a este juego necesitarás un\ndispositivo Android con Bluetooth.";
+	private static final String RULES2 = "Empareja tu móvil con tu ordenador \ny sigue las instrucciones de la aplicación \nde móvil para conectarte.";
 
 	@SuppressWarnings("deprecation")
 	@Override
@@ -60,9 +63,12 @@ public class RulesScreen1 implements Screen{
 		rules2 = new Label(RULES2, skin);
 		rules2.setStyle(new LabelStyle(rulesFont, Color.WHITE));
 		
+		image1 = new Image(assets.get(Assets.URL_RULES_IMAGE3, Texture.class));
+		
 		table.add(heading).spaceBottom(0.07f * SpaceTennis3D.HEIGHT).colspan(2).row();
-		table.add(rules1).colspan(2).row();
-		table.add(rules2).colspan(2).row();
+		table.add(rules1).spaceBottom(0.05f * SpaceTennis3D.HEIGHT).row();
+		table.add(rules2).row();
+		table.add(image1).pad(10).center();
 		stage.addActor(table);
 	}
 

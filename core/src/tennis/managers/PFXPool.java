@@ -1,9 +1,10 @@
 package tennis.managers;
 
 import com.badlogic.gdx.graphics.g3d.particles.ParticleEffect;
+import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.Pool;
 
-public class PFXPool extends Pool<ParticleEffect>{
+public class PFXPool extends Pool<ParticleEffect> implements Disposable{
 	private ParticleEffect sourceEffect;
 	
 	public PFXPool(ParticleEffect sourceEffect) {
@@ -18,6 +19,11 @@ public class PFXPool extends Pool<ParticleEffect>{
 	@Override
 	protected ParticleEffect newObject() {
 		return sourceEffect.copy();
+	}
+
+	public void dispose() {
+		clear();
+		sourceEffect.dispose();
 	}
 
 }

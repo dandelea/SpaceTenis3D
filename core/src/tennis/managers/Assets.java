@@ -32,6 +32,8 @@ public class Assets implements Disposable {
 	
 	public static final String URL_RULES_IMAGE1 = "img/rules/image01.png";
 	public static final String URL_RULES_IMAGE2 = "img/rules/image02.png";
+	public static final String URL_RULES_IMAGE3 = "img/rules/image03.png";
+	public static final String URL_RULES_IMAGE4 = "img/rules/image04.png";
 	
 	public static final String URL_MUSIC1 = "music/mess.ogg";
 	public static final String URL_MUSIC2 = "music/mess2.ogg";
@@ -40,8 +42,8 @@ public class Assets implements Disposable {
 	public static final String URL_SOUND2 = "sounds/button.ogg";
 	public static final String URL_SOUND3 = "sounds/quit.ogg";
 	public static final String URL_SOUND4 = "sounds/error.ogg";
-	public static final String URL_SOUND5 = "";
-	public static final String URL_SOUND6 = "";
+	public static final String URL_SOUND5 = "sounds/success.ogg";
+	public static final String URL_SOUND6 = "sounds/explosion.ogg";
 	public static final String URL_SOUND7 = "";
 	
 	
@@ -132,6 +134,8 @@ public class Assets implements Disposable {
 	private void loadRulesImages(){
 		assetManager.load(URL_RULES_IMAGE1, Texture.class);
 		assetManager.load(URL_RULES_IMAGE2, Texture.class);
+		assetManager.load(URL_RULES_IMAGE3, Texture.class);
+		assetManager.load(URL_RULES_IMAGE4, Texture.class);
 	}
 	
 	/**
@@ -150,6 +154,8 @@ public class Assets implements Disposable {
 		Soundbox.load(URL_SOUND2, "button");
 		Soundbox.load(URL_SOUND3, "quit");
 		Soundbox.load(URL_SOUND4, "error");
+		Soundbox.load(URL_SOUND5, "success");
+		Soundbox.load(URL_SOUND6, "explosion");
 	}
 
 	/**

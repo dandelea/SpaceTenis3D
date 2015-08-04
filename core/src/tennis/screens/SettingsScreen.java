@@ -4,6 +4,7 @@ import tennis.SpaceTennis3D;
 import tennis.managers.Assets;
 import tennis.managers.Soundbox;
 import tennis.managers.Tools;
+import tennis.objects.Difficulty;
 import tennis.references.Models;
 
 import com.badlogic.gdx.Gdx;
@@ -35,7 +36,7 @@ public class SettingsScreen implements Screen {
 	private BitmapFont titleFont;
 	
 	private CheckBox vSyncCheckBox, fullscreenCheckBox, musicCheckBox, soundCheckBox;
-	private SelectBox<String> resolution, fov, ambient;
+	private SelectBox<String> resolution, fov, ambient, difficulty;
 	
 	private TextButton btnSave, btnExit;
 
@@ -142,6 +143,13 @@ public class SettingsScreen implements Screen {
 		ambients[3] = "Space 1";
 		ambients[4] = "Space 2";
 		ambient.setItems(ambients);
+		
+		difficulty = new SelectBox<String>(skin);
+		String[] difficulties = new String[3];
+		difficulties[0] = Difficulty.EASY.toString();
+		difficulties[1] = Difficulty.MEDIUM.toString();
+		difficulties[2] = Difficulty.HARD.toString();
+		difficulty.setItems(difficulties);
 
 		btnSave = new TextButton("Save", skin);
 		btnSave.pad(10, 20, 10, 20);
@@ -161,6 +169,10 @@ public class SettingsScreen implements Screen {
 				
 				// Save ambient
 				Models.setAmbient(ambient.getSelected());
+				
+				// Save difficulty
+				SpaceTennis3D.difficulty = Enum.valueOf(Difficulty.class, difficulty.getSelected());
+				
 				Soundbox.play("button");
 				SpaceTennis3D.goTo(new SettingsScreen());
 			}
@@ -177,16 +189,18 @@ public class SettingsScreen implements Screen {
 		});
 		
 		table.add(heading).spaceBottom(0.07f * SpaceTennis3D.HEIGHT).colspan(2).row();
-		table.add(fullscreenCheckBox).spaceBottom(0.05f * SpaceTennis3D.HEIGHT).colspan(2).row();
-		table.add(vSyncCheckBox).spaceBottom(0.05f * SpaceTennis3D.HEIGHT).colspan(2).row();
-		table.add(musicCheckBox).spaceBottom(0.05f * SpaceTennis3D.HEIGHT).colspan(2).row();
-		table.add(soundCheckBox).spaceBottom(0.05f * SpaceTennis3D.HEIGHT).colspan(2).row();
-		table.add(new Label("Resolution:", skin)).spaceBottom(0.05f * SpaceTennis3D.HEIGHT);
-		table.add(resolution).spaceBottom(0.05f * SpaceTennis3D.HEIGHT).row();
-		table.add(new Label("FOV:", skin)).spaceBottom(0.05f * SpaceTennis3D.HEIGHT);
-		table.add(fov).spaceBottom(0.05f * SpaceTennis3D.HEIGHT).row();
-		table.add(new Label("Game background:", skin)).spaceBottom(0.05f * SpaceTennis3D.HEIGHT);
-		table.add(ambient).spaceBottom(0.05f * SpaceTennis3D.HEIGHT).row();
+		table.add(fullscreenCheckBox).spaceBottom(0.03f * SpaceTennis3D.HEIGHT).colspan(2).row();
+		table.add(vSyncCheckBox).spaceBottom(0.03f * SpaceTennis3D.HEIGHT).colspan(2).row();
+		table.add(musicCheckBox).spaceBottom(0.03f * SpaceTennis3D.HEIGHT).colspan(2).row();
+		table.add(soundCheckBox).spaceBottom(0.03f * SpaceTennis3D.HEIGHT).colspan(2).row();
+		table.add(new Label("Resolution:", skin)).spaceBottom(0.03f * SpaceTennis3D.HEIGHT);
+		table.add(resolution).spaceBottom(0.03f * SpaceTennis3D.HEIGHT).row();
+		table.add(new Label("FOV:", skin)).spaceBottom(0.03f * SpaceTennis3D.HEIGHT);
+		table.add(fov).spaceBottom(0.03f * SpaceTennis3D.HEIGHT).row();
+		table.add(new Label("Game background:", skin)).spaceBottom(0.03f * SpaceTennis3D.HEIGHT);
+		table.add(ambient).spaceBottom(0.03f * SpaceTennis3D.HEIGHT).row();
+		table.add(new Label("Difficulty:", skin)).spaceBottom(0.03f * SpaceTennis3D.HEIGHT);
+		table.add(difficulty).spaceBottom(0.03f * SpaceTennis3D.HEIGHT).row();
 		table.add(btnSave).colspan(2);
 		table.center();
 		stage.addActor(table);

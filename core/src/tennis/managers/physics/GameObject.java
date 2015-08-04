@@ -23,7 +23,6 @@ public class GameObject extends ModelInstance implements Disposable {
 	// BALL
 	public int lastPlayer;
 	public int bounces;
-	public static final int MAX_ERROR_BOUNCE = 50;
 	public boolean hitted;
 
 	public GameObject(Model model, String rootNode,
