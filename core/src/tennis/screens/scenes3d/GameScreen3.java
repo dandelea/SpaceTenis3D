@@ -386,6 +386,7 @@ public class GameScreen3 implements Screen {
 
 		// SETS MARKER
 		stringBuilder.setLength(0);
+		stringBuilder.append("Sets").append("\n");
 		stringBuilder.append("Player 1: ")
 				.append(scoreBoard.getSetsOfPlayer(1)).append("\n")
 				.append("Player 2: ").append(scoreBoard.getSetsOfPlayer(2));
@@ -478,9 +479,7 @@ public class GameScreen3 implements Screen {
 	private void updateReady() {
 		if (loading)
 			doneLoading();
-		if (Gdx.input.justTouched()) {
-			state = GAME_RUNNING;
-		}
+		state = GAME_RUNNING;
 	}
 
 	long time = 0;
@@ -508,13 +507,9 @@ public class GameScreen3 implements Screen {
 			System.out.println(reaction);
 		}
 
-		if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+		if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) && state==GAME_RUNNING) {
 			Tools.hit(instances, 50, opponent, particleController,
 					opponentWillHit);
-		}
-
-		if (Gdx.input.isKeyJustPressed(Input.Keys.E)) {
-			SpaceTennis3D.goTo(new MainMenuScreen());
 		}
 
 		if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)

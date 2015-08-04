@@ -126,9 +126,9 @@ public class SettingsScreen implements Screen {
 		// FOV
 		fov = new SelectBox<String>(skin);
 		String[] fovs = new String[6];
-		fovs[0] = "45";
-		fovs[1] = "60";
-		fovs[2] = "67";
+		fovs[0] = "67";
+		fovs[1] = "45";
+		fovs[2] = "60";
 		fovs[3] = "75";
 		fovs[4] = "90";
 		fovs[5] = "100";
@@ -136,12 +136,11 @@ public class SettingsScreen implements Screen {
 		
 		// AMBIENT
 		ambient = new SelectBox<String>(skin);
-		String[] ambients = new String[5];
-		ambients[0] = "Clean";
-		ambients[1] = "Office";
-		ambients[2] = "Park";
-		ambients[3] = "Space 1";
-		ambients[4] = "Space 2";
+		String[] ambients = new String[4];
+		ambients[0] = "Space 1";
+		ambients[1] = "Space 2";
+		ambients[2] = "Space 3";
+		ambients[3] = "Clean";
 		ambient.setItems(ambients);
 		
 		difficulty = new SelectBox<String>(skin);
@@ -201,7 +200,8 @@ public class SettingsScreen implements Screen {
 		table.add(ambient).spaceBottom(0.03f * SpaceTennis3D.HEIGHT).row();
 		table.add(new Label("Difficulty:", skin)).spaceBottom(0.03f * SpaceTennis3D.HEIGHT);
 		table.add(difficulty).spaceBottom(0.03f * SpaceTennis3D.HEIGHT).row();
-		table.add(btnSave).colspan(2);
+		table.add(btnSave).pad(10);
+		table.add(btnExit).pad(10).row();
 		table.center();
 		stage.addActor(table);
 		
