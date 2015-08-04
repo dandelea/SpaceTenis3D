@@ -3,6 +3,7 @@ package tennis.screens.scenes3d;
 import tennis.SpaceTennis3D;
 import tennis.managers.Assets;
 import tennis.managers.Jukebox;
+import tennis.managers.Models;
 import tennis.managers.Tools;
 import tennis.managers.bluetooth.BluetoothServer;
 import tennis.managers.physics.Constructor;
@@ -11,7 +12,6 @@ import tennis.managers.physics.GameObject;
 import tennis.managers.physics.ParticleController;
 import tennis.objects.Opponent;
 import tennis.objects.Scoreboard;
-import tennis.references.Models;
 import tennis.screens.GameOverScreen;
 import tennis.screens.MainMenuScreen;
 

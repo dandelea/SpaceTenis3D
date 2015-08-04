@@ -1,4 +1,4 @@
-package tennis.references;
+package tennis.managers;
 
 import com.badlogic.gdx.utils.Array;
 

@@ -2,10 +2,10 @@ package tennis.screens;
 
 import tennis.SpaceTennis3D;
 import tennis.managers.Assets;
+import tennis.managers.Models;
 import tennis.managers.Soundbox;
 import tennis.managers.Tools;
 import tennis.objects.Difficulty;
-import tennis.references.Models;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
