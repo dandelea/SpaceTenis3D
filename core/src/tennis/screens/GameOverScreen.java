@@ -52,7 +52,7 @@ public class GameOverScreen implements Screen {
 		scoreBoard = SpaceTennis3D.lastScoreboard;
 
 		stage = new Stage();
-		stage.setDebugAll(true);
+		//stage.setDebugAll(true);
 		Gdx.input.setInputProcessor(stage);
 
 		skin = Assets.skin;

@@ -52,7 +52,7 @@ public class MainMenuScreen implements Screen {
 		assets.loadScreen(Assets.MAIN_MENU_SCREEN);
 
 		stage = new Stage();
-		stage.setDebugAll(true);
+		//stage.setDebugAll(true);
 		Gdx.input.setInputProcessor(stage);
 
 		skin = Assets.skin;
