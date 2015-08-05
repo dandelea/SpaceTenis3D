@@ -5,7 +5,7 @@ import com.badlogic.gdx.utils.Array;
 public class Models {
 	
 	public static String MODEL_AMBIENT = "models/ambient/space1.g3dj";
-	public static String MODEL_TABLE = "models/table/table8.g3db";
+	public static String MODEL_TABLE = "models/table/table.g3db";
 
 
 	private static String[] models = {

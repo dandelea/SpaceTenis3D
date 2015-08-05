@@ -508,7 +508,7 @@ public class GameScreen implements Screen {
 		}
 
 		if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) && state==GAME_RUNNING) {
-			Tools.hit(instances, 50, opponent, particleController,
+			opponentWillHit = Tools.hit(instances, 50, opponent, particleController,
 					opponentWillHit);
 		}
 

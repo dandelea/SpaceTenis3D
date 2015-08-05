@@ -241,7 +241,7 @@ public class Tools {
 		return res;
 	}
 
-	public static void hit(Array<GameObject> instances, int intensity,
+	public static boolean hit(Array<GameObject> instances, int intensity,
 			Opponent opponent, ParticleController particleController,
 			boolean opponentWillHit) {
 		GameObject table = instances.get(0);
@@ -265,6 +265,7 @@ public class Tools {
 
 		Soundbox.play("laser");
 		moveTo(ball, new Vector3(0, 0, 0), intensity);
+		return opponentWillHit;
 	}
 
 	// SETTINGS
@@ -296,43 +297,5 @@ public class Tools {
 	 */
 	public static boolean sound() {
 		return Gdx.app.getPreferences(SpaceTennis3D.TITLE).getBoolean("sound");
-	}
-
-	// BLUETOOTH
-
-	public static byte[] toByteArray(Object obj) {
-		byte[] bytes = null;
-		ObjectOutputStream oos = null;
-		ByteArrayOutputStream bos = null;
-
-		try {
-			bos = new ByteArrayOutputStream();
-			oos = new ObjectOutputStream(bos);
-			oos.writeObject(obj);
-			return bos.toByteArray();
-		} catch (Exception e) {
-			System.out.println("Bluetooth. Cast exception at sending: "
-					+ e.getMessage());
-			Log.error("Bluetooth. Cast exception at sending: " + e.getMessage());
-		}
-
-		return bytes;
-	}
-
-	public static Object toObject(byte[] bytes) {
-		Object obj = null;
-		ObjectInputStream ois = null;
-
-		try {
-			ois = new ObjectInputStream(new ByteArrayInputStream(bytes));
-			return ois.readObject();
-		} catch (Exception e) {
-			System.out.println("Bluetooth. Cast exception at receiving: "
-					+ e.getMessage());
-			Log.error("Bluetooth. Cast exception at receiving: "
-					+ e.getMessage());
-		}
-
-		return obj;
 	}
 }
