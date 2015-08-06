@@ -60,7 +60,7 @@ public class MainMenuScreen implements Screen {
 		table = new Table(skin);
 		table.setBounds(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
-		btnStart = new TextButton("Start", skin);
+		btnStart = new TextButton("Jugar", skin);
 		btnStart.addListener(new ClickListener() {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
@@ -78,7 +78,7 @@ public class MainMenuScreen implements Screen {
 			}
 		});
 		btnDemo.pad(20);
-		btnOptions = new TextButton("Options", skin);
+		btnOptions = new TextButton("Opciones", skin);
 		btnOptions.addListener(new ClickListener() {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
@@ -87,7 +87,7 @@ public class MainMenuScreen implements Screen {
 			}
 		});
 		btnOptions.pad(20);
-		btnRules = new TextButton("Rules", skin);
+		btnRules = new TextButton("Cómo jugar", skin);
 		btnRules.addListener(new ClickListener() {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
@@ -96,7 +96,7 @@ public class MainMenuScreen implements Screen {
 			}
 		});
 		btnRules.pad(20);
-		btnExit = new TextButton("Exit", skin);
+		btnExit = new TextButton("Salir", skin);
 		btnExit.addListener(new ClickListener() {
 
 			@Override

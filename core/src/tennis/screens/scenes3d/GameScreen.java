@@ -82,7 +82,6 @@ public class GameScreen implements Screen {
 	private Stage stage;
 	private Window pause;
 	private Label setsLabel, pointsLabel;
-	private BitmapFont font;
 	private BitmapFont titleFont;
 	private StringBuilder stringBuilder;
 
@@ -154,11 +153,11 @@ public class GameScreen implements Screen {
 		setupUI();
 
 		// PAUSE SCREEN
-		pause = new Window("PAUSE", Assets.skin);
+		pause = new Window("PAUSA", Assets.skin);
 		pause.setSize(stage.getWidth() / 1.5f, stage.getHeight() / 1.5f);
 		pause.setPosition(stage.getWidth() / 2 - pause.getWidth() / 2,
 				stage.getHeight() / 2 - pause.getHeight() / 2);
-		TextButton resume = new TextButton("Resume", Assets.skin);
+		TextButton resume = new TextButton("Continuar", Assets.skin);
 		resume.pad(20);
 		resume.addListener(new ClickListener() {
 			@Override
@@ -167,7 +166,7 @@ public class GameScreen implements Screen {
 				disposePause();
 			}
 		});
-		TextButton quit = new TextButton("Quit", Assets.skin);
+		TextButton quit = new TextButton("Salir", Assets.skin);
 		quit.pad(20);
 		quit.addListener(new ClickListener() {
 			@Override
@@ -368,12 +367,9 @@ public class GameScreen implements Screen {
 	private void setupUI() {
 		// UI
 		stage = new Stage();
-		stage.setDebugAll(true);
-		// font1 = Assets.
 
 		titleFont = Assets.titleGenerator.generateFont(40);
-		font = Assets.fontGenerator.generateFont(20);
-		setsLabel = new Label("", new Label.LabelStyle(font, Color.WHITE));
+		setsLabel = new Label("", Assets.skin);
 		setsLabel.setPosition(SpaceTennis3D.WIDTH / 10,
 				5 * SpaceTennis3D.HEIGHT / 6);
 		pointsLabel = new Label("",
@@ -575,7 +571,6 @@ public class GameScreen implements Screen {
 		SpaceTennis3D.particleController.dispose();
 		
 		// FONTS
-		font.dispose();
 		titleFont.dispose();
 		
 		// SCREEN

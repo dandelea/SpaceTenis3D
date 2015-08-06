@@ -63,8 +63,8 @@ public class GameOverScreen implements Screen {
 		String btnPlayText = "";
 		String headingText = "";
 		if (scoreBoard.isFinished()) {
-			headingText = scoreBoard.getWinner()==1 ? "Congratulations!" : "Ooohh! You lost";
-			btnPlayText = scoreBoard.getWinner()==1 ? "Play again" : "Try again";
+			headingText = scoreBoard.getWinner()==1 ? "¡Felicidades!" : "Ooohh! Perdiste";
+			btnPlayText = scoreBoard.getWinner()==1 ? "Jugar otra vez" : "Revancha";
 		} else {
 			SpaceTennis3D.goTo(new MainMenuScreen());
 		}
@@ -79,7 +79,7 @@ public class GameOverScreen implements Screen {
 		});
 		btnPlay.pad(20);
 		
-		btnExit = new TextButton("Exit", skin);
+		btnExit = new TextButton("Salir", skin);
 		btnExit.addListener(new ClickListener() {
 
 			@Override

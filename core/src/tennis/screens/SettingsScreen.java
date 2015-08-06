@@ -57,10 +57,10 @@ public class SettingsScreen implements Screen {
 		
 		// Creating heading
 		titleFont = Assets.titleGenerator.generateFont(50);
-		heading = new Label("Settings", skin);
+		heading = new Label("Opciones", skin);
 		heading.setStyle(new LabelStyle(titleFont, Color.WHITE));
 		
-		vSyncCheckBox = new CheckBox("vSync", skin);
+		vSyncCheckBox = new CheckBox("  Sincronización vertical", skin);
 		vSyncCheckBox.setChecked(Tools.vSync());
 		vSyncCheckBox.addListener(new ClickListener() {
 			@Override
@@ -73,7 +73,7 @@ public class SettingsScreen implements Screen {
 			}
 		});
 		
-		fullscreenCheckBox = new CheckBox("Full Screen", skin);
+		fullscreenCheckBox = new CheckBox("  Pantalla completa", skin);
 		fullscreenCheckBox.setChecked(Tools.fullscreen());
 		fullscreenCheckBox.addListener(new ClickListener() {
 			@Override
@@ -86,7 +86,7 @@ public class SettingsScreen implements Screen {
 			}
 		});
 		
-		musicCheckBox = new CheckBox("Play Music", skin);
+		musicCheckBox = new CheckBox("  Reproducir música", skin);
 		musicCheckBox.setChecked(Tools.music());
 		musicCheckBox.addListener(new ClickListener() {
 			@Override
@@ -99,7 +99,7 @@ public class SettingsScreen implements Screen {
 			}
 		});
 		
-		soundCheckBox = new CheckBox("Play Sounds FX", skin);
+		soundCheckBox = new CheckBox("  Reproducir sonidos", skin);
 		soundCheckBox.setChecked(Tools.sound());
 		soundCheckBox.addListener(new ClickListener() {
 			@Override
@@ -150,7 +150,7 @@ public class SettingsScreen implements Screen {
 		difficulties[2] = Difficulty.HARD.toString();
 		difficulty.setItems(difficulties);
 
-		btnSave = new TextButton("Save", skin);
+		btnSave = new TextButton("Guardar", skin);
 		btnSave.pad(10, 20, 10, 20);
 		btnSave.addListener(new ClickListener(){
 			@Override
@@ -177,7 +177,7 @@ public class SettingsScreen implements Screen {
 			}
 		});
 		
-		btnExit = new TextButton("Return", skin);
+		btnExit = new TextButton("Volver", skin);
 		btnExit.pad(10);
 		btnExit.addListener(new ClickListener(){
 			@Override
@@ -192,13 +192,13 @@ public class SettingsScreen implements Screen {
 		table.add(vSyncCheckBox).spaceBottom(0.03f * SpaceTennis3D.HEIGHT).colspan(2).row();
 		table.add(musicCheckBox).spaceBottom(0.03f * SpaceTennis3D.HEIGHT).colspan(2).row();
 		table.add(soundCheckBox).spaceBottom(0.03f * SpaceTennis3D.HEIGHT).colspan(2).row();
-		table.add(new Label("Resolution:", skin)).spaceBottom(0.03f * SpaceTennis3D.HEIGHT);
+		table.add(new Label("Resolución:", skin)).spaceBottom(0.03f * SpaceTennis3D.HEIGHT);
 		table.add(resolution).spaceBottom(0.03f * SpaceTennis3D.HEIGHT).row();
 		table.add(new Label("FOV:", skin)).spaceBottom(0.03f * SpaceTennis3D.HEIGHT);
 		table.add(fov).spaceBottom(0.03f * SpaceTennis3D.HEIGHT).row();
-		table.add(new Label("Game background:", skin)).spaceBottom(0.03f * SpaceTennis3D.HEIGHT);
+		table.add(new Label("Fondo de juego:", skin)).spaceBottom(0.03f * SpaceTennis3D.HEIGHT);
 		table.add(ambient).spaceBottom(0.03f * SpaceTennis3D.HEIGHT).row();
-		table.add(new Label("Difficulty:", skin)).spaceBottom(0.03f * SpaceTennis3D.HEIGHT);
+		table.add(new Label("Dificultad:", skin)).spaceBottom(0.03f * SpaceTennis3D.HEIGHT);
 		table.add(difficulty).spaceBottom(0.03f * SpaceTennis3D.HEIGHT).row();
 		table.add(btnSave).pad(10);
 		table.add(btnExit).pad(10).row();

@@ -25,7 +25,6 @@ public class RulesScreen1 implements Screen{
 	private Table table;
 	
 	private BitmapFont titleFont;
-	private BitmapFont rulesFont;
 	private Skin skin;
 	
 	private Label heading;
@@ -55,13 +54,8 @@ public class RulesScreen1 implements Screen{
 		heading = new Label("Bluetooth", skin);
 		heading.setStyle(new LabelStyle(titleFont, Color.WHITE));
 
-		rulesFont = Assets.fontGenerator.generateFont(20);
 		rules1 = new Label(RULES1, skin);
-		rules1.setStyle(new LabelStyle(rulesFont, Color.WHITE));
-		
-		rulesFont = Assets.fontGenerator.generateFont(20);
 		rules2 = new Label(RULES2, skin);
-		rules2.setStyle(new LabelStyle(rulesFont, Color.WHITE));
 		
 		image1 = new Image(assets.get(Assets.URL_RULES_IMAGE3, Texture.class));
 		
