@@ -138,8 +138,6 @@ public class GameScreen implements Screen {
 	private Opponent opponent;
 	private boolean opponentWillHit;
 
-	private ParticleController particleController;
-
 	@Override
 	public void show() {
 
@@ -176,6 +174,7 @@ public class GameScreen implements Screen {
 			public void clicked(InputEvent event, float x, float y) {
 				dispose();
 				Jukebox.stopAll();
+				SpaceTennis3D.games++;
 				SpaceTennis3D.goTo(new MainMenuScreen());
 			}
 		});
@@ -207,7 +206,9 @@ public class GameScreen implements Screen {
 		Gdx.input.setInputProcessor(stage);
 
 		// PARTICLES
-		particleController = new ParticleController(cam, modelBatch);
+		if (SpaceTennis3D.games == 0) {
+			SpaceTennis3D.particleController = new ParticleController(cam, modelBatch);
+		}
 
 		// COLLISION STUFF
 		collisionConfig = new btDefaultCollisionConfiguration();
@@ -311,6 +312,7 @@ public class GameScreen implements Screen {
 			SpaceTennis3D.lastScoreboard = scoreBoard;
 			dispose();
 			Jukebox.stopAll();
+			SpaceTennis3D.games++;
 			SpaceTennis3D.goTo(new GameOverScreen());
 			break;
 		}
@@ -330,7 +332,7 @@ public class GameScreen implements Screen {
 		for (GameObject instance : instances) {
 			if (instance.isVisible(cam)
 					&& (!Tools.outOfTable(instances, scoreBoard, dynamicsWorld,
-							table, ball, constructors, particleController) || instances.indexOf(
+							table, ball, constructors, SpaceTennis3D.particleController) || instances.indexOf(
 							instance, true) == 0)) {
 				modelBatch.render(instance, environment);
 			}
@@ -346,7 +348,7 @@ public class GameScreen implements Screen {
 		}
 		modelBatch.end();
 
-		particleController.renderParticleEffects();
+		SpaceTennis3D.particleController.renderParticleEffects();
 
 		/*
 		 * debugDrawer.begin(cam); dynamicsWorld.debugDrawWorld();
@@ -462,7 +464,7 @@ public class GameScreen implements Screen {
 			GameObject ball = instances.get(1);
 			if (opponentWillHit) {
 				Tools.hit(instances, opponent.getVelocity(), opponent,
-						particleController, opponentWillHit);
+						SpaceTennis3D.particleController, opponentWillHit);
 
 			}
 			ball.hitted = true;
@@ -508,7 +510,7 @@ public class GameScreen implements Screen {
 		}
 
 		if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) && state==GAME_RUNNING) {
-			opponentWillHit = Tools.hit(instances, 50, opponent, particleController,
+			opponentWillHit = Tools.hit(instances, 50, opponent, SpaceTennis3D.particleController,
 					opponentWillHit);
 		}
 
@@ -545,6 +547,11 @@ public class GameScreen implements Screen {
 
 	@Override
 	public void dispose() {
+		
+		// ASSETS
+		assets.dispose();
+		
+		// INSTANCES AND MODELS
 		for (GameObject obj : instances) {
 			obj.motionState.dispose();
 			obj.body.dispose();
@@ -553,19 +560,27 @@ public class GameScreen implements Screen {
 		instances.clear();
 		ball.dispose();
 		
+		// BULLET COLLISIONS
 		dynamicsWorld.dispose();
 		broadphase.dispose();
-		dispatcher.dispose();
 		collisionConfig.dispose();
-
+		dispatcher.dispose();
+		constraintSolver.dispose();
 		contactListener.dispose();
-
-		modelBatch.dispose();
-
+		
+		// DEBUG
 		debugDrawer.dispose();
-		assets.dispose();
-
-		particleController.dispose();
+		
+		// PARTICLE
+		SpaceTennis3D.particleController.dispose();
+		
+		// FONTS
+		font.dispose();
+		titleFont.dispose();
+		
+		// SCREEN
+		modelBatch.dispose();
+		stage.dispose();
 
 	}
 }

@@ -2,6 +2,7 @@ package tennis;
 
 import tennis.managers.Log;
 import tennis.managers.bluetooth.BluetoothServer;
+import tennis.managers.physics.ParticleController;
 import tennis.objects.Difficulty;
 import tennis.objects.Scoreboard;
 import tennis.screens.MainMenuScreen;
@@ -23,6 +24,8 @@ public class SpaceTennis3D extends Game {
 	public static int HEIGHT;
 	public static Scoreboard lastScoreboard;
 	public static Difficulty difficulty;
+	public static int games;
+	public static ParticleController particleController;
 
 	/**
 	 * First method to create the application. Initialize the server and start
@@ -43,6 +46,7 @@ public class SpaceTennis3D extends Game {
 		Gdx.app.getPreferences(TITLE).putBoolean("music", true);
 		Gdx.app.getPreferences(TITLE).putBoolean("sound", true);
 		difficulty = Difficulty.EASY;
+		games = 0;
 
 		setScreen(new MainMenuScreen());
 	}

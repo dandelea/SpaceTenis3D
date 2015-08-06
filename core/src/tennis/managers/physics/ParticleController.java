@@ -11,7 +11,7 @@ import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.particles.ParticleEffect;
 import com.badlogic.gdx.graphics.g3d.particles.ParticleEffectLoader;
 import com.badlogic.gdx.graphics.g3d.particles.ParticleSystem;
-import com.badlogic.gdx.graphics.g3d.particles.batches.PointSpriteParticleBatch;
+import com.badlogic.gdx.graphics.g3d.particles.batches.BillboardParticleBatch;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
@@ -27,7 +27,7 @@ public class ParticleController implements Disposable {
 	private static final String URL_DEFAULT_PARTICLE = "particles/pre_particle.png";
 
 	private AssetManager particleManager;
-	private PointSpriteParticleBatch particleBatch;
+	private BillboardParticleBatch particleBatch;
 	private ParticleSystem particleSystem;
 	private ParticleEffect originalEffect;
 	private PFXPool particles1Hit;
@@ -43,7 +43,7 @@ public class ParticleController implements Disposable {
 		// PARTICLES
 		particleSystem = ParticleSystem.get();
 		particleManager = new AssetManager();
-		particleBatch = new PointSpriteParticleBatch();
+		particleBatch = new BillboardParticleBatch();
 		particleBatch.setCamera(cam);
 		particleSystem.add(particleBatch);
 
@@ -56,9 +56,7 @@ public class ParticleController implements Disposable {
 		particleManager.load(URL_PARTICLE1, ParticleEffect.class, loadParam);
 		particleManager.load(URL_PARTICLE2, ParticleEffect.class, loadParam);
 		particleManager.load(URL_PARTICLE3, ParticleEffect.class, loadParam);
-
 		particleManager.finishLoading();
-
 		particleBatch.setTexture(particleManager.get(URL_DEFAULT_PARTICLE,
 				Texture.class));
 
@@ -109,12 +107,17 @@ public class ParticleController implements Disposable {
 		Soundbox.play("explosion");
 	}
 
-	@Override
 	public void dispose() {
+		originalEffect.dispose();
+		batch.dispose();
 		particles1Hit.dispose();
 		particles2Hit.dispose();
-		originalEffect.dispose();
+		explosions.dispose();
+	}
+	
+	public void disposeAll(){
 		particleManager.dispose();
+		dispose();
 	}
 
 }
