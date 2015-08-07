@@ -13,7 +13,6 @@ import com.badlogic.gdx.graphics.g3d.particles.ParticleEffectLoader;
 import com.badlogic.gdx.graphics.g3d.particles.ParticleSystem;
 import com.badlogic.gdx.graphics.g3d.particles.batches.BillboardParticleBatch;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Disposable;
 
 public class ParticleController implements Disposable {
@@ -33,9 +32,7 @@ public class ParticleController implements Disposable {
 	private PFXPool particles1Hit;
 	private PFXPool particles2Hit;
 	private PFXPool explosions;
-
-	Array<ParticleController> emitters;
-
+	
 	public ParticleController(PerspectiveCamera cam, ModelBatch batch) {
 		this.cam = cam;
 		this.batch = batch;
