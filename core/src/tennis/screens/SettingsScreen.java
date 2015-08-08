@@ -172,7 +172,10 @@ public class SettingsScreen implements Screen {
 				// Save difficulty
 				SpaceTennis3D.difficulty = Enum.valueOf(Difficulty.class, difficulty.getSelected());
 				
-				Soundbox.play("button");
+				if (soundCheckBox.isChecked()){
+					Soundbox.play("button");
+				}
+				
 				SpaceTennis3D.goTo(new SettingsScreen());
 			}
 		});
@@ -182,7 +185,9 @@ public class SettingsScreen implements Screen {
 		btnExit.addListener(new ClickListener(){
 			@Override
 			public void clicked(InputEvent event, float x, float y){
-				Soundbox.play("quit");
+				if (soundCheckBox.isChecked()){
+					Soundbox.play("quit");
+				}
 				SpaceTennis3D.goTo(new MainMenuScreen());
 			}
 		});

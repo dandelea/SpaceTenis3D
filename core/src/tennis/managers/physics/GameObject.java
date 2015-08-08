@@ -24,6 +24,8 @@ public class GameObject extends ModelInstance implements Disposable {
 	public int lastPlayer;
 	public int bounces;
 	public boolean hitted;
+	public boolean disposed;
+	public static final int MAX_BOUNCES = 50;
 
 	public GameObject(Model model, String rootNode,
 			btRigidBody.btRigidBodyConstructionInfo constructionInfo) {
@@ -37,6 +39,7 @@ public class GameObject extends ModelInstance implements Disposable {
 		body = new btRigidBody(constructionInfo);
 		body.setMotionState(motionState);
 		bounces = 0;
+		disposed = false;
 	}
 
 	public Vector3 getPosition() {

@@ -74,7 +74,6 @@ public class GameScreen implements Screen {
 					* inertia.y, inertia.z);
 			ball.body.setLinearVelocity(reaction);
 			ball.bounces++;
-
 			return true;
 		}
 	}
@@ -327,12 +326,15 @@ public class GameScreen implements Screen {
 		// AMBIENT
 		if (ambient != null)
 			modelBatch.render(ambient);
-		// PHYSICS
+		
+		// RENDER MODELS
+		
 		for (GameObject instance : instances) {
 			if (instance.isVisible(cam)
 					&& (!Tools.outOfTable(instances, scoreBoard, dynamicsWorld,
 							table, ball, constructors, SpaceTennis3D.particleController) || instances.indexOf(
-							instance, true) == 0)) {
+							instance, true) == 0)
+							&& !instance.disposed) {
 				modelBatch.render(instance, environment);
 			}
 		}

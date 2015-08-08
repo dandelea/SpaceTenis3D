@@ -1,10 +1,5 @@
 package tennis.managers;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-
 import tennis.SpaceTennis3D;
 import tennis.managers.physics.Constructor;
 import tennis.managers.physics.Flags;
@@ -31,6 +26,7 @@ public class Tools {
 
 	// THREADS
 
+	
 	public static void sleep(long ms) {
 		try {
 			Thread.sleep(ms);
@@ -136,13 +132,21 @@ public class Tools {
 		return instances.size == 2;
 	}
 
+	/**
+	 * Remove the ball from physic world and from the instances collection
+	 * Also dispose the model instance.
+	 */
 	public static void disposeBall(Array<GameObject> instances,
 			GameObject ball, btDynamicsWorld dynamicsWorld) {
 		instances.removeValue(ball, false);
 		dynamicsWorld.removeRigidBody(ball.body);
+		ball.disposed = true;
 		ball.dispose();
 	}
 
+	/**
+	 * Spawns a new ball in a certain location, with the certain characteristics.
+	 */
 	public static void spawn(ArrayMap<String, Constructor> constructors,
 			Vector3 ballPosition, Array<GameObject> instances,
 			btDynamicsWorld dynamicsWorld) {
@@ -163,6 +167,9 @@ public class Tools {
 		dynamicsWorld.addRigidBody(obj.body);
 	}
 
+	/**
+	 * Updates the scoreboard, according to the screen state.
+	 */
 	public static void point(Array<GameObject> instances, Scoreboard scoreBoard) {
 		GameObject table = instances.get(0);
 		GameObject ball = instances.get(1);
@@ -212,11 +219,10 @@ public class Tools {
 	}
 
 	/**
-	 * Dice que esta fuera del Eje Y de la tabla.
+	 * Checks if the ball is in a bad state (out of table or stopped).
+	 * If true, dispose the ball, point and spawn a new ball.
 	 * 
-	 * @param table
-	 * @param ball
-	 * @return
+	 * @return ball have been disposed and renewed
 	 */
 	public static boolean outOfTable(Array<GameObject> instances,
 			Scoreboard scoreBoard, btDynamicsWorld dynamicsWorld,
@@ -224,14 +230,17 @@ public class Tools {
 			ArrayMap<String, Constructor> constructors,
 			ParticleController particleController) {
 		boolean res;
+		
 		Vector3 ballPosition = ball.getPosition();
 		BoundingBox tableBounds = GameObject.bounds;
 		Vector3 min = new Vector3();
 		tableBounds.getCorner000(min);
 		Vector3 max = new Vector3();
 		tableBounds.getCorner111(max);
-		res = ballPosition.y < min.y && Math.abs(ballPosition.x) < 5
-				&& Math.abs(ballPosition.z) < 5;
+		
+		res = ((ballPosition.y < min.y && Math.abs(ballPosition.x) < 5
+				&& Math.abs(ballPosition.z) < 5) ||
+				 ball.bounces >= GameObject.MAX_BOUNCES) && !ball.disposed;
 		if (res) {
 			Tools.point(instances, scoreBoard);
 			particleController.explosion(ball.position);
@@ -241,6 +250,13 @@ public class Tools {
 		return res;
 	}
 
+	/**
+	 * Hit the ball oriented to the center of the table with a given intensity.
+	 * 
+	 * @param intensity Force to be applied to the ball
+	 * @param opponentWillHit Advance if opponent is going to hit, according to difficulty
+	 * @return opponent hit the ball
+	 */
 	public static boolean hit(Array<GameObject> instances, int intensity,
 			Opponent opponent, ParticleController particleController,
 			boolean opponentWillHit) {
