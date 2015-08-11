@@ -43,9 +43,7 @@ public class Assets implements Disposable {
 	public static final String URL_SOUND5 = "sounds/success.ogg";
 	public static final String URL_SOUND6 = "sounds/explosion.ogg";
 	public static final String URL_SOUND7 = "";
-	
-	
-	
+		
 	public Array<String> models;
 	public static Skin skin;
 	public static FreeTypeFontGenerator titleGenerator;
@@ -56,13 +54,6 @@ public class Assets implements Disposable {
 		assetManager = new AssetManager();
 	}
 
-	public void loadAll() {
-		loadModels();
-
-		loadSkin();
-
-		finish();
-	}
 
 	public void loadScreen(int screen) {
 		switch (screen) {

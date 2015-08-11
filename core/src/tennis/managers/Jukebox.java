@@ -24,6 +24,10 @@ public class Jukebox {
 		return musics.get(name);		
 	}
 	
+	public static boolean isPlaying(String name){
+		return get("game").isPlaying();
+	}
+	
 	public static void play(String name) {
 		boolean on = Gdx.app.getPreferences(SpaceTennis3D.TITLE).getBoolean("music");
 		if (on) {
@@ -48,6 +52,13 @@ public class Jukebox {
 			m.stop();
 		}
 	}
+	
+	public static void pause(String name) {
+		musics.get(name).pause();
+	}
+	
+	
+	
 	
 }
 

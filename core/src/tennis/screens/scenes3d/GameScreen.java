@@ -205,7 +205,8 @@ public class GameScreen implements Screen {
 
 		// PARTICLES
 		if (SpaceTennis3D.games == 0) {
-			SpaceTennis3D.particleController = new ParticleController(cam, modelBatch);
+			SpaceTennis3D.particleController = new ParticleController(cam,
+					modelBatch);
 		}
 
 		// COLLISION STUFF
@@ -326,15 +327,16 @@ public class GameScreen implements Screen {
 		// AMBIENT
 		if (ambient != null)
 			modelBatch.render(ambient);
-		
+
 		// RENDER MODELS
-		
+
 		for (GameObject instance : instances) {
 			if (instance.isVisible(cam)
 					&& (!Tools.outOfTable(instances, scoreBoard, dynamicsWorld,
-							table, ball, constructors, SpaceTennis3D.particleController) || instances.indexOf(
-							instance, true) == 0)
-							&& !instance.disposed) {
+							table, ball, constructors,
+							SpaceTennis3D.particleController) || instances
+							.indexOf(instance, true) == 0)
+					&& !instance.disposed) {
 				modelBatch.render(instance, environment);
 			}
 		}
@@ -358,7 +360,7 @@ public class GameScreen implements Screen {
 
 		renderUI();
 
-		if (firstSong && !Jukebox.get("game").isPlaying()) {
+		if (firstSong && !Jukebox.isPlaying("game") && state == GAME_RUNNING) {
 			firstSong = false;
 			Jukebox.stop("game");
 			Jukebox.loop("game2");
@@ -492,7 +494,7 @@ public class GameScreen implements Screen {
 		if (Tools.allObjectsLoaded(instances)
 				&& Tools.onPlayerHittable(instances.get(0), instances.get(1))
 				&& !instances.get(1).hitted
-				&& BluetoothServer.accelerometer.z > 10) {
+				&& SpaceTennis3D.movement.getMean() > 8) {
 			GameObject table = instances.get(0);
 			GameObject ball = instances.get(1);
 			Vector3 inertia = ball.body.getLinearVelocity().scl(-1);
@@ -507,17 +509,31 @@ public class GameScreen implements Screen {
 			System.out.println(reaction);
 		}
 
-		if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) && state==GAME_RUNNING) {
-			opponentWillHit = Tools.hit(instances, 50, opponent, SpaceTennis3D.particleController,
-					opponentWillHit);
+		if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)
+				&& state == GAME_RUNNING) {
+			opponentWillHit = Tools.hit(instances, 50, opponent,
+					SpaceTennis3D.particleController, opponentWillHit);
 		}
 
 		if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)
 				&& state == GAME_RUNNING) {
+
+			if (firstSong) {
+				Jukebox.pause("game");
+			} else {
+				Jukebox.pause("game2");
+			}
+
 			state = GAME_PAUSED;
 			createPauseMenu();
+
 		} else if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)
 				&& state == GAME_PAUSED) {
+			if (firstSong) {
+				Jukebox.play("game");
+			} else {
+				Jukebox.play("game2");
+			}
 			state = GAME_RUNNING;
 			disposePause();
 		}
@@ -545,10 +561,10 @@ public class GameScreen implements Screen {
 
 	@Override
 	public void dispose() {
-		
+
 		// ASSETS
 		assets.dispose();
-		
+
 		// INSTANCES AND MODELS
 		for (GameObject obj : instances) {
 			obj.motionState.dispose();
@@ -557,7 +573,7 @@ public class GameScreen implements Screen {
 		}
 		instances.clear();
 		ball.dispose();
-		
+
 		// BULLET COLLISIONS
 		dynamicsWorld.dispose();
 		broadphase.dispose();
@@ -565,16 +581,16 @@ public class GameScreen implements Screen {
 		dispatcher.dispose();
 		constraintSolver.dispose();
 		contactListener.dispose();
-		
+
 		// DEBUG
 		debugDrawer.dispose();
-		
+
 		// PARTICLE
 		SpaceTennis3D.particleController.dispose();
-		
+
 		// FONTS
 		titleFont.dispose();
-		
+
 		// SCREEN
 		modelBatch.dispose();
 		stage.dispose();

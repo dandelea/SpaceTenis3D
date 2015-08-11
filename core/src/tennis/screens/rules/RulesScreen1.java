@@ -114,7 +114,8 @@ public class RulesScreen1 implements Screen{
 
 	@Override
 	public void dispose() {
-		stage.dispose();
 		assets.dispose();
+		stage.dispose();
+		titleFont.dispose();
 	}
 }

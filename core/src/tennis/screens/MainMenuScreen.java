@@ -3,6 +3,7 @@ package tennis.screens;
 import tennis.SpaceTennis3D;
 import tennis.managers.Assets;
 import tennis.managers.Soundbox;
+import tennis.managers.bluetooth.BluetoothServer;
 import tennis.screens.demos.PathRotationTest;
 import tennis.screens.rules.RulesScreen;
 import tennis.screens.scenes3d.GameScreen;
@@ -60,15 +61,9 @@ public class MainMenuScreen implements Screen {
 		table = new Table(skin);
 		table.setBounds(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
-		btnStart = new TextButton("Jugar", skin);
-		btnStart.addListener(new ClickListener() {
-			@Override
-			public void clicked(InputEvent event, float x, float y) {
-				Soundbox.play("button");
-				SpaceTennis3D.goTo(new GameScreen());
-			}
-		});
+		btnStart = new TextButton("¡Dispositivo no conectado!", skin);
 		btnStart.pad(20);
+		
 		btnDemo = new TextButton("Demo", skin);
 		btnDemo.addListener(new ClickListener() {
 			@Override
@@ -170,7 +165,21 @@ public class MainMenuScreen implements Screen {
 		handleInput();
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
+		
+		if (BluetoothServer.connected){
+			btnStart.setText("Jugar");
+			btnStart.addListener(new ClickListener() {
+				@Override
+				public void clicked(InputEvent event, float x, float y) {
+					Soundbox.play("button");
+					SpaceTennis3D.goTo(new GameScreen());
+				}
+			});
+		} else {
+			btnStart.setText("¡Dispositivo no conectado!");
+			btnStart.clearListeners();
+		}
+				
 		stage.act(delta);
 		stage.draw();
 
