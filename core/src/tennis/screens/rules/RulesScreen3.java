@@ -11,12 +11,15 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
 public class RulesScreen3 implements Screen{
 	private Assets assets;
@@ -30,9 +33,10 @@ public class RulesScreen3 implements Screen{
 	private Label heading;
 	private Label rules1, rules2;
 	private Image image1;
+	private TextButton btnExit;
 	
 	private static final String RULES1 = "Igual que el tenis";
-	private static final String RULES2 = "Hemos procurado que las reglas sean \nlas mismas que el tenis tradicional.\nAsi que simplemente divértete.";
+	private static final String RULES2 = "Hemos procurado que las reglas sean las mismas que el tenis tradicional.\nAsi que simplemente divértete.";
 
 	@SuppressWarnings("deprecation")
 	@Override
@@ -59,10 +63,22 @@ public class RulesScreen3 implements Screen{
 
 		image1 = new Image(assets.get(Assets.URL_RULES_IMAGE4, Texture.class));
 		
+		btnExit = new TextButton("Volver", skin);
+		btnExit.pad(20);
+		btnExit.addListener(new ClickListener() {
+
+			@Override
+			public void clicked(InputEvent event, float x, float y) {
+				SpaceTennis3D.goTo(new RulesScreen());
+			}
+
+		});
+		
 		table.add(heading).spaceBottom(0.07f * SpaceTennis3D.HEIGHT).colspan(2).row();
 		table.add(rules1).spaceBottom(0.05f * SpaceTennis3D.HEIGHT).row();
 		table.add(rules2).row();
-		table.add(image1).pad(10).center();
+		table.add(image1).pad(10).center().row();
+		table.add(btnExit).spaceBottom(0.05f * SpaceTennis3D.HEIGHT).row();
 		stage.addActor(table);
 	}
 

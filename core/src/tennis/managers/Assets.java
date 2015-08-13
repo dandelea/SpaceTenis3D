@@ -47,6 +47,7 @@ public class Assets implements Disposable {
 	public Array<String> models;
 	public static Skin skin;
 	public static FreeTypeFontGenerator titleGenerator;
+	public static FreeTypeFontGenerator fontGenerator;
 	public AssetManager assetManager;
 
 	public Assets() {
@@ -105,6 +106,8 @@ public class Assets implements Disposable {
 		skin = new Skin(Gdx.files.internal(URL_SKIN));
 		titleGenerator = new FreeTypeFontGenerator(
 				Gdx.files.internal(URL_FONT1));
+		fontGenerator = new FreeTypeFontGenerator(
+				Gdx.files.internal(URL_FONT2));
 	}
 
 	/**

@@ -10,20 +10,25 @@ import javax.microedition.io.Connector;
 import javax.microedition.io.StreamConnection;
 import javax.microedition.io.StreamConnectionNotifier;
 
-import tennis.SpaceTennis3D;
-
-import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.math.WindowedMean;
 
 public class BluetoothServer implements Runnable {
 	static final String deviceUUID = "0000110100001000800000805F9B34FB";
-	public static Vector3 accelerometer;
 	static StreamConnectionNotifier server;
-	public static boolean connected;
+	public static boolean connected = false;
+	
+	public static WindowedMean movementX;
+	public static WindowedMean movementY;
+	public static WindowedMean movementZ;
+	private final static int WINDOW_SIZE = 10;
 
 	@Override
 	public void run() {
 		try {
-			accelerometer = new Vector3();
+			movementX = new WindowedMean(WINDOW_SIZE);
+			movementY = new WindowedMean(WINDOW_SIZE);
+			movementZ = new WindowedMean(WINDOW_SIZE);
+			
 			LocalDevice.getLocalDevice().setDiscoverable(DiscoveryAgent.GIAC);
 
 			String url = "btspp://localhost:" + deviceUUID
@@ -45,29 +50,37 @@ public class BluetoothServer implements Runnable {
 		StreamConnection connection = server.acceptAndOpen();
 		DataInputStream dis = connection.openDataInputStream();
 
+		connected = true;
+		float x;
+		float y;
+		float z;
+		
 		while (true) {
 			try {
 				
-				accelerometer.x = dis.readFloat();
+				x = dis.readFloat();
 				
-				if (accelerometer.x == Float.MAX_VALUE){
+				if (x == Float.MAX_VALUE){
 					connected = false;
 				} else {
-					accelerometer.y = dis.readFloat();
-					accelerometer.z = dis.readFloat();
-					SpaceTennis3D.movement.addValue(accelerometer.z);
-					connected = true;
-					System.out.println(accelerometer + ". Media: " + SpaceTennis3D.movement.getMean() + ". Deviation: " + SpaceTennis3D.movement.standardDeviation());
+					y = dis.readFloat();
+					z = dis.readFloat();
+					movementX.addValue(x);
+					movementY.addValue(y);
+					movementZ.addValue(z);
 				}				
 				
 			} catch (EOFException e) {
 				connected = false;
 				break;
 			}
+			
+			if (!connected){
+				connection.close();
+				break;
+			}
 		}
-
-		connection.close();
+		
 		startServer();
-
 	}
 }

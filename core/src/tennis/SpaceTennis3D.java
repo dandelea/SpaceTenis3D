@@ -10,7 +10,6 @@ import tennis.screens.MainMenuScreen;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.math.WindowedMean;
 
 /**
  * Space Tennis 3D Application Listener
@@ -27,7 +26,6 @@ public class SpaceTennis3D extends Game {
 	public static Difficulty difficulty;
 	public static int games;
 	public static ParticleController particleController;
-	public static WindowedMean movement;
 
 	/**
 	 * First method to create the application. Initialize the server and start
@@ -49,7 +47,6 @@ public class SpaceTennis3D extends Game {
 		Gdx.app.getPreferences(TITLE).putBoolean("sound", true);
 		difficulty = Difficulty.EASY;
 		games = 0;
-		movement = new WindowedMean(100);
 
 		setScreen(new MainMenuScreen());
 	}
@@ -63,6 +60,7 @@ public class SpaceTennis3D extends Game {
 	public void render() {
 		WIDTH = Gdx.graphics.getWidth();
 		HEIGHT = Gdx.graphics.getHeight();
+		
 		super.render();
 	}
 

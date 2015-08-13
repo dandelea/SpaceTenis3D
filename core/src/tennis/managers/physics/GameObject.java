@@ -24,6 +24,7 @@ public class GameObject extends ModelInstance implements Disposable {
 	public int lastPlayer;
 	public int bounces;
 	public boolean hitted;
+	public Vector3 force;
 	public boolean disposed;
 	public static final int MAX_BOUNCES = 50;
 
@@ -74,6 +75,12 @@ public class GameObject extends ModelInstance implements Disposable {
 				ray.origin.y + ray.direction.y * len, ray.origin.z
 						+ ray.direction.z * len);
 		return (dist2 <= radius * radius) ? dist2 : -1f;
+	}
+	
+	public void applyForce(){
+		body.setLinearVelocity(new Vector3());
+   		body.applyCentralForce(force);
+   		force = null;
 	}
 
 	@Override

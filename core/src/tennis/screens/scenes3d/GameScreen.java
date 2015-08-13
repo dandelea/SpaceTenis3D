@@ -165,6 +165,7 @@ public class GameScreen implements Screen {
 				disposePause();
 			}
 		});
+
 		TextButton quit = new TextButton("Salir", Assets.skin);
 		quit.pad(20);
 		quit.addListener(new ClickListener() {
@@ -353,10 +354,8 @@ public class GameScreen implements Screen {
 
 		SpaceTennis3D.particleController.renderParticleEffects();
 
-		/*
-		 * debugDrawer.begin(cam); dynamicsWorld.debugDrawWorld();
-		 * debugDrawer.end();
-		 */
+		// debugDrawer.begin(cam); dynamicsWorld.debugDrawWorld();
+		// debugDrawer.end();
 
 		renderUI();
 
@@ -456,20 +455,24 @@ public class GameScreen implements Screen {
 			Tools.spawn(constructors, ballPosition, instances, dynamicsWorld);
 		firstBall = false;
 
-		instances.get(1);
-		// Opponent hit the ball
-		if (Tools.allObjectsLoaded(instances)
-				&& Tools.onOpponentHittable(instances.get(0), instances.get(1))
-				&& instances.get(1).lastPlayer == 1) {
+		if (Tools.allObjectsLoaded(instances)) {
+			GameObject table = instances.get(0);
 			GameObject ball = instances.get(1);
-			if (opponentWillHit) {
-				Tools.hit(instances, opponent.getVelocity(), opponent,
-						SpaceTennis3D.particleController, opponentWillHit);
+
+			if (ball.force != null) {
+				ball.applyForce();
+			}
+
+			if (Tools.onOpponentHittable(table, ball) && ball.lastPlayer == 1) {
+				if (opponentWillHit) {
+					Tools.hit(instances, opponent.getVelocity(), opponent,
+							SpaceTennis3D.particleController);
+
+				}
+				ball.hitted = true;
+				ball.lastPlayer = 2;
 
 			}
-			ball.hitted = true;
-			ball.lastPlayer = 2;
-
 		}
 
 		dynamicsWorld.stepSimulation(delta, 5, 1f / 60f);
@@ -493,26 +496,17 @@ public class GameScreen implements Screen {
 
 		if (Tools.allObjectsLoaded(instances)
 				&& Tools.onPlayerHittable(instances.get(0), instances.get(1))
-				&& !instances.get(1).hitted
-				&& SpaceTennis3D.movement.getMean() > 8) {
-			GameObject table = instances.get(0);
-			GameObject ball = instances.get(1);
-			Vector3 inertia = ball.body.getLinearVelocity().scl(-1);
-			Vector3 normal = BluetoothServer.accelerometer.nor();
-			Vector3 reaction = normal.scl(2 * normal.dot(inertia)).sub(inertia)
-					.scl(0.2f);
-			reaction.z = Math.abs(reaction.z) * 10 + 1;
-			ball.bounces = 0;
-			ball.hitted = true;
-			ball.lastPlayer = Tools.onPlayerSide(table, ball) ? 1 : 2;
-			ball.body.applyCentralImpulse(reaction);
-			System.out.println(reaction);
+				&& (!instances.get(1).hitted || (instances.get(1).hitted && instances
+						.get(1).lastPlayer == 2)) && state == GAME_RUNNING
+				&& Math.abs(BluetoothServer.movementZ.standardDeviation()) > 5) {
+			opponentWillHit = Tools.accelerometerHit(instances, opponent,
+					SpaceTennis3D.particleController);
 		}
 
 		if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)
 				&& state == GAME_RUNNING) {
 			opponentWillHit = Tools.hit(instances, 50, opponent,
-					SpaceTennis3D.particleController, opponentWillHit);
+					SpaceTennis3D.particleController);
 		}
 
 		if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)

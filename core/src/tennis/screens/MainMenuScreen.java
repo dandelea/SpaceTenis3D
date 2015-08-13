@@ -20,6 +20,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -36,6 +37,7 @@ public class MainMenuScreen implements Screen {
 	private Skin skin;
 
 	private Table table;
+	private BitmapFont font;
 	private BitmapFont titleFont;
 	private Label heading;
 
@@ -44,6 +46,9 @@ public class MainMenuScreen implements Screen {
 	private TweenManager tweenManager;
 
 	private TextButton btnStart, btnDemo, btnOptions, btnRules, btnExit;
+	
+	private SpriteBatch batch;
+	private String device = "Dispositivo conectado";
 
 	@SuppressWarnings("deprecation")
 	@Override
@@ -53,8 +58,9 @@ public class MainMenuScreen implements Screen {
 		assets.loadScreen(Assets.MAIN_MENU_SCREEN);
 
 		stage = new Stage();
-		//stage.setDebugAll(true);
 		Gdx.input.setInputProcessor(stage);
+		
+		batch = new SpriteBatch();
 
 		skin = Assets.skin;
 
@@ -103,6 +109,7 @@ public class MainMenuScreen implements Screen {
 		btnExit.pad(15);
 
 		// Creating heading
+		font = Assets.fontGenerator.generateFont(14);
 		titleFont = Assets.titleGenerator.generateFont(50);
 
 		heading = new Label(SpaceTennis3D.TITLE, skin);
@@ -182,6 +189,12 @@ public class MainMenuScreen implements Screen {
 				
 		stage.act(delta);
 		stage.draw();
+		
+		batch.begin();
+		if (BluetoothServer.connected){
+			font.draw(batch, device, 0, font.getBounds(device).height + font.getBounds(device).height / 2);
+		}
+		batch.end();
 
 		tweenManager.update(delta);
 	}
@@ -235,6 +248,8 @@ public class MainMenuScreen implements Screen {
 	public void dispose() {
 		stage.dispose();
 		assets.dispose();
+		font.dispose();
+		batch.dispose();
 	}
 
 }

@@ -11,12 +11,15 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
 public class RulesScreen2 implements Screen {
 	private Assets assets;
@@ -30,6 +33,7 @@ public class RulesScreen2 implements Screen {
 	private Label heading;
 	private Label rules1, rules2;
 	private Image image1, image2;
+	private TextButton btnExit;
 	
 	private static final String RULES1 = "Bienvenido a SpaceTennis 3D";
 	private static final String RULES2 = "Este juego te enfrentará a la máquina en una partida de tenis.\nPara golpear la pelota usa tu teléfono como raqueta.";
@@ -60,11 +64,23 @@ public class RulesScreen2 implements Screen {
 		image1 = new Image(assets.get(Assets.URL_RULES_IMAGE1, Texture.class));
 		image2 = new Image(assets.get(Assets.URL_RULES_IMAGE2, Texture.class));
 		
+		btnExit = new TextButton("Volver", skin);
+		btnExit.pad(20);
+		btnExit.addListener(new ClickListener() {
+
+			@Override
+			public void clicked(InputEvent event, float x, float y) {
+				SpaceTennis3D.goTo(new RulesScreen());
+			}
+
+		});
+		
 		table.add(heading).spaceBottom(0.07f * SpaceTennis3D.HEIGHT).colspan(2).row();
 		table.add(rules1).colspan(2).row();
 		table.add(rules2).colspan(2).row();
-		table.add(image1).pad(10).left();
-		table.add(image2).pad(10).right();
+		table.add(image1).pad(20).left();
+		table.add(image2).pad(20).right().row();
+		table.add(btnExit).colspan(2).spaceBottom(0.05f * SpaceTennis3D.HEIGHT).row();
 		stage.addActor(table);
 	}
 

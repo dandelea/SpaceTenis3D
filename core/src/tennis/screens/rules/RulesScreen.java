@@ -31,7 +31,7 @@ public class RulesScreen implements Screen {
 	private Skin skin;
 
 	private Label heading;
-	private TextButton  btnRules1, btnRules2, btnRules3;
+	private TextButton  btnRules1, btnRules2, btnRules3, btnExit;
 
 	@SuppressWarnings("deprecation")
 	@Override
@@ -89,10 +89,23 @@ public class RulesScreen implements Screen {
 
 		});
 		
+		btnExit = new TextButton("Volver", skin);
+		btnExit.pad(20);
+		btnExit.addListener(new ClickListener() {
+
+			@Override
+			public void clicked(InputEvent event, float x, float y) {
+				Soundbox.play("quit");
+				SpaceTennis3D.goTo(new MainMenuScreen());
+			}
+
+		});
+		
 		table.add(heading).spaceBottom(0.07f * SpaceTennis3D.HEIGHT).row();
 		table.add(btnRules1).spaceBottom(0.05f * SpaceTennis3D.HEIGHT).row();
 		table.add(btnRules2).spaceBottom(0.05f * SpaceTennis3D.HEIGHT).row();
 		table.add(btnRules3).spaceBottom(0.05f * SpaceTennis3D.HEIGHT).row();
+		table.add(btnExit).spaceBottom(0.05f * SpaceTennis3D.HEIGHT).row();
 		stage.addActor(table);
 	}
 

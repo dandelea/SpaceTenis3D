@@ -1,6 +1,7 @@
 package tennis.managers;
 
 import tennis.SpaceTennis3D;
+import tennis.managers.bluetooth.BluetoothServer;
 import tennis.managers.physics.Constructor;
 import tennis.managers.physics.Flags;
 import tennis.managers.physics.GameObject;
@@ -22,11 +23,10 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ArrayMap;
 
 public class Tools {
-	private static float[] playerHitZoneZ = { -1.1f, 0 };
+	private static float[] playerHitZoneZ = { -1.3f, 0 };
 
 	// THREADS
 
-	
 	public static void sleep(long ms) {
 		try {
 			Thread.sleep(ms);
@@ -133,8 +133,8 @@ public class Tools {
 	}
 
 	/**
-	 * Remove the ball from physic world and from the instances collection
-	 * Also dispose the model instance.
+	 * Remove the ball from physic world and from the instances collection Also
+	 * dispose the model instance.
 	 */
 	public static void disposeBall(Array<GameObject> instances,
 			GameObject ball, btDynamicsWorld dynamicsWorld) {
@@ -145,7 +145,8 @@ public class Tools {
 	}
 
 	/**
-	 * Spawns a new ball in a certain location, with the certain characteristics.
+	 * Spawns a new ball in a certain location, with the certain
+	 * characteristics.
 	 */
 	public static void spawn(ArrayMap<String, Constructor> constructors,
 			Vector3 ballPosition, Array<GameObject> instances,
@@ -213,14 +214,17 @@ public class Tools {
 	public static void moveTo(GameObject instance, Vector3 position,
 			int intensity) {
 		Vector3 instPos = instance.getPosition();
+		Vector3 force = new Vector3((position.x - instPos.x) * intensity, 10,
+				(position.z - instPos.z) * intensity);
+		System.out.println("[" + force.x + ", " + force.y + ", " + force.z
+				+ "]");
 		instance.body.setLinearVelocity(new Vector3());
-		instance.body.applyCentralForce(new Vector3((position.x - instPos.x)
-				* intensity, 10, (position.z - instPos.z) * intensity));
+		instance.body.applyCentralForce(force);
 	}
 
 	/**
-	 * Checks if the ball is in a bad state (out of table or stopped).
-	 * If true, dispose the ball, point and spawn a new ball.
+	 * Checks if the ball is in a bad state (out of table or stopped). If true,
+	 * dispose the ball, point and spawn a new ball.
 	 * 
 	 * @return ball have been disposed and renewed
 	 */
@@ -230,22 +234,23 @@ public class Tools {
 			ArrayMap<String, Constructor> constructors,
 			ParticleController particleController) {
 		boolean res;
-		
+
 		Vector3 ballPosition = ball.getPosition();
 		BoundingBox tableBounds = GameObject.bounds;
 		Vector3 min = new Vector3();
 		tableBounds.getCorner000(min);
 		Vector3 max = new Vector3();
 		tableBounds.getCorner111(max);
-		
-		res = ((ballPosition.y < min.y && Math.abs(ballPosition.x) < 5
-				&& Math.abs(ballPosition.z) < 5) ||
-				 ball.bounces >= GameObject.MAX_BOUNCES) && !ball.disposed;
+
+		res = ((ballPosition.y < min.y && Math.abs(ballPosition.x) < 5 && Math
+				.abs(ballPosition.z) < 5) || ball.bounces >= GameObject.MAX_BOUNCES)
+				&& !ball.disposed;
 		if (res) {
 			Tools.point(instances, scoreBoard);
 			particleController.explosion(ball.position);
 			Tools.disposeBall(instances, ball, dynamicsWorld);
-			Tools.spawn(constructors, GameScreen.ballPosition, instances, dynamicsWorld);
+			Tools.spawn(constructors, GameScreen.ballPosition, instances,
+					dynamicsWorld);
 		}
 		return res;
 	}
@@ -253,23 +258,24 @@ public class Tools {
 	/**
 	 * Hit the ball oriented to the center of the table with a given intensity.
 	 * 
-	 * @param intensity Force to be applied to the ball
-	 * @param opponentWillHit Advance if opponent is going to hit, according to difficulty
+	 * @param intensity
+	 *            Force to be applied to the ball
 	 * @return opponent hit the ball
 	 */
 	public static boolean hit(Array<GameObject> instances, int intensity,
-			Opponent opponent, ParticleController particleController,
-			boolean opponentWillHit) {
+			Opponent opponent, ParticleController particleController) {
+		boolean res = false;
 		GameObject table = instances.get(0);
 		GameObject ball = instances.get(1);
 		ball.bounces = 0;
 		ball.hitted = Tools.onPlayerSide(table, ball);
 		ball.lastPlayer = Tools.onPlayerSide(table, ball) ? 1 : 2;
+
 		if (ball.lastPlayer == 1) {
 			if (MathUtils.random(1) < opponent.getHitRate()) {
-				opponentWillHit = true;
+				res = true;
 			} else {
-				opponentWillHit = false;
+				res = false;
 			}
 		}
 
@@ -281,7 +287,47 @@ public class Tools {
 
 		Soundbox.play("laser");
 		moveTo(ball, new Vector3(0, 0, 0), intensity);
-		return opponentWillHit;
+		return res;
+	}
+
+	public static boolean accelerometerHit(Array<GameObject> instances,
+			Opponent opponent, ParticleController particleController) {
+		boolean res = false;
+		GameObject table = instances.get(0);
+		GameObject ball = instances.get(1);
+
+		assert Tools.allObjectsLoaded(instances)
+				&& Tools.onPlayerHittable(table, ball) && !ball.hitted
+				&& Math.abs(BluetoothServer.movementZ.standardDeviation()) > 5;
+
+		ball.bounces = 0;
+		ball.hitted = Tools.onPlayerSide(table, ball);
+		ball.lastPlayer = Tools.onPlayerSide(table, ball) ? 1 : 2;
+
+		if (ball.lastPlayer == 1) {
+			if (MathUtils.random(1) < opponent.getHitRate()) {
+				res = true;
+			} else {
+				res = false;
+			}
+		}
+
+		if (Tools.onPlayerSide(table, ball)) {
+			particleController.explodeHit(1, ball.position);
+		} else {
+			particleController.explodeHit(2, ball.position);
+		}
+
+		Soundbox.play("laser");
+
+		ball.force = new Vector3(
+				BluetoothServer.movementZ.getLatest() < 0 ? -BluetoothServer.movementX.getLatest()
+						: BluetoothServer.movementX.getLatest(), 20,
+				Math.abs(BluetoothServer.movementZ.standardDeviation()) * 10);
+		System.out.println("[" + ball.force.x + ", " + ball.force.y + ", " + ball.force.z
+				+ "]");
+
+		return res;
 	}
 
 	// SETTINGS
