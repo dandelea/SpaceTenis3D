@@ -69,6 +69,7 @@ public class GameScreen implements Screen {
 				boolean match0, int userValue1, int partId1, int index1,
 				boolean match1) {
 			final GameObject ball = instances.get(userValue0);
+			
 			Vector3 inertia = ball.body.getLinearVelocity();
 			Vector3 reaction = new Vector3(inertia.x, -tableBouncingFactor
 					* inertia.y, inertia.z);
@@ -463,7 +464,7 @@ public class GameScreen implements Screen {
 				ball.applyForce();
 			}
 
-			if (Tools.onOpponentHittable(table, ball) && ball.lastPlayer == 1) {
+			if (Tools.onOpponentHittable(table, ball) && ball.lastPlayer == 1 && ball.bounces > 0) {
 				if (opponentWillHit) {
 					Tools.hit(instances, opponent.getVelocity(), opponent,
 							SpaceTennis3D.particleController);

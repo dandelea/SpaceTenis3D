@@ -216,8 +216,6 @@ public class Tools {
 		Vector3 instPos = instance.getPosition();
 		Vector3 force = new Vector3((position.x - instPos.x) * intensity, 10,
 				(position.z - instPos.z) * intensity);
-		System.out.println("[" + force.x + ", " + force.y + ", " + force.z
-				+ "]");
 		instance.body.setLinearVelocity(new Vector3());
 		instance.body.applyCentralForce(force);
 	}
@@ -242,12 +240,15 @@ public class Tools {
 		Vector3 max = new Vector3();
 		tableBounds.getCorner111(max);
 
-		res = ((ballPosition.y < min.y && Math.abs(ballPosition.x) < 5 && Math
-				.abs(ballPosition.z) < 5) || ball.bounces >= GameObject.MAX_BOUNCES)
+		res = (Math.abs(ballPosition.x) > 2
+				|| ballPosition.y < min.y
+				|| ballPosition.y > 2
+				|| Math.abs(ballPosition.z) > 5
+				|| ball.bounces >= GameObject.MAX_BOUNCES)
 				&& !ball.disposed;
 		if (res) {
 			Tools.point(instances, scoreBoard);
-			particleController.explosion(ball.position);
+			particleController.explosion(ballPosition);
 			Tools.disposeBall(instances, ball, dynamicsWorld);
 			Tools.spawn(constructors, GameScreen.ballPosition, instances,
 					dynamicsWorld);
@@ -322,10 +323,8 @@ public class Tools {
 
 		ball.force = new Vector3(
 				BluetoothServer.movementZ.getLatest() < 0 ? -BluetoothServer.movementX.getLatest()
-						: BluetoothServer.movementX.getLatest(), 20,
+						: BluetoothServer.movementX.getLatest(), 30,
 				Math.abs(BluetoothServer.movementZ.standardDeviation()) * 10);
-		System.out.println("[" + ball.force.x + ", " + ball.force.y + ", " + ball.force.z
-				+ "]");
 
 		return res;
 	}
