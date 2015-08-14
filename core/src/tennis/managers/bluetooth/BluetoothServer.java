@@ -24,7 +24,7 @@ import com.badlogic.gdx.math.WindowedMean;
  * @version 1
  */
 public class BluetoothServer implements Runnable {
-	private static final String deviceUUID = "0000110100001000800000805F9B34FB";
+	private static final String UUID = "0000110100001000800000805F9B34FB";
 	private static StreamConnectionNotifier server;
 	public static boolean connected = false;
 	public static boolean paused = false;
@@ -32,10 +32,9 @@ public class BluetoothServer implements Runnable {
 	public static WindowedMean movementX;
 	public static WindowedMean movementY;
 	public static WindowedMean movementZ;
-	
-	
+
 	/**
-	 * 	Window size to store a swing movement.
+	 * Window size to store a swing movement.
 	 */
 	private final static int WINDOW_SIZE = 10;
 
@@ -55,10 +54,9 @@ public class BluetoothServer implements Runnable {
 			// SET DISCOVERABLE
 			LocalDevice.getLocalDevice().setDiscoverable(DiscoveryAgent.GIAC);
 
-			String url = "btspp://localhost:" + deviceUUID
-					+ ";name=BlueToothServer";
+			String url = "btspp://localhost:" + UUID + ";name=BlueToothServer";
 			server = (StreamConnectionNotifier) Connector.open(url);
-			
+
 			// ABLE TO RECONNECT
 			listen();
 		} catch (IOException e) {
@@ -68,6 +66,7 @@ public class BluetoothServer implements Runnable {
 
 	/**
 	 * Bluetooth server listener. Called from {@link #run()}
+	 * 
 	 * @throws IOException
 	 */
 	private void listen() throws IOException {

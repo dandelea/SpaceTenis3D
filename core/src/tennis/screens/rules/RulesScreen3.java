@@ -21,18 +21,18 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
-public class RulesScreen3 implements Screen{
+public class RulesScreen3 implements Screen {
 	private Assets assets;
 	private Skin skin;
 	private BitmapFont titleFont;
 
 	private Stage stage;
 	private Table table;
-		
+
 	private Label heading, rules1, rules2;
 	private Image image1;
 	private TextButton btnExit;
-	
+
 	private static final String RULES1 = "Igual que el tenis";
 	private static final String RULES2 = "Hemos procurado que las reglas sean las mismas que el tenis tradicional.\nAsi que simplemente divértete.";
 
@@ -41,16 +41,16 @@ public class RulesScreen3 implements Screen{
 	public void show() {
 		assets = new Assets();
 		assets.loadScreen(Assets.RULES_SCREEN);
-		
+
 		stage = new Stage();
 		Gdx.input.setInputProcessor(stage);
-		
+
 		skin = Assets.skin;
 		titleFont = Assets.titleGenerator.generateFont(50);
-		
+
 		table = new Table(skin);
 		table.setFillParent(true);
-		
+
 		heading = new Label("Reglas", skin);
 		heading.setStyle(new LabelStyle(titleFont, Color.WHITE));
 
@@ -58,7 +58,7 @@ public class RulesScreen3 implements Screen{
 		rules2 = new Label(RULES2, skin);
 
 		image1 = new Image(assets.get(Assets.URL_RULES_IMAGE4, Texture.class));
-		
+
 		btnExit = new TextButton("Volver", skin);
 		btnExit.pad(20);
 		btnExit.addListener(new ClickListener() {
@@ -69,8 +69,9 @@ public class RulesScreen3 implements Screen{
 			}
 
 		});
-		
-		table.add(heading).spaceBottom(0.07f * SpaceTennis3D.HEIGHT).colspan(2).row();
+
+		table.add(heading).spaceBottom(0.07f * SpaceTennis3D.HEIGHT).colspan(2)
+				.row();
 		table.add(rules1).spaceBottom(0.05f * SpaceTennis3D.HEIGHT).row();
 		table.add(rules2).row();
 		table.add(image1).pad(10).center().row();
@@ -83,19 +84,19 @@ public class RulesScreen3 implements Screen{
 		handleInput();
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-		
+
 		stage.act(delta);
 		stage.draw();
 	}
-	
+
 	public void handleInput() {
-		if (Gdx.input.isKeyJustPressed(Input.Keys.UP) ||
-				Gdx.input.isKeyJustPressed(Input.Keys.LEFT)){
+		if (Gdx.input.isKeyJustPressed(Input.Keys.UP)
+				|| Gdx.input.isKeyJustPressed(Input.Keys.LEFT)) {
 			SpaceTennis3D.goTo(new RulesScreen2());
 		}
-		
-		if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE) ||
-				Gdx.input.isKeyJustPressed(Input.Keys.ENTER)){
+
+		if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)
+				|| Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
 			Soundbox.play("quit");
 			SpaceTennis3D.goTo(new RulesScreen());
 		}

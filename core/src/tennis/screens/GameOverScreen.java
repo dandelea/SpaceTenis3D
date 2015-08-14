@@ -32,7 +32,7 @@ public class GameOverScreen implements Screen {
 
 	private Stage stage;
 	private Table table;
-	
+
 	private Label heading;
 	private TextButton btnExit, btnPlay;
 
@@ -56,12 +56,14 @@ public class GameOverScreen implements Screen {
 		String btnPlayText = "";
 		String headingText = "";
 		if (SpaceTennis3D.lastScoreboard.isFinished()) {
-			headingText = SpaceTennis3D.lastScoreboard.getWinner()==1 ? "¡Felicidades!" : "Ooohh! Perdiste";
-			btnPlayText = SpaceTennis3D.lastScoreboard.getWinner()==1 ? "Jugar otra vez" : "Revancha";
+			headingText = SpaceTennis3D.lastScoreboard.getWinner() == 1 ? "¡Felicidades!"
+					: "Ooohh! Perdiste";
+			btnPlayText = SpaceTennis3D.lastScoreboard.getWinner() == 1 ? "Jugar otra vez"
+					: "Revancha";
 		} else {
 			SpaceTennis3D.goTo(new MainMenuScreen());
 		}
-		
+
 		btnPlay = new TextButton(btnPlayText, skin);
 		btnPlay.addListener(new ClickListener() {
 			@Override
@@ -71,7 +73,7 @@ public class GameOverScreen implements Screen {
 			}
 		});
 		btnPlay.pad(20);
-		
+
 		btnExit = new TextButton("Salir", skin);
 		btnExit.addListener(new ClickListener() {
 
@@ -109,8 +111,7 @@ public class GameOverScreen implements Screen {
 				.end().repeat(Tween.INFINITY, 0).start(tweenManager);
 
 		// HEADING AND BUTTONS FADE IN
-		Timeline.createSequence()
-				.beginSequence()
+		Timeline.createSequence().beginSequence()
 				.push(Tween.set(btnPlay, ActorAccessor.ALPHA).target(0))
 				.push(Tween.set(btnExit, ActorAccessor.ALPHA).target(0))
 				.push(Tween.from(heading, ActorAccessor.ALPHA, .25f).target(0))
@@ -139,7 +140,7 @@ public class GameOverScreen implements Screen {
 
 		tweenManager.update(delta);
 	}
-	
+
 	public void handleInput() {
 		if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
 			SpaceTennis3D.goTo(new MainMenuScreen());

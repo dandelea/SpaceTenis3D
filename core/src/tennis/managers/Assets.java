@@ -17,7 +17,6 @@ import com.badlogic.gdx.utils.Disposable;
  * @version 1
  */
 public class Assets implements Disposable {
-
 	public static final int MAIN_MENU_SCREEN = 1;
 	public static final int SPLASH_SCREEN_DEVELOPER = 2;
 	public static final int SPLASH_SCREEN_US = 3;
@@ -28,9 +27,8 @@ public class Assets implements Disposable {
 
 	public static final String URL_SKIN = "ui/uiskin.json";
 
-	public static final String URL_FONT1 = "fonts/space_age.ttf";
-	public static final String URL_FONT2 = "fonts/Montserrat-Regular.ttf";
-	public static final String URL_FONT3 = "fonts/Montserrat-Bold.ttf";
+	private static final String URL_FONT1 = "fonts/space_age.ttf";
+	private static final String URL_FONT2 = "fonts/Montserrat-Regular.ttf";
 
 	public static final String URL_SPLASH_DEV = "img/splash_screen/developer.png";
 	public static final String URL_SPLASH_US = "img/splash_screen/us.png";
@@ -40,24 +38,25 @@ public class Assets implements Disposable {
 	public static final String URL_RULES_IMAGE3 = "img/rules/image03.png";
 	public static final String URL_RULES_IMAGE4 = "img/rules/image04.png";
 
-	public static final String URL_MUSIC1 = "music/mess.ogg";
-	public static final String URL_MUSIC2 = "music/mess2.ogg";
+	private static final String URL_MUSIC1 = "music/mess.ogg";
+	private static final String URL_MUSIC2 = "music/mess2.ogg";
 
-	public static final String URL_SOUND1 = "sounds/laser.ogg";
-	public static final String URL_SOUND2 = "sounds/button.ogg";
-	public static final String URL_SOUND3 = "sounds/quit.ogg";
-	public static final String URL_SOUND4 = "sounds/error.ogg";
-	public static final String URL_SOUND5 = "sounds/success.ogg";
-	public static final String URL_SOUND6 = "sounds/explosion.ogg";
+	private static final String URL_SOUND1 = "sounds/laser.ogg";
+	private static final String URL_SOUND2 = "sounds/button.ogg";
+	private static final String URL_SOUND3 = "sounds/quit.ogg";
+	private static final String URL_SOUND4 = "sounds/error.ogg";
+	private static final String URL_SOUND5 = "sounds/success.ogg";
+	private static final String URL_SOUND6 = "sounds/explosion.ogg";
 
 	public Array<String> models;
 	public static Skin skin;
 	public static FreeTypeFontGenerator titleGenerator;
 	public static FreeTypeFontGenerator fontGenerator;
+
 	public AssetManager assetManager;
 
 	/**
-	 * Initializes {@link #Assets()}
+	 * Initializes assets.
 	 */
 	public Assets() {
 		models = Models.MODELS;

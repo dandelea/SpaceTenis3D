@@ -91,8 +91,10 @@ public class ParticleController implements Disposable {
 	 * Creates a hit particle effect of a given player (blue or red) in a
 	 * certain location
 	 * 
-	 * @param player Color of player 1 (blue) or player 2 (red).
-	 * @param position Location of effect.
+	 * @param player
+	 *            Color of player 1 (blue) or player 2 (red).
+	 * @param position
+	 *            Location of effect.
 	 */
 	public void explodeHit(int player, Vector3 position) {
 		ParticleEffect effect;
@@ -116,7 +118,9 @@ public class ParticleController implements Disposable {
 
 	/**
 	 * Creates a endturn explosion in a certain location.
-	 * @param position Location of effect.
+	 * 
+	 * @param position
+	 *            Location of effect.
 	 */
 	public void explosion(Vector3 position) {
 		ParticleEffect effect = explosions.obtain();

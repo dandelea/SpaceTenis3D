@@ -1,6 +1,5 @@
 package tennis.objects;
 
-
 /**
  * Manages the opponent params and difficulty.
  * 

@@ -29,7 +29,7 @@ public class RulesScreen implements Screen {
 	private Table table;
 
 	private Label heading;
-	private TextButton  btnRules1, btnRules2, btnRules3, btnExit;
+	private TextButton btnRules1, btnRules2, btnRules3, btnExit;
 
 	@SuppressWarnings("deprecation")
 	@Override
@@ -48,7 +48,7 @@ public class RulesScreen implements Screen {
 
 		heading = new Label("Cómo jugar", skin);
 		heading.setStyle(new LabelStyle(titleFont, Color.WHITE));
-		
+
 		btnRules1 = new TextButton("Bluetooth", skin);
 		btnRules1.pad(20);
 		btnRules1.addListener(new ClickListener() {
@@ -60,7 +60,7 @@ public class RulesScreen implements Screen {
 			}
 
 		});
-		
+
 		btnRules2 = new TextButton("Control", skin);
 		btnRules2.pad(20);
 		btnRules2.addListener(new ClickListener() {
@@ -72,7 +72,7 @@ public class RulesScreen implements Screen {
 			}
 
 		});
-		
+
 		btnRules3 = new TextButton("Reglas", skin);
 		btnRules3.pad(20);
 		btnRules3.addListener(new ClickListener() {
@@ -84,7 +84,7 @@ public class RulesScreen implements Screen {
 			}
 
 		});
-		
+
 		btnExit = new TextButton("Volver", skin);
 		btnExit.pad(20);
 		btnExit.addListener(new ClickListener() {
@@ -96,7 +96,7 @@ public class RulesScreen implements Screen {
 			}
 
 		});
-		
+
 		table.add(heading).spaceBottom(0.07f * SpaceTennis3D.HEIGHT).row();
 		table.add(btnRules1).spaceBottom(0.05f * SpaceTennis3D.HEIGHT).row();
 		table.add(btnRules2).spaceBottom(0.05f * SpaceTennis3D.HEIGHT).row();
@@ -120,16 +120,16 @@ public class RulesScreen implements Screen {
 			Soundbox.play("quit");
 			SpaceTennis3D.goTo(new MainMenuScreen());
 		}
-		
-		if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1) || 
-				Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
+
+		if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)
+				|| Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
 			SpaceTennis3D.goTo(new RulesScreen1());
 		}
-		
+
 		if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) {
 			SpaceTennis3D.goTo(new RulesScreen2());
 		}
-		
+
 		if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)) {
 			SpaceTennis3D.goTo(new RulesScreen3());
 		}

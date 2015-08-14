@@ -103,8 +103,8 @@ public class Tools {
 	 * Spawns a new ball in a certain location, with the certain
 	 * characteristics.
 	 */
-	public static void spawn(ArrayMap<String, Constructor> constructors, Array<GameObject> instances,
-			btDynamicsWorld dynamicsWorld) {
+	public static void spawn(ArrayMap<String, Constructor> constructors,
+			Array<GameObject> instances, btDynamicsWorld dynamicsWorld) {
 		GameObject obj = constructors.values[0].construct();
 		obj.transform.trn(BALL_SPAWN_POSITION);
 		obj.bounces++;
@@ -273,7 +273,7 @@ public class Tools {
 						: BluetoothServer.movementX.getLatest(), 30,
 				Math.abs(BluetoothServer.movementZ.standardDeviation()) * 10);
 		ball.body.setLinearVelocity(new Vector3());
-   		ball.body.applyCentralForce(force);
+		ball.body.applyCentralForce(force);
 
 		return res;
 	}

@@ -18,13 +18,11 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class SplashDeveloperScreen implements Screen {
 	private Assets assets;
-	
+
 	private TweenManager tweenManager;
 
 	private SpriteBatch batch;
 	private Sprite devSplash;
-
-	private String devDirection = "img/splash_screen/developer.png";
 
 	@Override
 	public void render(float delta) {
@@ -34,7 +32,7 @@ public class SplashDeveloperScreen implements Screen {
 		batch.begin();
 		devSplash.draw(batch);
 		batch.end();
-		
+
 		tweenManager.update(delta);
 	}
 
@@ -42,27 +40,30 @@ public class SplashDeveloperScreen implements Screen {
 	public void show() {
 		assets = new Assets();
 		assets.loadScreen(Assets.SPLASH_SCREEN_DEVELOPER);
-		
+
 		batch = new SpriteBatch();
 
 		tweenManager = new TweenManager();
 		Tween.registerAccessor(Sprite.class, new SpriteAccessor());
 
-		Texture devTex = assets.get(devDirection, Texture.class);
+		Texture devTex = assets.get(Assets.URL_SPLASH_DEV, Texture.class);
 		devSplash = new Sprite(devTex);
 		devSplash.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
-		Tween.set(devSplash, SpriteAccessor.ALPHA).target(0).start(tweenManager);
-		Tween.to(devSplash, SpriteAccessor.ALPHA, 2).target(1).start(tweenManager);
+		Tween.set(devSplash, SpriteAccessor.ALPHA).target(0)
+				.start(tweenManager);
+		Tween.to(devSplash, SpriteAccessor.ALPHA, 2).target(1)
+				.start(tweenManager);
 		// DO THE SAME IN THE OPPOSITE DIRECTION (YOYO). DELAY FOR 1 SECOND.
-		Tween.to(devSplash, SpriteAccessor.ALPHA, 2).target(1).repeatYoyo(1, 1).setCallback(new TweenCallback() {
-			
-			@Override
-			public void onEvent(int arg0, BaseTween<?> arg1) {
-				SpaceTennis3D.goTo(new MainMenuScreen());
-				
-			}
-		}).start(tweenManager);
+		Tween.to(devSplash, SpriteAccessor.ALPHA, 2).target(1).repeatYoyo(1, 1)
+				.setCallback(new TweenCallback() {
+
+					@Override
+					public void onEvent(int arg0, BaseTween<?> arg1) {
+						SpaceTennis3D.goTo(new MainMenuScreen());
+
+					}
+				}).start(tweenManager);
 	}
 
 	@Override

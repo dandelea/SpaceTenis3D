@@ -9,6 +9,7 @@ import com.badlogic.gdx.audio.Music;
 
 /**
  * Manage the music, to be easily called from the game.
+ * 
  * @author Daniel de los Reyes Leal
  * @version 1
  */

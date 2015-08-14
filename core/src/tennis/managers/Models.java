@@ -22,8 +22,10 @@ public class Models {
 	/**
 	 * Sets the game background (ambient) according to user choice in the
 	 * settings screen.
+	 * 
 	 * @see tennis.screens.SettingsScreen
-	 * @param name Name of the ambient.
+	 * @param name
+	 *            Name of the ambient.
 	 */
 	public static void setAmbient(String name) {
 		switch (name) {

@@ -23,8 +23,6 @@ public class SplashUsScreen implements Screen {
 	private SpriteBatch batch;
 	private Sprite usSplash;
 
-	private String usDirection = "img/splash_screen/us.png";
-
 	@Override
 	public void render(float delta) {
 		Gdx.gl.glClearColor(0, 0, 0, 0);
@@ -33,7 +31,7 @@ public class SplashUsScreen implements Screen {
 		batch.begin();
 		usSplash.draw(batch);
 		batch.end();
-		
+
 		tweenManager.update(delta);
 	}
 
@@ -41,27 +39,29 @@ public class SplashUsScreen implements Screen {
 	public void show() {
 		assets = new Assets();
 		assets.loadScreen(Assets.SPLASH_SCREEN_US);
-		
+
 		batch = new SpriteBatch();
-		
+
 		tweenManager = new TweenManager();
 		Tween.registerAccessor(Sprite.class, new SpriteAccessor());
-		
-		Texture usTex = assets.get(usDirection, Texture.class);
+
+		Texture usTex = assets.get(Assets.URL_SPLASH_US, Texture.class);
 		usSplash = new Sprite(usTex);
 		usSplash.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-		
+
 		Tween.set(usSplash, SpriteAccessor.ALPHA).target(0).start(tweenManager);
-		Tween.to(usSplash, SpriteAccessor.ALPHA, 2).target(1).start(tweenManager);
+		Tween.to(usSplash, SpriteAccessor.ALPHA, 2).target(1)
+				.start(tweenManager);
 		// DO THE SAME IN THE OPPOSITE DIRECTION (YOYO). DELAY FOR 1 SECOND.
-		Tween.to(usSplash, SpriteAccessor.ALPHA, 2).target(1).repeatYoyo(1, 1).setCallback(new TweenCallback() {
-			
-			@Override
-			public void onEvent(int arg0, BaseTween<?> arg1) {
-				SpaceTennis3D.goTo(new SplashDeveloperScreen());
-				
-			}
-		}).start(tweenManager);
+		Tween.to(usSplash, SpriteAccessor.ALPHA, 2).target(1).repeatYoyo(1, 1)
+				.setCallback(new TweenCallback() {
+
+					@Override
+					public void onEvent(int arg0, BaseTween<?> arg1) {
+						SpaceTennis3D.goTo(new SplashDeveloperScreen());
+
+					}
+				}).start(tweenManager);
 	}
 
 	@Override

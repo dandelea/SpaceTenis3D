@@ -4,6 +4,7 @@ import tennis.managers.Soundbox;
 
 /**
  * Manages the tennis game scoreboard
+ * 
  * @author Daniel de los Reyes Leal
  * @version 1
  */

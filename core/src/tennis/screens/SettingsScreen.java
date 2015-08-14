@@ -33,7 +33,8 @@ public class SettingsScreen implements Screen {
 	private Table table;
 
 	private Label heading;
-	private CheckBox vSyncCheckBox, fullscreenCheckBox, musicCheckBox, soundCheckBox;
+	private CheckBox vSyncCheckBox, fullscreenCheckBox, musicCheckBox,
+			soundCheckBox;
 	private SelectBox<String> resolution, fov, ambient, difficulty;
 	private TextButton btnSave, btnExit;
 
@@ -42,19 +43,19 @@ public class SettingsScreen implements Screen {
 	public void show() {
 		assets = new Assets();
 		assets.loadScreen(Assets.SETTINGS_SCREEN);
-		
+
 		stage = new Stage();
 		Gdx.input.setInputProcessor(stage);
 
 		skin = Assets.skin;
 		titleFont = Assets.titleGenerator.generateFont(50);
-		
+
 		table = new Table(skin);
 		table.setFillParent(true);
-		
+
 		heading = new Label("Opciones", skin);
 		heading.setStyle(new LabelStyle(titleFont, Color.WHITE));
-		
+
 		// VSYNC
 		vSyncCheckBox = new CheckBox("  Sincronización vertical", skin);
 		vSyncCheckBox.setChecked(Tools.vSync());
@@ -62,13 +63,15 @@ public class SettingsScreen implements Screen {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
 				// save vSync
-				Gdx.app.getPreferences(SpaceTennis3D.TITLE).putBoolean("vsync", vSyncCheckBox.isChecked());
+				Gdx.app.getPreferences(SpaceTennis3D.TITLE).putBoolean("vsync",
+						vSyncCheckBox.isChecked());
 				// set vSync
 				Gdx.graphics.setVSync(Tools.vSync());
-				Gdx.app.log(SpaceTennis3D.TITLE, "vSync " + (Tools.vSync() ? "enabled" : "disabled"));
+				Gdx.app.log(SpaceTennis3D.TITLE, "vSync "
+						+ (Tools.vSync() ? "enabled" : "disabled"));
 			}
 		});
-		
+
 		// FULL SCREEN
 		fullscreenCheckBox = new CheckBox("  Pantalla completa", skin);
 		fullscreenCheckBox.setChecked(Tools.fullscreen());
@@ -76,13 +79,17 @@ public class SettingsScreen implements Screen {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
 				// save Fullscreen
-				Gdx.app.getPreferences(SpaceTennis3D.TITLE).putBoolean("fullscreen", fullscreenCheckBox.isChecked());
+				Gdx.app.getPreferences(SpaceTennis3D.TITLE).putBoolean(
+						"fullscreen", fullscreenCheckBox.isChecked());
 				// Set Fullscreen
-				Gdx.graphics.setDisplayMode(SpaceTennis3D.WIDTH, SpaceTennis3D.HEIGHT, fullscreenCheckBox.isChecked());
-				Gdx.app.log(SpaceTennis3D.TITLE, "fullscreen " + (Tools.fullscreen() ? "enabled" : "disabled"));
+				Gdx.graphics.setDisplayMode(SpaceTennis3D.WIDTH,
+						SpaceTennis3D.HEIGHT, fullscreenCheckBox.isChecked());
+				Gdx.app.log(SpaceTennis3D.TITLE,
+						"fullscreen "
+								+ (Tools.fullscreen() ? "enabled" : "disabled"));
 			}
 		});
-		
+
 		// PLAY MUSIC
 		musicCheckBox = new CheckBox("  Reproducir música", skin);
 		musicCheckBox.setChecked(Tools.music());
@@ -90,13 +97,15 @@ public class SettingsScreen implements Screen {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
 				// save Music
-				Gdx.app.getPreferences(SpaceTennis3D.TITLE).putBoolean("music", musicCheckBox.isChecked());
+				Gdx.app.getPreferences(SpaceTennis3D.TITLE).putBoolean("music",
+						musicCheckBox.isChecked());
 				// set Music
 				Gdx.graphics.setVSync(Tools.music());
-				Gdx.app.log(SpaceTennis3D.TITLE, "Music " + (Tools.music() ? "enabled" : "disabled"));
+				Gdx.app.log(SpaceTennis3D.TITLE, "Music "
+						+ (Tools.music() ? "enabled" : "disabled"));
 			}
 		});
-		
+
 		// PLAY SOUND
 		soundCheckBox = new CheckBox("  Reproducir sonidos", skin);
 		soundCheckBox.setChecked(Tools.sound());
@@ -104,13 +113,15 @@ public class SettingsScreen implements Screen {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
 				// save Music
-				Gdx.app.getPreferences(SpaceTennis3D.TITLE).putBoolean("sound", musicCheckBox.isChecked());
+				Gdx.app.getPreferences(SpaceTennis3D.TITLE).putBoolean("sound",
+						musicCheckBox.isChecked());
 				// set Music
 				Gdx.graphics.setVSync(Tools.sound());
-				Gdx.app.log(SpaceTennis3D.TITLE, "Sound " + (Tools.sound() ? "enabled" : "disabled"));
+				Gdx.app.log(SpaceTennis3D.TITLE, "Sound "
+						+ (Tools.sound() ? "enabled" : "disabled"));
 			}
 		});
-		
+
 		// RESOLUTION
 		resolution = new SelectBox<String>(skin);
 		String[] resolutions = new String[6];
@@ -132,7 +143,7 @@ public class SettingsScreen implements Screen {
 		fovs[4] = "90";
 		fovs[5] = "100";
 		fov.setItems(fovs);
-		
+
 		// AMBIENT
 		ambient = new SelectBox<String>(skin);
 		String[] ambients = new String[4];
@@ -141,7 +152,7 @@ public class SettingsScreen implements Screen {
 		ambients[2] = "Space 3";
 		ambients[3] = "Clean";
 		ambient.setItems(ambients);
-		
+
 		// DIFFICULTY
 		difficulty = new SelectBox<String>(skin);
 		String[] difficulties = new String[3];
@@ -153,65 +164,77 @@ public class SettingsScreen implements Screen {
 		// BUTTON SAVE
 		btnSave = new TextButton("Guardar", skin);
 		btnSave.pad(10, 20, 10, 20);
-		btnSave.addListener(new ClickListener(){
+		btnSave.addListener(new ClickListener() {
 			@Override
-			public void clicked(InputEvent event, float x, float y){
-				
+			public void clicked(InputEvent event, float x, float y) {
+
 				// CHANGE WIDTH AND HEIGHT
 				String[] parts = resolution.getSelected().split(" x ");
 				int width = Integer.parseInt(parts[0]);
 				int height = Integer.parseInt(parts[1]);
 				Gdx.graphics.setDisplayMode(width, height, Tools.fullscreen());
-				
+
 				// SAVE FOV
-				Gdx.app.getPreferences(SpaceTennis3D.TITLE).putInteger("FOV", new Integer(fov.getSelected()));
-				Gdx.app.log(SpaceTennis3D.TITLE, "FOV changed to " + fov.getSelected());
-				
+				Gdx.app.getPreferences(SpaceTennis3D.TITLE).putInteger("FOV",
+						new Integer(fov.getSelected()));
+				Gdx.app.log(SpaceTennis3D.TITLE,
+						"FOV changed to " + fov.getSelected());
+
 				// SAVE AMBIENT
 				Models.setAmbient(ambient.getSelected());
-				
+
 				// SAVE DIFFICULTY
-				SpaceTennis3D.difficulty = Enum.valueOf(Difficulty.class, difficulty.getSelected());
-				
-				if (soundCheckBox.isChecked()){
+				SpaceTennis3D.difficulty = Enum.valueOf(Difficulty.class,
+						difficulty.getSelected());
+
+				if (soundCheckBox.isChecked()) {
 					Soundbox.play("button");
 				}
-				
+
 				SpaceTennis3D.goTo(new SettingsScreen());
 			}
 		});
-		
+
 		btnExit = new TextButton("Volver", skin);
 		btnExit.pad(10);
-		btnExit.addListener(new ClickListener(){
+		btnExit.addListener(new ClickListener() {
 			@Override
-			public void clicked(InputEvent event, float x, float y){
-				if (soundCheckBox.isChecked()){
+			public void clicked(InputEvent event, float x, float y) {
+				if (soundCheckBox.isChecked()) {
 					Soundbox.play("quit");
 				}
 				SpaceTennis3D.goTo(new MainMenuScreen());
 			}
 		});
-		
+
 		// TABLE
-		table.add(heading).spaceBottom(0.07f * SpaceTennis3D.HEIGHT).colspan(2).row();
-		table.add(fullscreenCheckBox).spaceBottom(0.03f * SpaceTennis3D.HEIGHT).colspan(2).row();
-		table.add(vSyncCheckBox).spaceBottom(0.03f * SpaceTennis3D.HEIGHT).colspan(2).row();
-		table.add(musicCheckBox).spaceBottom(0.03f * SpaceTennis3D.HEIGHT).colspan(2).row();
-		table.add(soundCheckBox).spaceBottom(0.03f * SpaceTennis3D.HEIGHT).colspan(2).row();
-		table.add(new Label("Resolución:", skin)).spaceBottom(0.03f * SpaceTennis3D.HEIGHT);
+		table.add(heading).spaceBottom(0.07f * SpaceTennis3D.HEIGHT).colspan(2)
+				.row();
+		table.add(fullscreenCheckBox).spaceBottom(0.03f * SpaceTennis3D.HEIGHT)
+				.colspan(2).row();
+		table.add(vSyncCheckBox).spaceBottom(0.03f * SpaceTennis3D.HEIGHT)
+				.colspan(2).row();
+		table.add(musicCheckBox).spaceBottom(0.03f * SpaceTennis3D.HEIGHT)
+				.colspan(2).row();
+		table.add(soundCheckBox).spaceBottom(0.03f * SpaceTennis3D.HEIGHT)
+				.colspan(2).row();
+		table.add(new Label("Resolución:", skin)).spaceBottom(
+				0.03f * SpaceTennis3D.HEIGHT);
 		table.add(resolution).spaceBottom(0.03f * SpaceTennis3D.HEIGHT).row();
-		table.add(new Label("FOV:", skin)).spaceBottom(0.03f * SpaceTennis3D.HEIGHT);
+		table.add(new Label("FOV:", skin)).spaceBottom(
+				0.03f * SpaceTennis3D.HEIGHT);
 		table.add(fov).spaceBottom(0.03f * SpaceTennis3D.HEIGHT).row();
-		table.add(new Label("Fondo de juego:", skin)).spaceBottom(0.03f * SpaceTennis3D.HEIGHT);
+		table.add(new Label("Fondo de juego:", skin)).spaceBottom(
+				0.03f * SpaceTennis3D.HEIGHT);
 		table.add(ambient).spaceBottom(0.03f * SpaceTennis3D.HEIGHT).row();
-		table.add(new Label("Dificultad:", skin)).spaceBottom(0.03f * SpaceTennis3D.HEIGHT);
+		table.add(new Label("Dificultad:", skin)).spaceBottom(
+				0.03f * SpaceTennis3D.HEIGHT);
 		table.add(difficulty).spaceBottom(0.03f * SpaceTennis3D.HEIGHT).row();
 		table.add(btnSave).pad(10);
 		table.add(btnExit).pad(10).row();
 		table.center();
 		stage.addActor(table);
-		
+
 	}
 
 	@Override
@@ -219,14 +242,14 @@ public class SettingsScreen implements Screen {
 		handleInput();
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-		
+
 		stage.act(delta);
 		stage.draw();
 	}
-	
+
 	public void handleInput() {
-		if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
-			if (soundCheckBox.isChecked()){
+		if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+			if (soundCheckBox.isChecked()) {
 				Soundbox.play("quit");
 			}
 			SpaceTennis3D.goTo(new MainMenuScreen());

@@ -320,7 +320,7 @@ public class GameScreen implements Screen {
 
 	private void updateGame() {
 		// FINALLY UPDATES THE GAME
-		
+
 		GameObject table = instances.get(0);
 		GameObject ball = instances.get(1);
 
@@ -342,7 +342,7 @@ public class GameScreen implements Screen {
 				modelBatch.render(instance, environment);
 			}
 		}
-		
+
 		// RED BALL WHEN HITTABLE AND VISIBLE
 		if (Tools.allObjectsLoaded(instances) && ball.isVisible(cam)) {
 			if (Tools.onPlayerHittable(table, ball)) {
@@ -353,13 +353,13 @@ public class GameScreen implements Screen {
 						ColorAttribute.Diffuse)).color.set(Color.WHITE);
 			}
 		}
-		
+
 		// DRAW PARTICLES
 		SpaceTennis3D.particleController.renderParticleEffects();
-		
+
 		// FINISH DRAWING
 		modelBatch.end();
-		
+
 		// RENDER UI
 		renderUI();
 
@@ -377,7 +377,7 @@ public class GameScreen implements Screen {
 
 		titleFont = Assets.titleGenerator.generateFont(40);
 		stringBuilder = new StringBuilder();
-		
+
 		// SETS MARKER
 		setsLabel = new Label("", Assets.skin);
 		setsLabel.setPosition(SpaceTennis3D.WIDTH / 10,
@@ -385,8 +385,10 @@ public class GameScreen implements Screen {
 		// POINTS MARKER
 		pointsLabel = new Label("",
 				new Label.LabelStyle(titleFont, Color.WHITE));
-		pointsLabel.setPosition(SpaceTennis3D.WIDTH/2 - pointsLabel.getWidth()/2, 9 * SpaceTennis3D.HEIGHT / 10);
-		
+		pointsLabel.setPosition(
+				SpaceTennis3D.WIDTH / 2 - pointsLabel.getWidth() / 2,
+				9 * SpaceTennis3D.HEIGHT / 10);
+
 		stage.addActor(setsLabel);
 		stage.addActor(pointsLabel);
 	}
@@ -440,7 +442,6 @@ public class GameScreen implements Screen {
 		stage.draw();
 	}
 
-	
 	private void updatePaused() {
 		handleInput();
 	}
@@ -460,7 +461,7 @@ public class GameScreen implements Screen {
 		if (Tools.allObjectsLoaded(instances)) {
 			GameObject table = instances.get(0);
 			GameObject ball = instances.get(1);
-			
+
 			// OPPONENT HIT
 			if (Tools.onOpponentHittable(table, ball) && ball.lastPlayer == 1
 					&& ball.bounces > 0) {
@@ -483,10 +484,8 @@ public class GameScreen implements Screen {
 		state = GAME_RUNNING;
 	}
 
-	
-
 	public void handleInput() {
-		
+
 		// PLAYER SWING ON CORRECT ZONE
 		if (Tools.allObjectsLoaded(instances)
 				&& Tools.onPlayerHittable(instances.get(0), instances.get(1))

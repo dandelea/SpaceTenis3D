@@ -5,7 +5,7 @@ import aurelienribon.tweenengine.TweenAccessor;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 
 public class SpriteAccessor implements TweenAccessor<Sprite> {
-	//Initial ALPHA value : DEACTIVATED
+	// Initial ALPHA value : DEACTIVATED
 	public static final int ALPHA = 0;
 
 	@Override

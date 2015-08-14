@@ -38,7 +38,7 @@ public class MainMenuScreen implements Screen {
 
 	private Stage stage;
 	private Table table;
-	
+
 	private Label heading;
 	private TextButton btnStart, btnOptions, btnRules, btnExit;
 
@@ -55,7 +55,7 @@ public class MainMenuScreen implements Screen {
 
 		stage = new Stage();
 		Gdx.input.setInputProcessor(stage);
-		
+
 		batch = new SpriteBatch();
 
 		skin = Assets.skin;
@@ -67,7 +67,7 @@ public class MainMenuScreen implements Screen {
 
 		btnStart = new TextButton("¡Dispositivo no conectado!", skin);
 		btnStart.pad(20);
-		
+
 		btnOptions = new TextButton("Opciones", skin);
 		btnOptions.addListener(new ClickListener() {
 			@Override
@@ -153,9 +153,9 @@ public class MainMenuScreen implements Screen {
 		handleInput();
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-		
+
 		// UPDATE START BUTTON
-		if (BluetoothServer.connected){
+		if (BluetoothServer.connected) {
 			btnStart.setText("Jugar");
 			btnStart.addListener(new ClickListener() {
 				@Override
@@ -168,14 +168,16 @@ public class MainMenuScreen implements Screen {
 			btnStart.setText("¡Dispositivo no conectado!");
 			btnStart.clearListeners();
 		}
-				
+
 		stage.act(delta);
 		stage.draw();
-		
+
 		// DRAW TEXT 'DEVICE CONNECTED'
 		batch.begin();
-		if (BluetoothServer.connected){
-			font.draw(batch, device, 0, font.getBounds(device).height + font.getBounds(device).height / 2);
+		if (BluetoothServer.connected) {
+			font.draw(batch, device, 0,
+					font.getBounds(device).height
+							+ font.getBounds(device).height / 2);
 		}
 		batch.end();
 

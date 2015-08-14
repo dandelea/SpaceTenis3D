@@ -9,6 +9,7 @@ import com.badlogic.gdx.utils.GdxRuntimeException;
 
 /**
  * Manages the log messages for information, debugging and errors.
+ * 
  * @author Daniel de los Reyes Leal
  * @version 1
  */
