@@ -19,6 +19,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
 import com.badlogic.gdx.physics.bullet.dynamics.btDynamicsWorld;
+import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ArrayMap;
 
@@ -327,6 +328,17 @@ public class Tools {
 				Math.abs(BluetoothServer.movementZ.standardDeviation()) * 10);
 
 		return res;
+	}
+	
+	public static void pause(boolean firstSong, Window pause) {
+		if (firstSong) {
+			Jukebox.pause("game");
+		} else {
+			Jukebox.pause("game2");
+		}
+
+		GameScreen.state = GameScreen.GAME_PAUSED;
+		pause.setVisible(true);
 	}
 
 	// SETTINGS

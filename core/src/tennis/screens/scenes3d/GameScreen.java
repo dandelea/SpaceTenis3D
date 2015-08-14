@@ -69,7 +69,7 @@ public class GameScreen implements Screen {
 				boolean match0, int userValue1, int partId1, int index1,
 				boolean match1) {
 			final GameObject ball = instances.get(userValue0);
-			
+
 			Vector3 inertia = ball.body.getLinearVelocity();
 			Vector3 reaction = new Vector3(inertia.x, -tableBouncingFactor
 					* inertia.y, inertia.z);
@@ -120,7 +120,7 @@ public class GameScreen implements Screen {
 	private ArrayMap<String, Constructor> constructors;
 
 	// MUSIC
-	private boolean firstSong;
+	public static boolean firstSong = true;
 
 	// DEBUG
 	private DebugDrawer debugDrawer;
@@ -162,6 +162,11 @@ public class GameScreen implements Screen {
 		resume.addListener(new ClickListener() {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
+				if (firstSong) {
+					Jukebox.play("game");
+				} else {
+					Jukebox.play("game2");
+				}
 				state = GAME_RUNNING;
 				disposePause();
 			}
@@ -434,10 +439,6 @@ public class GameScreen implements Screen {
 		stage.draw();
 	}
 
-	private void createPauseMenu() {
-		pause.setVisible(true);
-	}
-
 	private void updatePaused() {
 		handleInput();
 		updateGame();
@@ -464,7 +465,8 @@ public class GameScreen implements Screen {
 				ball.applyForce();
 			}
 
-			if (Tools.onOpponentHittable(table, ball) && ball.lastPlayer == 1 && ball.bounces > 0) {
+			if (Tools.onOpponentHittable(table, ball) && ball.lastPlayer == 1
+					&& ball.bounces > 0) {
 				if (opponentWillHit) {
 					Tools.hit(instances, opponent.getVelocity(), opponent,
 							SpaceTennis3D.particleController);
@@ -510,26 +512,19 @@ public class GameScreen implements Screen {
 					SpaceTennis3D.particleController);
 		}
 
-		if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)
-				&& state == GAME_RUNNING) {
+		if ((Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE) && state == GAME_RUNNING)
+				|| (BluetoothServer.paused && state == GAME_RUNNING)) {
+			Tools.pause(firstSong, pause);
+			BluetoothServer.paused = false;
 
-			if (firstSong) {
-				Jukebox.pause("game");
-			} else {
-				Jukebox.pause("game2");
-			}
-
-			state = GAME_PAUSED;
-			createPauseMenu();
-
-		} else if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)
-				&& state == GAME_PAUSED) {
+		} else if ((Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE) && state == GAME_PAUSED)) {
 			if (firstSong) {
 				Jukebox.play("game");
 			} else {
 				Jukebox.play("game2");
 			}
 			state = GAME_RUNNING;
+			BluetoothServer.paused = false;
 			disposePause();
 		}
 	}
