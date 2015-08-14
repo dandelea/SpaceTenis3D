@@ -5,7 +5,7 @@ import tennis.managers.bluetooth.BluetoothServer;
 import tennis.managers.physics.ParticleController;
 import tennis.objects.Difficulty;
 import tennis.objects.Scoreboard;
-import tennis.screens.MainMenuScreen;
+import tennis.screens.splash.SplashDeveloperScreen;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
@@ -30,7 +30,7 @@ public class SpaceTennis3D extends Game {
 	/**
 	 * First method to create the application. Initialize the server and start
 	 * it in a new thread. Then initializes the attributes and preferences of
-	 * the game. Starts with Main Menu Screen
+	 * the game. Starts with Splash screens
 	 */
 	@Override
 	public void create() {
@@ -48,7 +48,7 @@ public class SpaceTennis3D extends Game {
 		difficulty = Difficulty.EASY;
 		games = 0;
 
-		setScreen(new MainMenuScreen());
+		setScreen(new SplashDeveloperScreen());
 	}
 
 	@Override
@@ -60,7 +60,7 @@ public class SpaceTennis3D extends Game {
 	public void render() {
 		WIDTH = Gdx.graphics.getWidth();
 		HEIGHT = Gdx.graphics.getHeight();
-		
+
 		super.render();
 	}
 

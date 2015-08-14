@@ -30,12 +30,10 @@ import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
-import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.physics.bullet.Bullet;
-import com.badlogic.gdx.physics.bullet.DebugDrawer;
 import com.badlogic.gdx.physics.bullet.collision.CollisionConstants;
 import com.badlogic.gdx.physics.bullet.collision.ContactListener;
 import com.badlogic.gdx.physics.bullet.collision.btBroadphaseInterface;
@@ -50,7 +48,6 @@ import com.badlogic.gdx.physics.bullet.dynamics.btConstraintSolver;
 import com.badlogic.gdx.physics.bullet.dynamics.btDiscreteDynamicsWorld;
 import com.badlogic.gdx.physics.bullet.dynamics.btDynamicsWorld;
 import com.badlogic.gdx.physics.bullet.dynamics.btSequentialImpulseConstraintSolver;
-import com.badlogic.gdx.physics.bullet.linearmath.btIDebugDraw;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -63,6 +60,7 @@ import com.badlogic.gdx.utils.ArrayMap;
 public class GameScreen implements Screen {
 
 	class MyContactListener extends ContactListener {
+		private final static float BOUNCING_FACTOR = 1.05f;
 
 		@Override
 		public boolean onContactAdded(int userValue0, int partId0, int index0,
@@ -71,7 +69,7 @@ public class GameScreen implements Screen {
 			final GameObject ball = instances.get(userValue0);
 
 			Vector3 inertia = ball.body.getLinearVelocity();
-			Vector3 reaction = new Vector3(inertia.x, -tableBouncingFactor
+			Vector3 reaction = new Vector3(inertia.x, -BOUNCING_FACTOR
 					* inertia.y, inertia.z);
 			ball.body.setLinearVelocity(reaction);
 			ball.bounces++;
@@ -79,51 +77,46 @@ public class GameScreen implements Screen {
 		}
 	}
 
+	// UI
 	private Stage stage;
 	private Window pause;
 	private Label setsLabel, pointsLabel;
 	private BitmapFont titleFont;
 	private StringBuilder stringBuilder;
 
-	private static PerspectiveCamera cam;
-
+	// BATCH
 	private static ModelBatch modelBatch;
-	private boolean loading;
 
-	private Environment environment;
+	// CAM
+	private static PerspectiveCamera cam;
+	private final static Vector3 CAM_POSITION = new Vector3(0, 2, -2);
+	private final static Vector3 CAM_DIRECTION = new Vector3();
 
-	private CameraInputController camController;
+	// ASSETS
+	private Assets assets;
 
 	// MODELS
-	private Assets assets;
+	private Environment environment;
 	private Model ball;
 	private Model table;
 	private ModelInstance ambient;
+	private boolean loading;
 
-	// POSITIONS
-	private Vector3 camPosition = new Vector3(0, 2, -2);
-	private Vector3 camDirection = new Vector3();
-	private float tableBouncingFactor = 1.05f;
-	public static Vector3 ballPosition = new Vector3(-0.5f, .5f, -1);
-	private float gravity = -2;
-
-	// BULLET COLLISION STUFF
-	btCollisionConfiguration collisionConfig;
-	btDispatcher dispatcher;
-	MyContactListener contactListener;
-	btBroadphaseInterface broadphase;
-	btDynamicsWorld dynamicsWorld;
-	btConstraintSolver constraintSolver;
-
-	// COLLISIONS INSTANCES
+	// MODEL INSTANCES
 	private Array<GameObject> instances;
 	private ArrayMap<String, Constructor> constructors;
 
+	// BULLET
+	private btCollisionConfiguration collisionConfig;
+	private btDispatcher dispatcher;
+	private MyContactListener contactListener;
+	private btBroadphaseInterface broadphase;
+	private btDynamicsWorld dynamicsWorld;
+	private btConstraintSolver constraintSolver;
+	private final static float GRAVITY = -2;
+
 	// MUSIC
 	public static boolean firstSong = true;
-
-	// DEBUG
-	private DebugDrawer debugDrawer;
 
 	// GAME STATES
 	public static final int GAME_READY = 0;
@@ -136,6 +129,7 @@ public class GameScreen implements Screen {
 	private Scoreboard scoreBoard = new Scoreboard();
 	private Opponent opponent;
 	private boolean opponentWillHit;
+	private boolean firstBall;
 
 	@Override
 	public void show() {
@@ -144,15 +138,16 @@ public class GameScreen implements Screen {
 		 * Initialize bullet wrapper. Must be before any call to a constructor
 		 * of Bullet related objects.
 		 */
-
 		Bullet.init();
 
+		// LOAD ASSETS
 		assets = new Assets();
 		assets.loadScreen(Assets.GAME_SCREEN);
 
+		// CREATE UI
 		setupUI();
 
-		// PAUSE SCREEN
+		// CREATE PAUSE SCREEN
 		pause = new Window("PAUSA", Assets.skin);
 		pause.setSize(stage.getWidth() / 1.5f, stage.getHeight() / 1.5f);
 		pause.setPosition(stage.getWidth() / 2 - pause.getWidth() / 2,
@@ -188,8 +183,9 @@ public class GameScreen implements Screen {
 		pause.setVisible(false);
 		stage.addActor(pause);
 
-		// GAMES
+		// GAME STATE
 		state = GAME_READY;
+		firstBall = true;
 
 		// ENVIRONMENT
 		modelBatch = new ModelBatch();
@@ -202,12 +198,11 @@ public class GameScreen implements Screen {
 		// CAMERA
 		cam = new PerspectiveCamera(Gdx.app.getPreferences(SpaceTennis3D.TITLE)
 				.getInteger("FOV"), SpaceTennis3D.WIDTH, SpaceTennis3D.HEIGHT);
-		cam.position.set(camPosition);
-		cam.lookAt(camDirection);
+		cam.position.set(CAM_POSITION);
+		cam.lookAt(CAM_DIRECTION);
 		cam.near = 1f;
 		cam.far = 300f;
 		cam.update();
-		camController = new CameraInputController(cam);
 		Gdx.input.setInputProcessor(stage);
 
 		// PARTICLES
@@ -216,20 +211,15 @@ public class GameScreen implements Screen {
 					modelBatch);
 		}
 
-		// COLLISION STUFF
+		// BULLET
 		collisionConfig = new btDefaultCollisionConfiguration();
 		dispatcher = new btCollisionDispatcher(collisionConfig);
 		broadphase = new btDbvtBroadphase();
 		constraintSolver = new btSequentialImpulseConstraintSolver();
 		dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase,
 				constraintSolver, collisionConfig);
-		dynamicsWorld.setGravity(new Vector3(0, gravity, 0));
+		dynamicsWorld.setGravity(new Vector3(0, GRAVITY, 0));
 
-		// MAKE AND REGISTER RENDERER
-		debugDrawer = new DebugDrawer();
-		debugDrawer
-				.setDebugMode(btIDebugDraw.DebugDrawModes.DBG_MAX_DEBUG_DRAW_MODE);
-		dynamicsWorld.setDebugDrawer(debugDrawer);
 		contactListener = new MyContactListener();
 
 		// INITIALIZE INSTANCES
@@ -239,24 +229,23 @@ public class GameScreen implements Screen {
 		loading = true;
 	}
 
-	@SuppressWarnings("deprecation")
 	private void doneLoading() {
+		// START LOADING
 
 		// AMBIENT
 		ambient = new ModelInstance(assets.get(Models.MODEL_AMBIENT,
 				Model.class));
 		ambient.transform.rotate(Vector3.Z, 180);
 
-		// CREATE TABLE
+		// CREATE TABLE MODEL
 		table = assets.get(Models.MODEL_TABLE, Model.class);
 
 		// INITIAL OPPONENT POSITION
 		opponent = new Opponent(SpaceTennis3D.difficulty);
 		BoundingBox box = new BoundingBox();
 		table.calculateBoundingBox(box);
-		opponent.setLastHit(new Vector3(box.getMax().z, 1, 0));
 
-		// CREATE BALL
+		// CREATE BALL MODEL
 		ModelBuilder mb = new ModelBuilder();
 		mb.begin();
 		mb.node().id = "ball";
@@ -273,7 +262,7 @@ public class GameScreen implements Screen {
 		constructors.put("table", new Constructor(table, table.nodes.get(0).id,
 				Bullet.obtainStaticNodeShape(table.nodes), 0));
 
-		// ADD TABLE
+		// ADD TABLE INSTANCE
 		GameObject finalTable = constructors.get("table").construct();
 		finalTable.transform.rotate(new Vector3(0, 1, 0), 90);
 		finalTable.body.setCollisionFlags(finalTable.body.getCollisionFlags()
@@ -284,15 +273,14 @@ public class GameScreen implements Screen {
 		finalTable.body
 				.setActivationState(CollisionConstants.DISABLE_DEACTIVATION);
 		instances.add(finalTable);
-
 		dynamicsWorld.addRigidBody(finalTable.body);
 
+		// FIRST SONG
 		Jukebox.play("game");
 		firstSong = true;
 
 		// FINISHED LOADING
 		loading = false;
-
 	}
 
 	@Override
@@ -301,20 +289,25 @@ public class GameScreen implements Screen {
 		Gdx.gl.glClearColor(0.3f, 0.3f, 0.3f, 1.f);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 
+		// ADJUST DELTA
 		if (delta > 0.1f)
 			delta = 0.1f;
 
+		// UPDATES ACCORDING TO ACTUAL STATE
 		switch (state) {
 		case GAME_READY:
 			updateReady();
 			break;
 		case GAME_RUNNING:
 			updateRunning(delta);
+			updateGame();
 			break;
 		case GAME_PAUSED:
 			updatePaused();
+			updateGame();
 			break;
 		case GAME_OVER:
+			// EXIT GAME
 			SpaceTennis3D.lastScoreboard = scoreBoard;
 			dispose();
 			Jukebox.stopAll();
@@ -326,17 +319,19 @@ public class GameScreen implements Screen {
 	}
 
 	private void updateGame() {
+		// FINALLY UPDATES THE GAME
+		
 		GameObject table = instances.get(0);
 		GameObject ball = instances.get(1);
 
+		// START DRAWING
 		modelBatch.begin(cam);
 
-		// AMBIENT
+		// DRAW AMBIENT
 		if (ambient != null)
 			modelBatch.render(ambient);
 
 		// RENDER MODELS
-
 		for (GameObject instance : instances) {
 			if (instance.isVisible(cam)
 					&& (!Tools.outOfTable(instances, scoreBoard, dynamicsWorld,
@@ -347,7 +342,9 @@ public class GameScreen implements Screen {
 				modelBatch.render(instance, environment);
 			}
 		}
-		if (Tools.allObjectsLoaded(instances)) {
+		
+		// RED BALL WHEN HITTABLE AND VISIBLE
+		if (Tools.allObjectsLoaded(instances) && ball.isVisible(cam)) {
 			if (Tools.onPlayerHittable(table, ball)) {
 				((ColorAttribute) ball.materials.get(0).get(
 						ColorAttribute.Diffuse)).color.set(Color.RED);
@@ -356,15 +353,17 @@ public class GameScreen implements Screen {
 						ColorAttribute.Diffuse)).color.set(Color.WHITE);
 			}
 		}
-		modelBatch.end();
-
+		
+		// DRAW PARTICLES
 		SpaceTennis3D.particleController.renderParticleEffects();
-
-		// debugDrawer.begin(cam); dynamicsWorld.debugDrawWorld();
-		// debugDrawer.end();
-
+		
+		// FINISH DRAWING
+		modelBatch.end();
+		
+		// RENDER UI
 		renderUI();
 
+		// LOOPS NEXT SONG IF NECESSARY
 		if (firstSong && !Jukebox.isPlaying("game") && state == GAME_RUNNING) {
 			firstSong = false;
 			Jukebox.stop("game");
@@ -374,19 +373,22 @@ public class GameScreen implements Screen {
 
 	@SuppressWarnings("deprecation")
 	private void setupUI() {
-		// UI
 		stage = new Stage();
 
 		titleFont = Assets.titleGenerator.generateFont(40);
+		stringBuilder = new StringBuilder();
+		
+		// SETS MARKER
 		setsLabel = new Label("", Assets.skin);
 		setsLabel.setPosition(SpaceTennis3D.WIDTH / 10,
 				5 * SpaceTennis3D.HEIGHT / 6);
+		// POINTS MARKER
 		pointsLabel = new Label("",
 				new Label.LabelStyle(titleFont, Color.WHITE));
-		pointsLabel.setY(9 * SpaceTennis3D.HEIGHT / 10);
+		pointsLabel.setPosition(SpaceTennis3D.WIDTH/2 - pointsLabel.getWidth()/2, 9 * SpaceTennis3D.HEIGHT / 10);
+		
 		stage.addActor(setsLabel);
 		stage.addActor(pointsLabel);
-		stringBuilder = new StringBuilder();
 	}
 
 	private void renderUI() {
@@ -398,7 +400,6 @@ public class GameScreen implements Screen {
 				.append(scoreBoard.getSetsOfPlayer(1)).append("\n")
 				.append("Player 2: ").append(scoreBoard.getSetsOfPlayer(2));
 		setsLabel.setText(stringBuilder);
-
 		// POINTS MARKER
 		stringBuilder.setLength(0);
 		if (scoreBoard.isDeuce()) {
@@ -439,49 +440,41 @@ public class GameScreen implements Screen {
 		stage.draw();
 	}
 
+	
 	private void updatePaused() {
 		handleInput();
-		updateGame();
 	}
 
 	private void disposePause() {
 		pause.setVisible(false);
 	}
 
-	boolean firstBall = true;
-
 	private void updateRunning(float delta) {
 		handleInput();
 
+		// AUTOMATICALLY SPAWN BALL IF FIRST
 		if (firstBall)
-			Tools.spawn(constructors, ballPosition, instances, dynamicsWorld);
+			Tools.spawn(constructors, instances, dynamicsWorld);
 		firstBall = false;
 
 		if (Tools.allObjectsLoaded(instances)) {
 			GameObject table = instances.get(0);
 			GameObject ball = instances.get(1);
-
-			if (ball.force != null) {
-				ball.applyForce();
-			}
-
+			
+			// OPPONENT HIT
 			if (Tools.onOpponentHittable(table, ball) && ball.lastPlayer == 1
 					&& ball.bounces > 0) {
 				if (opponentWillHit) {
-					Tools.hit(instances, opponent.getVelocity(), opponent,
+					Tools.hit(instances, opponent.getForce(), opponent,
 							SpaceTennis3D.particleController);
-
 				}
 				ball.hitted = true;
 				ball.lastPlayer = 2;
-
 			}
 		}
 
+		// PHYSICS SIMULATION
 		dynamicsWorld.stepSimulation(delta, 5, 1f / 60f);
-		camController.update();
-
-		updateGame();
 	}
 
 	private void updateReady() {
@@ -490,13 +483,11 @@ public class GameScreen implements Screen {
 		state = GAME_RUNNING;
 	}
 
-	long time = 0;
+	
 
 	public void handleInput() {
-		// STARTED TO SWING
-
-		// Log.debug(BluetoothServer.accelerometer.toString());
-
+		
+		// PLAYER SWING ON CORRECT ZONE
 		if (Tools.allObjectsLoaded(instances)
 				&& Tools.onPlayerHittable(instances.get(0), instances.get(1))
 				&& (!instances.get(1).hitted || (instances.get(1).hitted && instances
@@ -506,12 +497,14 @@ public class GameScreen implements Screen {
 					SpaceTennis3D.particleController);
 		}
 
+		// HIT SPACE
 		if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)
 				&& state == GAME_RUNNING) {
 			opponentWillHit = Tools.hit(instances, 50, opponent,
 					SpaceTennis3D.particleController);
 		}
 
+		// PLAYER HIT PAUSE
 		if ((Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE) && state == GAME_RUNNING)
 				|| (BluetoothServer.paused && state == GAME_RUNNING)) {
 			Tools.pause(firstSong, pause);
@@ -531,7 +524,7 @@ public class GameScreen implements Screen {
 
 	@Override
 	public void resize(int width, int height) {
-
+		stage.getViewport().update(width, height, true);
 	}
 
 	@Override
@@ -571,9 +564,6 @@ public class GameScreen implements Screen {
 		dispatcher.dispose();
 		constraintSolver.dispose();
 		contactListener.dispose();
-
-		// DEBUG
-		debugDrawer.dispose();
 
 		// PARTICLE
 		SpaceTennis3D.particleController.dispose();

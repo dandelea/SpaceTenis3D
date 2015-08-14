@@ -23,15 +23,13 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
 public class RulesScreen2 implements Screen {
 	private Assets assets;
+	private Skin skin;
+	private BitmapFont titleFont;
 
 	private Stage stage;
 	private Table table;
 	
-	private BitmapFont titleFont;
-	private Skin skin;
-	
-	private Label heading;
-	private Label rules1, rules2;
+	private Label heading, rules1, rules2;
 	private Image image1, image2;
 	private TextButton btnExit;
 	
@@ -45,16 +43,14 @@ public class RulesScreen2 implements Screen {
 		assets.loadScreen(Assets.RULES_SCREEN);
 		
 		stage = new Stage();
-		//stage.setDebugAll(true);
 		Gdx.input.setInputProcessor(stage);
 		
 		skin = Assets.skin;
+		titleFont = Assets.titleGenerator.generateFont(50);
 		
 		table = new Table(skin);
 		table.setFillParent(true);
 		
-		// Creating heading
-		titleFont = Assets.titleGenerator.generateFont(50);
 		heading = new Label("Control", skin);
 		heading.setStyle(new LabelStyle(titleFont, Color.WHITE));
 
@@ -120,14 +116,10 @@ public class RulesScreen2 implements Screen {
 
 	@Override
 	public void pause() {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void resume() {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
@@ -139,6 +131,8 @@ public class RulesScreen2 implements Screen {
 	public void dispose() {
 		stage.dispose();
 		assets.dispose();
+		skin.dispose();
+		titleFont.dispose();
 	}
 
 }

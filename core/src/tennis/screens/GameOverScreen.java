@@ -3,7 +3,6 @@ package tennis.screens;
 import tennis.SpaceTennis3D;
 import tennis.managers.Assets;
 import tennis.managers.Soundbox;
-import tennis.objects.Scoreboard;
 import tennis.screens.scenes3d.GameScreen;
 import tennis.tween.ActorAccessor;
 import aurelienribon.tweenengine.Timeline;
@@ -27,44 +26,38 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
 public class GameOverScreen implements Screen {
-	private Scoreboard scoreBoard;
-	
-	private Stage stage;
-
-	private Skin skin;
-
-	private Table table;
-	private BitmapFont titleFont;
-	private Label heading;
-
 	private Assets assets;
+	private Skin skin;
+	private BitmapFont titleFont;
+
+	private Stage stage;
+	private Table table;
+	
+	private Label heading;
+	private TextButton btnExit, btnPlay;
 
 	private TweenManager tweenManager;
-
-	private TextButton btnExit, btnPlay;
 
 	@SuppressWarnings("deprecation")
 	@Override
 	public void show() {
 		assets = new Assets();
 		assets.loadScreen(Assets.GAME_OVER_SCREEN);
-		
-		scoreBoard = SpaceTennis3D.lastScoreboard;
 
 		stage = new Stage();
-		//stage.setDebugAll(true);
 		Gdx.input.setInputProcessor(stage);
 
 		skin = Assets.skin;
+		titleFont = Assets.titleGenerator.generateFont(50);
 
 		table = new Table(skin);
 		table.setBounds(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
 		String btnPlayText = "";
 		String headingText = "";
-		if (scoreBoard.isFinished()) {
-			headingText = scoreBoard.getWinner()==1 ? "¡Felicidades!" : "Ooohh! Perdiste";
-			btnPlayText = scoreBoard.getWinner()==1 ? "Jugar otra vez" : "Revancha";
+		if (SpaceTennis3D.lastScoreboard.isFinished()) {
+			headingText = SpaceTennis3D.lastScoreboard.getWinner()==1 ? "¡Felicidades!" : "Ooohh! Perdiste";
+			btnPlayText = SpaceTennis3D.lastScoreboard.getWinner()==1 ? "Jugar otra vez" : "Revancha";
 		} else {
 			SpaceTennis3D.goTo(new MainMenuScreen());
 		}
@@ -91,9 +84,6 @@ public class GameOverScreen implements Screen {
 		});
 		btnExit.pad(15);
 
-		// Creating heading
-		titleFont = Assets.titleGenerator.generateFont(50);
-
 		heading = new Label(headingText, skin);
 		heading.setStyle(new LabelStyle(titleFont, Color.WHITE));
 
@@ -102,13 +92,11 @@ public class GameOverScreen implements Screen {
 		table.add(btnExit);
 		stage.addActor(table);
 
-		// Creating animations
+		// TWEEN ANIMATIONS
 		tweenManager = new TweenManager();
 		Tween.registerAccessor(Actor.class, new ActorAccessor());
 
-		// Animation Fade-In.
-
-		// Heading color animation
+		// HEADING COLOR ANIMATION
 		Timeline.createSequence()
 				.beginSequence()
 				.push(Tween.to(heading, ActorAccessor.RGB, .5f).target(0, 0, 1))
@@ -120,7 +108,7 @@ public class GameOverScreen implements Screen {
 				.push(Tween.to(heading, ActorAccessor.RGB, .5f).target(1, 1, 1))
 				.end().repeat(Tween.INFINITY, 0).start(tweenManager);
 
-		// Heading and buttons fade-in
+		// HEADING AND BUTTONS FADE IN
 		Timeline.createSequence()
 				.beginSequence()
 				.push(Tween.set(btnPlay, ActorAccessor.ALPHA).target(0))
@@ -130,12 +118,13 @@ public class GameOverScreen implements Screen {
 				.push(Tween.to(btnExit, ActorAccessor.ALPHA, .25f).target(1))
 				.end().start(tweenManager);
 
-		// table fade-in
+		// TABLE FADE IN
 		Tween.from(table, ActorAccessor.ALPHA, .75f).target(0)
 				.start(tweenManager);
 		Tween.from(table, ActorAccessor.Y, .75f)
 				.target(Gdx.graphics.getHeight() / 8).start(tweenManager);
 
+		// UPDATE TWEEN
 		tweenManager.update(Gdx.graphics.getDeltaTime());
 	}
 
@@ -159,20 +148,16 @@ public class GameOverScreen implements Screen {
 
 	@Override
 	public void resize(int width, int height) {
-		// TODO Auto-generated method stub
-
+		stage.getViewport().update(width, height, true);
+		table.invalidateHierarchy();
 	}
 
 	@Override
 	public void pause() {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void resume() {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
@@ -184,6 +169,8 @@ public class GameOverScreen implements Screen {
 	public void dispose() {
 		stage.dispose();
 		assets.dispose();
+		skin.dispose();
+		titleFont.dispose();
 	}
 
 }

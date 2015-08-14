@@ -7,6 +7,11 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 
+/**
+ * Manages the log messages for information, debugging and errors.
+ * @author Daniel de los Reyes Leal
+ * @version 1
+ */
 public class Log {
 	private static final String TAG = "LOG";
 	private static FileHandle logFile;
@@ -24,7 +29,9 @@ public class Log {
 
 	/**
 	 * Displays a debug message in console and write to file
-	 * @param msg Message to be displayed
+	 * 
+	 * @param msg
+	 *            Message to be displayed
 	 */
 	public static void debug(String msg) {
 		Gdx.app.debug(DEBUG_S + " " + TAG, msg);
@@ -34,7 +41,9 @@ public class Log {
 
 	/**
 	 * Displays an info message in console and write to file
-	 * @param msg Message to be displayed
+	 * 
+	 * @param msg
+	 *            Message to be displayed
 	 */
 	public static void info(String msg) {
 		Gdx.app.log(INFO_S + " " + TAG, msg);
@@ -44,7 +53,9 @@ public class Log {
 
 	/**
 	 * Displays an error message in console and write to file
-	 * @param msg Message to be displayed
+	 * 
+	 * @param msg
+	 *            Message to be displayed
 	 */
 	public static void error(String msg) {
 		Gdx.app.log(ERROR_S + " " + TAG, msg);

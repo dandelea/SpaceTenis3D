@@ -4,7 +4,6 @@ import tennis.SpaceTennis3D;
 import tennis.managers.Assets;
 import tennis.managers.Soundbox;
 import tennis.managers.bluetooth.BluetoothServer;
-import tennis.screens.demos.PathRotationTest;
 import tennis.screens.rules.RulesScreen;
 import tennis.screens.scenes3d.GameScreen;
 import tennis.tween.ActorAccessor;
@@ -32,28 +31,25 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
 public class MainMenuScreen implements Screen {
-	private Stage stage;
-
+	private Assets assets;
 	private Skin skin;
-
-	private Table table;
 	private BitmapFont font;
 	private BitmapFont titleFont;
-	private Label heading;
 
-	private Assets assets;
+	private Stage stage;
+	private Table table;
+	
+	private Label heading;
+	private TextButton btnStart, btnOptions, btnRules, btnExit;
 
 	private TweenManager tweenManager;
 
-	private TextButton btnStart, btnDemo, btnOptions, btnRules, btnExit;
-	
 	private SpriteBatch batch;
 	private String device = "Dispositivo conectado";
 
 	@SuppressWarnings("deprecation")
 	@Override
 	public void show() {
-
 		assets = new Assets();
 		assets.loadScreen(Assets.MAIN_MENU_SCREEN);
 
@@ -63,6 +59,8 @@ public class MainMenuScreen implements Screen {
 		batch = new SpriteBatch();
 
 		skin = Assets.skin;
+		font = Assets.fontGenerator.generateFont(14);
+		titleFont = Assets.titleGenerator.generateFont(50);
 
 		table = new Table(skin);
 		table.setBounds(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -70,15 +68,6 @@ public class MainMenuScreen implements Screen {
 		btnStart = new TextButton("¡Dispositivo no conectado!", skin);
 		btnStart.pad(20);
 		
-		btnDemo = new TextButton("Demo", skin);
-		btnDemo.addListener(new ClickListener() {
-			@Override
-			public void clicked(InputEvent event, float x, float y) {
-				Soundbox.play("button");
-				SpaceTennis3D.goTo(new PathRotationTest());
-			}
-		});
-		btnDemo.pad(20);
 		btnOptions = new TextButton("Opciones", skin);
 		btnOptions.addListener(new ClickListener() {
 			@Override
@@ -108,29 +97,22 @@ public class MainMenuScreen implements Screen {
 		});
 		btnExit.pad(15);
 
-		// Creating heading
-		font = Assets.fontGenerator.generateFont(14);
-		titleFont = Assets.titleGenerator.generateFont(50);
-
 		heading = new Label(SpaceTennis3D.TITLE, skin);
 		heading.setStyle(new LabelStyle(titleFont, Color.WHITE));
 
 		table.add(heading);
 		table.getCell(heading).spaceBottom(100).row();
 		table.add(btnStart).spaceBottom(0.05f * SpaceTennis3D.HEIGHT).row();
-		//table.add(btnDemo).spaceBottom(0.05f * SpaceTennis3D.HEIGHT).row();
 		table.add(btnOptions).spaceBottom(0.05f * SpaceTennis3D.HEIGHT).row();
 		table.add(btnRules).spaceBottom(0.05f * SpaceTennis3D.HEIGHT).row();
 		table.add(btnExit).spaceBottom(0.05f * SpaceTennis3D.HEIGHT).row();
 		stage.addActor(table);
 
-		// Creating animations
+		// TWEEN ANIMATIONS
 		tweenManager = new TweenManager();
 		Tween.registerAccessor(Actor.class, new ActorAccessor());
 
-		// Animation Fade-In.
-
-		// Heading color animation
+		// HEADING COLOR ANIMATION
 		Timeline.createSequence()
 				.beginSequence()
 				.push(Tween.to(heading, ActorAccessor.RGB, .4f).target(0, 0, 1))
@@ -142,28 +124,27 @@ public class MainMenuScreen implements Screen {
 				.push(Tween.to(heading, ActorAccessor.RGB, .4f).target(1, 1, 1))
 				.end().repeat(Tween.INFINITY, 0).start(tweenManager);
 
-		// Heading and buttons fade-in
+		// HEADING AND BUTTONS FADE IN
 		Timeline.createSequence()
 				.beginSequence()
 				.push(Tween.set(btnStart, ActorAccessor.ALPHA).target(0))
-				.push(Tween.set(btnDemo, ActorAccessor.ALPHA).target(0))
 				.push(Tween.set(btnOptions, ActorAccessor.ALPHA).target(0))
 				.push(Tween.set(btnRules, ActorAccessor.ALPHA).target(0))
 				.push(Tween.set(btnExit, ActorAccessor.ALPHA).target(0))
 				.push(Tween.from(heading, ActorAccessor.ALPHA, .25f).target(0))
 				.push(Tween.to(btnStart, ActorAccessor.ALPHA, .25f).target(1))
-				.push(Tween.to(btnDemo, ActorAccessor.ALPHA, .25f).target(1))
 				.push(Tween.to(btnOptions, ActorAccessor.ALPHA, .25f).target(1))
 				.push(Tween.to(btnRules, ActorAccessor.ALPHA, .25f).target(1))
 				.push(Tween.to(btnExit, ActorAccessor.ALPHA, .25f).target(1))
 				.end().start(tweenManager);
 
-		// table fade-in
+		// TABLE FADE IN
 		Tween.from(table, ActorAccessor.ALPHA, .75f).target(0)
 				.start(tweenManager);
 		Tween.from(table, ActorAccessor.Y, .75f)
 				.target(Gdx.graphics.getHeight() / 8).start(tweenManager);
 
+		// TWEEN UPDATE
 		tweenManager.update(Gdx.graphics.getDeltaTime());
 	}
 
@@ -173,6 +154,7 @@ public class MainMenuScreen implements Screen {
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		
+		// UPDATE START BUTTON
 		if (BluetoothServer.connected){
 			btnStart.setText("Jugar");
 			btnStart.addListener(new ClickListener() {
@@ -190,6 +172,7 @@ public class MainMenuScreen implements Screen {
 		stage.act(delta);
 		stage.draw();
 		
+		// DRAW TEXT 'DEVICE CONNECTED'
 		batch.begin();
 		if (BluetoothServer.connected){
 			font.draw(batch, device, 0, font.getBounds(device).height + font.getBounds(device).height / 2);
@@ -199,6 +182,9 @@ public class MainMenuScreen implements Screen {
 		tweenManager.update(delta);
 	}
 
+	/**
+	 * Smoothly exits
+	 */
 	public void exitFadeOut() {
 		Timeline.createParallel()
 				.beginParallel()
@@ -229,14 +215,10 @@ public class MainMenuScreen implements Screen {
 
 	@Override
 	public void pause() {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void resume() {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
@@ -249,6 +231,8 @@ public class MainMenuScreen implements Screen {
 		stage.dispose();
 		assets.dispose();
 		font.dispose();
+		titleFont.dispose();
+		skin.dispose();
 		batch.dispose();
 	}
 

@@ -54,7 +54,7 @@ public class SplashDeveloperScreen implements Screen {
 
 		Tween.set(devSplash, SpriteAccessor.ALPHA).target(0).start(tweenManager);
 		Tween.to(devSplash, SpriteAccessor.ALPHA, 2).target(1).start(tweenManager);
-		// Do the same in the opposite direction (Yoyo). Delay of 1 second.
+		// DO THE SAME IN THE OPPOSITE DIRECTION (YOYO). DELAY FOR 1 SECOND.
 		Tween.to(devSplash, SpriteAccessor.ALPHA, 2).target(1).repeatYoyo(1, 1).setCallback(new TweenCallback() {
 			
 			@Override
@@ -72,20 +72,15 @@ public class SplashDeveloperScreen implements Screen {
 
 	@Override
 	public void pause() {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void resume() {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void hide() {
-		// TODO Auto-generated method stub
-
+		dispose();
 	}
 
 	@Override

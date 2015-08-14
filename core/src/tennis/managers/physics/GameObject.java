@@ -9,14 +9,21 @@ import com.badlogic.gdx.math.collision.Ray;
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
 import com.badlogic.gdx.utils.Disposable;
 
+/**
+ * Model Instance subclass that add some methods for easy management in the game
+ * scene.
+ * 
+ * @author Daniel de los Reyes Leal
+ * @version 1
+ */
 public class GameObject extends ModelInstance implements Disposable {
 
 	// PHYSICS
-	public final Vector3 center = new Vector3();
-	public final Vector3 dimensions = new Vector3();
-	public final float radius;
+	private final Vector3 center = new Vector3();
+	private final Vector3 dimensions = new Vector3();
+	private final float radius;
 	public final static BoundingBox bounds = new BoundingBox();
-	public final Vector3 position = new Vector3();
+	private final Vector3 position = new Vector3();
 	public final btRigidBody body;
 	public final MyMotionState motionState;
 
@@ -24,7 +31,6 @@ public class GameObject extends ModelInstance implements Disposable {
 	public int lastPlayer;
 	public int bounces;
 	public boolean hitted;
-	public Vector3 force;
 	public boolean disposed;
 	public static final int MAX_BOUNCES = 50;
 
@@ -44,10 +50,8 @@ public class GameObject extends ModelInstance implements Disposable {
 	}
 
 	public Vector3 getPosition() {
-		Vector3 res = new Vector3();
 		transform.getTranslation(position);
-		transform.getTranslation(res);
-		return res;
+		return position;
 	}
 
 	public BoundingBox getBoundingBox() {
@@ -75,12 +79,6 @@ public class GameObject extends ModelInstance implements Disposable {
 				ray.origin.y + ray.direction.y * len, ray.origin.z
 						+ ray.direction.z * len);
 		return (dist2 <= radius * radius) ? dist2 : -1f;
-	}
-	
-	public void applyForce(){
-		body.setLinearVelocity(new Vector3());
-   		body.applyCentralForce(force);
-   		force = null;
 	}
 
 	@Override

@@ -26,20 +26,16 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
 public class SettingsScreen implements Screen {
 	private Assets assets;
+	private Skin skin;
+	private BitmapFont titleFont;
 
 	private Stage stage;
-
-	private Skin skin;
 	private Table table;
+
 	private Label heading;
-	
-	private BitmapFont titleFont;
-	
 	private CheckBox vSyncCheckBox, fullscreenCheckBox, musicCheckBox, soundCheckBox;
 	private SelectBox<String> resolution, fov, ambient, difficulty;
-	
 	private TextButton btnSave, btnExit;
-
 
 	@SuppressWarnings("deprecation")
 	@Override
@@ -51,15 +47,15 @@ public class SettingsScreen implements Screen {
 		Gdx.input.setInputProcessor(stage);
 
 		skin = Assets.skin;
+		titleFont = Assets.titleGenerator.generateFont(50);
 		
 		table = new Table(skin);
 		table.setFillParent(true);
 		
-		// Creating heading
-		titleFont = Assets.titleGenerator.generateFont(50);
 		heading = new Label("Opciones", skin);
 		heading.setStyle(new LabelStyle(titleFont, Color.WHITE));
 		
+		// VSYNC
 		vSyncCheckBox = new CheckBox("  Sincronización vertical", skin);
 		vSyncCheckBox.setChecked(Tools.vSync());
 		vSyncCheckBox.addListener(new ClickListener() {
@@ -73,6 +69,7 @@ public class SettingsScreen implements Screen {
 			}
 		});
 		
+		// FULL SCREEN
 		fullscreenCheckBox = new CheckBox("  Pantalla completa", skin);
 		fullscreenCheckBox.setChecked(Tools.fullscreen());
 		fullscreenCheckBox.addListener(new ClickListener() {
@@ -86,6 +83,7 @@ public class SettingsScreen implements Screen {
 			}
 		});
 		
+		// PLAY MUSIC
 		musicCheckBox = new CheckBox("  Reproducir música", skin);
 		musicCheckBox.setChecked(Tools.music());
 		musicCheckBox.addListener(new ClickListener() {
@@ -99,6 +97,7 @@ public class SettingsScreen implements Screen {
 			}
 		});
 		
+		// PLAY SOUND
 		soundCheckBox = new CheckBox("  Reproducir sonidos", skin);
 		soundCheckBox.setChecked(Tools.sound());
 		soundCheckBox.addListener(new ClickListener() {
@@ -112,7 +111,7 @@ public class SettingsScreen implements Screen {
 			}
 		});
 		
-		// resolution
+		// RESOLUTION
 		resolution = new SelectBox<String>(skin);
 		String[] resolutions = new String[6];
 		resolutions[0] = "800 x 600";
@@ -143,6 +142,7 @@ public class SettingsScreen implements Screen {
 		ambients[3] = "Clean";
 		ambient.setItems(ambients);
 		
+		// DIFFICULTY
 		difficulty = new SelectBox<String>(skin);
 		String[] difficulties = new String[3];
 		difficulties[0] = Difficulty.EASY.toString();
@@ -150,6 +150,7 @@ public class SettingsScreen implements Screen {
 		difficulties[2] = Difficulty.HARD.toString();
 		difficulty.setItems(difficulties);
 
+		// BUTTON SAVE
 		btnSave = new TextButton("Guardar", skin);
 		btnSave.pad(10, 20, 10, 20);
 		btnSave.addListener(new ClickListener(){
@@ -162,14 +163,14 @@ public class SettingsScreen implements Screen {
 				int height = Integer.parseInt(parts[1]);
 				Gdx.graphics.setDisplayMode(width, height, Tools.fullscreen());
 				
-				// Save FOV
+				// SAVE FOV
 				Gdx.app.getPreferences(SpaceTennis3D.TITLE).putInteger("FOV", new Integer(fov.getSelected()));
 				Gdx.app.log(SpaceTennis3D.TITLE, "FOV changed to " + fov.getSelected());
 				
-				// Save ambient
+				// SAVE AMBIENT
 				Models.setAmbient(ambient.getSelected());
 				
-				// Save difficulty
+				// SAVE DIFFICULTY
 				SpaceTennis3D.difficulty = Enum.valueOf(Difficulty.class, difficulty.getSelected());
 				
 				if (soundCheckBox.isChecked()){
@@ -192,6 +193,7 @@ public class SettingsScreen implements Screen {
 			}
 		});
 		
+		// TABLE
 		table.add(heading).spaceBottom(0.07f * SpaceTennis3D.HEIGHT).colspan(2).row();
 		table.add(fullscreenCheckBox).spaceBottom(0.03f * SpaceTennis3D.HEIGHT).colspan(2).row();
 		table.add(vSyncCheckBox).spaceBottom(0.03f * SpaceTennis3D.HEIGHT).colspan(2).row();
@@ -224,7 +226,9 @@ public class SettingsScreen implements Screen {
 	
 	public void handleInput() {
 		if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
-			Soundbox.play("quit");
+			if (soundCheckBox.isChecked()){
+				Soundbox.play("quit");
+			}
 			SpaceTennis3D.goTo(new MainMenuScreen());
 		}
 	}
@@ -237,19 +241,14 @@ public class SettingsScreen implements Screen {
 
 	@Override
 	public void pause() {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void resume() {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void hide() {
-		//weird but ok
 		dispose();
 	}
 
@@ -257,6 +256,8 @@ public class SettingsScreen implements Screen {
 	public void dispose() {
 		stage.dispose();
 		assets.dispose();
+		skin.dispose();
+		titleFont.dispose();
 	}
 
 }

@@ -1,44 +1,38 @@
 package tennis.objects;
 
-import com.badlogic.gdx.math.Vector3;
 
+/**
+ * Manages the opponent params and difficulty.
+ * 
+ * @author Daniel de los Reyes Leal
+ * @version 1
+ */
 public class Opponent {
-	private Vector3 lastHit;
-	private int velocity;
+	private int force;
 	private float hitRate;
 	private Difficulty difficulty;
-	
-	public Opponent(Difficulty difficulty){
-		lastHit = new Vector3();
-		switch (difficulty){
+
+	public Opponent(Difficulty difficulty) {
+		switch (difficulty) {
 		case EASY:
 			hitRate = 0.3f;
-			velocity = 60;
+			force = 40;
 			break;
 		case MEDIUM:
 			hitRate = 0.6f;
-			velocity = 60;
+			force = 50;
 			break;
 		case HARD:
 			hitRate = 0.9f;
-			velocity = 90;
+			force = 70;
 			break;
 		}
 	}
 
-	public Opponent(Vector3 lastHit, int velocity, Difficulty difficulty) {
+	public Opponent(int force, float hitRate, Difficulty difficulty) {
 		super();
-		this.lastHit = lastHit;
-		this.velocity = velocity;
+		this.force = force;
 		this.difficulty = difficulty;
-	}
-
-	public Vector3 getLastHit() {
-		return lastHit;
-	}
-
-	public void setLastHit(Vector3 lastHit) {
-		this.lastHit = lastHit;
 	}
 
 	public float getHitRate() {
@@ -49,12 +43,12 @@ public class Opponent {
 		this.hitRate = hitRate;
 	}
 
-	public int getVelocity() {
-		return velocity;
+	public int getForce() {
+		return force;
 	}
 
-	public void setVelocity(int velocity) {
-		this.velocity = velocity;
+	public void setForce(int force) {
+		this.force = force;
 	}
 
 	public Difficulty getDifficulty() {
@@ -64,14 +58,11 @@ public class Opponent {
 	public void setDifficulty(Difficulty difficulty) {
 		this.difficulty = difficulty;
 	}
-	
 
 	@Override
 	public String toString() {
-		return "Opponent [getLastHit()=" + getLastHit() + ", getVelocity()="
-				+ getVelocity() + ", getDifficulty()=" + getDifficulty() + "]";
+		return "Opponent [getForce()=" + getForce() + ", getDifficulty()="
+				+ getDifficulty() + "]";
 	}
-	
-	
 
 }

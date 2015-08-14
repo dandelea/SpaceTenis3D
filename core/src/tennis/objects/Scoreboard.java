@@ -2,6 +2,11 @@ package tennis.objects;
 
 import tennis.managers.Soundbox;
 
+/**
+ * Manages the tennis game scoreboard
+ * @author Daniel de los Reyes Leal
+ * @version 1
+ */
 public class Scoreboard {
 	private int score1;
 	private int score2;

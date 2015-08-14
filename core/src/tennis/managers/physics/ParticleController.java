@@ -15,6 +15,14 @@ import com.badlogic.gdx.graphics.g3d.particles.batches.BillboardParticleBatch;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Disposable;
 
+/**
+ * Custom controller class for managing the particleSystem. Creates particle
+ * pools, particle effects and add them to the system simulator when necessary.
+ * Also plays the sound of explosions.
+ * 
+ * @author Daniel de los Reyes Leal
+ * @version 1
+ */
 public class ParticleController implements Disposable {
 
 	private PerspectiveCamera cam;
@@ -32,18 +40,19 @@ public class ParticleController implements Disposable {
 	private PFXPool particles1Hit;
 	private PFXPool particles2Hit;
 	private PFXPool explosions;
-	
+
 	public ParticleController(PerspectiveCamera cam, ModelBatch batch) {
 		this.cam = cam;
 		this.batch = batch;
 
-		// PARTICLES
+		// PARTICLE SYSTEM
 		particleSystem = ParticleSystem.get();
 		particleManager = new AssetManager();
 		particleBatch = new BillboardParticleBatch();
 		particleBatch.setCamera(cam);
 		particleSystem.add(particleBatch);
 
+		// LOAD PARTICLES
 		ParticleEffectLoader.ParticleEffectLoadParameter loadParam = new ParticleEffectLoader.ParticleEffectLoadParameter(
 				particleSystem.getBatches());
 		ParticleEffectLoader loader = new ParticleEffectLoader(
@@ -57,6 +66,7 @@ public class ParticleController implements Disposable {
 		particleBatch.setTexture(particleManager.get(URL_DEFAULT_PARTICLE,
 				Texture.class));
 
+		// CREATE EFFECT POOLS
 		originalEffect = particleManager.get(URL_PARTICLE1);
 		particles1Hit = new PFXPool(originalEffect);
 		originalEffect = particleManager.get(URL_PARTICLE2);
@@ -65,17 +75,25 @@ public class ParticleController implements Disposable {
 		explosions = new PFXPool(originalEffect);
 	}
 
+	/**
+	 * Render the current particle effects in the particle system.
+	 */
 	public void renderParticleEffects() {
-		batch.begin(cam);
 		particleSystem.update();
 		particleBatch.setCamera(cam);
 		particleSystem.begin();
 		particleSystem.draw();
 		particleSystem.end();
 		batch.render(particleSystem);
-		batch.end();
 	}
 
+	/**
+	 * Creates a hit particle effect of a given player (blue or red) in a
+	 * certain location
+	 * 
+	 * @param player Color of player 1 (blue) or player 2 (red).
+	 * @param position Location of effect.
+	 */
 	public void explodeHit(int player, Vector3 position) {
 		ParticleEffect effect;
 		switch (player) {
@@ -93,9 +111,14 @@ public class ParticleController implements Disposable {
 		effect.init();
 		effect.start();
 		particleSystem.add(effect);
+		Soundbox.play("laser");
 	}
-	
-	public void explosion(Vector3 position){
+
+	/**
+	 * Creates a endturn explosion in a certain location.
+	 * @param position Location of effect.
+	 */
+	public void explosion(Vector3 position) {
 		ParticleEffect effect = explosions.obtain();
 		effect.translate(position);
 		effect.init();
@@ -111,8 +134,8 @@ public class ParticleController implements Disposable {
 		particles2Hit.dispose();
 		explosions.dispose();
 	}
-	
-	public void disposeAll(){
+
+	public void disposeAll() {
 		particleManager.dispose();
 		dispose();
 	}

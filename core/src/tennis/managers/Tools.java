@@ -11,10 +11,7 @@ import tennis.objects.Scoreboard;
 import tennis.screens.scenes3d.GameScreen;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Matrix4;
-import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
@@ -23,65 +20,22 @@ import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ArrayMap;
 
+/**
+ * Executes some complex tasks from the game scene and the settings scene.
+ * 
+ * @author Daniel de los Reyes Leal
+ * @version 1
+ */
 public class Tools {
-	private static float[] playerHitZoneZ = { -1.3f, 0 };
-
-	// THREADS
-
-	public static void sleep(long ms) {
-		try {
-			Thread.sleep(ms);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
-
-	// COLORS
-
 	/**
-	 * Get a random color
-	 * 
-	 * @return Color
+	 * Zone were ball is actually hittable by the player, z axis.
 	 */
-	public static Color randomColor() {
-		return randomColor(0f, 1f);
-	}
-
+	private final static float[] PLAYER_HITZONE_Z = { -1.3f, 0 };
 	/**
-	 * Get a random color between lo and hi values
-	 * 
-	 * @param lo
-	 *            Lower value
-	 * @param hi
-	 *            Higher value
-	 * @return Random Color
+	 * Position to spawn the ball
 	 */
-	public static Color randomColor(float lo, float hi) {
-		Color col = new Color();
-		col.r = MathUtils.random(lo, hi);
-		col.g = MathUtils.random(lo, hi);
-		col.b = MathUtils.random(lo, hi);
-		col.a = 1f;
-		return col;
-	}
-
-	// GEOMETRY
-
-	private static Matrix4 mtx = new Matrix4();
-	private static Quaternion q = new Quaternion();
-
-	/**
-	 * Rotate a position around an axis
-	 * 
-	 * @param position
-	 * @param axis
-	 * @param angle
-	 */
-	public static void rotateAround(Vector3 position, Vector3 axis, float angle) {
-		q.setFromAxis(axis, angle);
-		mtx.set(q);
-		position.prj(mtx);
-	}
+	private final static Vector3 BALL_SPAWN_POSITION = new Vector3(-0.5f, .5f,
+			-1);
 
 	// GAME SCREEN
 
@@ -108,8 +62,8 @@ public class Tools {
 	public static boolean onPlayerHittable(GameObject table, GameObject ball) {
 		boolean res;
 		Vector3 ballPosition = ball.getPosition();
-		res = ballPosition.z > playerHitZoneZ[0]
-				&& ballPosition.z < playerHitZoneZ[1];
+		res = ballPosition.z > PLAYER_HITZONE_Z[0]
+				&& ballPosition.z < PLAYER_HITZONE_Z[1];
 		return res;
 	}
 
@@ -149,11 +103,10 @@ public class Tools {
 	 * Spawns a new ball in a certain location, with the certain
 	 * characteristics.
 	 */
-	public static void spawn(ArrayMap<String, Constructor> constructors,
-			Vector3 ballPosition, Array<GameObject> instances,
+	public static void spawn(ArrayMap<String, Constructor> constructors, Array<GameObject> instances,
 			btDynamicsWorld dynamicsWorld) {
 		GameObject obj = constructors.values[0].construct();
-		obj.transform.trn(ballPosition);
+		obj.transform.trn(BALL_SPAWN_POSITION);
 		obj.bounces++;
 		obj.hitted = false;
 		obj.lastPlayer = 0;
@@ -241,18 +194,14 @@ public class Tools {
 		Vector3 max = new Vector3();
 		tableBounds.getCorner111(max);
 
-		res = (Math.abs(ballPosition.x) > 2
-				|| ballPosition.y < min.y
-				|| ballPosition.y > 2
-				|| Math.abs(ballPosition.z) > 5
-				|| ball.bounces >= GameObject.MAX_BOUNCES)
+		res = (Math.abs(ballPosition.x) > 2 || ballPosition.y < min.y
+				|| ballPosition.y > 2 || Math.abs(ballPosition.z) > 5 || ball.bounces >= GameObject.MAX_BOUNCES)
 				&& !ball.disposed;
 		if (res) {
 			Tools.point(instances, scoreBoard);
 			particleController.explosion(ballPosition);
 			Tools.disposeBall(instances, ball, dynamicsWorld);
-			Tools.spawn(constructors, GameScreen.ballPosition, instances,
-					dynamicsWorld);
+			Tools.spawn(constructors, instances, dynamicsWorld);
 		}
 		return res;
 	}
@@ -282,12 +231,11 @@ public class Tools {
 		}
 
 		if (Tools.onPlayerSide(table, ball)) {
-			particleController.explodeHit(1, ball.position);
+			particleController.explodeHit(1, ball.getPosition());
 		} else {
-			particleController.explodeHit(2, ball.position);
+			particleController.explodeHit(2, ball.getPosition());
 		}
 
-		Soundbox.play("laser");
 		moveTo(ball, new Vector3(0, 0, 0), intensity);
 		return res;
 	}
@@ -315,21 +263,21 @@ public class Tools {
 		}
 
 		if (Tools.onPlayerSide(table, ball)) {
-			particleController.explodeHit(1, ball.position);
+			particleController.explodeHit(1, ball.getPosition());
 		} else {
-			particleController.explodeHit(2, ball.position);
+			particleController.explodeHit(2, ball.getPosition());
 		}
 
-		Soundbox.play("laser");
-
-		ball.force = new Vector3(
+		Vector3 force = new Vector3(
 				BluetoothServer.movementZ.getLatest() < 0 ? -BluetoothServer.movementX.getLatest()
 						: BluetoothServer.movementX.getLatest(), 30,
 				Math.abs(BluetoothServer.movementZ.standardDeviation()) * 10);
+		ball.body.setLinearVelocity(new Vector3());
+   		ball.body.applyCentralForce(force);
 
 		return res;
 	}
-	
+
 	public static void pause(boolean firstSong, Window pause) {
 		if (firstSong) {
 			Jukebox.pause("game");
