@@ -15,11 +15,11 @@ public class Opponent {
 		switch (difficulty) {
 		case EASY:
 			hitRate = 0.3f;
-			force = 40;
+			force = 50;
 			break;
 		case MEDIUM:
 			hitRate = 0.6f;
-			force = 50;
+			force = 60;
 			break;
 		case HARD:
 			hitRate = 0.9f;

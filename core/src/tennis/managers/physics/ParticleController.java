@@ -74,6 +74,14 @@ public class ParticleController implements Disposable {
 		originalEffect = particleManager.get(URL_PARTICLE3);
 		explosions = new PFXPool(originalEffect);
 	}
+	
+	/**
+	 * Updates the cam and batch of the scene.
+	 */
+	public void setBatch(PerspectiveCamera cam, ModelBatch batch){
+		this.cam = cam;
+		this.batch = batch;
+	}
 
 	/**
 	 * Render the current particle effects in the particle system.

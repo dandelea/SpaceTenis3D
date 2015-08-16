@@ -209,6 +209,8 @@ public class GameScreen implements Screen {
 		if (SpaceTennis3D.games == 0) {
 			SpaceTennis3D.particleController = new ParticleController(cam,
 					modelBatch);
+		} else {
+			SpaceTennis3D.particleController.setBatch(cam, modelBatch);
 		}
 
 		// BULLET
