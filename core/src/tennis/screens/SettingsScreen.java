@@ -132,6 +132,8 @@ public class SettingsScreen implements Screen {
 		resolutions[4] = "1366 x 768";
 		resolutions[5] = "1920 x 1080";
 		resolution.setItems(resolutions);
+		resolution.setSelected(Gdx.app.getPreferences(SpaceTennis3D.TITLE)
+				.getString("resolution"));
 
 		// FOV
 		fov = new SelectBox<String>(skin);
@@ -143,6 +145,8 @@ public class SettingsScreen implements Screen {
 		fovs[4] = "90";
 		fovs[5] = "100";
 		fov.setItems(fovs);
+		fov.setSelected(Gdx.app.getPreferences(SpaceTennis3D.TITLE).getString(
+				"FOV"));
 
 		// AMBIENT
 		ambient = new SelectBox<String>(skin);
@@ -152,6 +156,8 @@ public class SettingsScreen implements Screen {
 		ambients[2] = "Space 3";
 		ambients[3] = "Clean";
 		ambient.setItems(ambients);
+		ambient.setSelected(Gdx.app.getPreferences(SpaceTennis3D.TITLE)
+				.getString("ambient"));
 
 		// DIFFICULTY
 		difficulty = new SelectBox<String>(skin);
@@ -160,6 +166,8 @@ public class SettingsScreen implements Screen {
 		difficulties[1] = Difficulty.MEDIUM.toString();
 		difficulties[2] = Difficulty.HARD.toString();
 		difficulty.setItems(difficulties);
+		difficulty.setSelected(Gdx.app.getPreferences(SpaceTennis3D.TITLE)
+				.getString("difficulty"));
 
 		// BUTTON SAVE
 		btnSave = new TextButton("Guardar", skin);
@@ -168,24 +176,36 @@ public class SettingsScreen implements Screen {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
 
-				// CHANGE WIDTH AND HEIGHT
+				// CHANGE RESOLUTION
 				String[] parts = resolution.getSelected().split(" x ");
 				int width = Integer.parseInt(parts[0]);
 				int height = Integer.parseInt(parts[1]);
 				Gdx.graphics.setDisplayMode(width, height, Tools.fullscreen());
+				Gdx.app.getPreferences(SpaceTennis3D.TITLE).putString(
+						"resolution", resolution.getSelected());
+				Gdx.app.log(SpaceTennis3D.TITLE, "Resolution changed to "
+						+ resolution.getSelected());
 
 				// SAVE FOV
-				Gdx.app.getPreferences(SpaceTennis3D.TITLE).putInteger("FOV",
-						new Integer(fov.getSelected()));
+				Gdx.app.getPreferences(SpaceTennis3D.TITLE).putString("FOV",
+						fov.getSelected());
 				Gdx.app.log(SpaceTennis3D.TITLE,
 						"FOV changed to " + fov.getSelected());
 
 				// SAVE AMBIENT
 				Models.setAmbient(ambient.getSelected());
+				Gdx.app.getPreferences(SpaceTennis3D.TITLE).putString(
+						"ambient", ambient.getSelected());
+				Gdx.app.log(SpaceTennis3D.TITLE, "Ambient changed to "
+						+ ambient.getSelected());
 
 				// SAVE DIFFICULTY
 				SpaceTennis3D.difficulty = Enum.valueOf(Difficulty.class,
 						difficulty.getSelected());
+				Gdx.app.getPreferences(SpaceTennis3D.TITLE).putString(
+						"difficulty", difficulty.getSelected());
+				Gdx.app.log(SpaceTennis3D.TITLE, "Difficulty changed to "
+						+ difficulty.getSelected());
 
 				if (soundCheckBox.isChecked()) {
 					Soundbox.play("button");

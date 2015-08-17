@@ -29,12 +29,12 @@ public class RulesScreen1 implements Screen {
 	private Stage stage;
 	private Table table;
 
-	private Label heading, rules1, rules2;
+	private Label heading, rules1;
 	private Image image1;
 	private TextButton btnExit;
 
-	private static final String RULES1 = "Para jugar a este juego necesitarás un dispositivo Android con Bluetooth.";
-	private static final String RULES2 = "Empareja tu móvil con tu ordenador y sigue las instrucciones de la aplicación de móvil para conectarte.";
+	private static final String RULES1 = "Para jugar a este juego\nnecesitarás un dispositivo\nAndroid con Bluetooth.";
+	private static final String RULES2 = "\nEmpareja tu móvil con tu\nordenador y sigue las\ninstrucciones de la aplicación\nde móvil para conectarte.";
 
 	@SuppressWarnings("deprecation")
 	@Override
@@ -54,10 +54,9 @@ public class RulesScreen1 implements Screen {
 		heading = new Label("Bluetooth", skin);
 		heading.setStyle(new LabelStyle(titleFont, Color.WHITE));
 
-		rules1 = new Label(RULES1, skin);
-		rules2 = new Label(RULES2, skin);
+		rules1 = new Label(RULES1 + "\n" + RULES2, skin);
 
-		image1 = new Image(assets.get(Assets.URL_RULES_IMAGE3, Texture.class));
+		image1 = new Image(assets.get(Assets.URL_RULES_IMAGE5, Texture.class));
 
 		btnExit = new TextButton("Volver", skin);
 		btnExit.pad(20);
@@ -72,10 +71,10 @@ public class RulesScreen1 implements Screen {
 
 		table.add(heading).spaceBottom(0.03f * SpaceTennis3D.HEIGHT).colspan(2)
 				.row();
-		table.add(rules1).spaceBottom(0.03f * SpaceTennis3D.HEIGHT).row();
-		table.add(rules2).row();
-		table.add(image1).pad(20).center().row();
-		table.add(btnExit).spaceBottom(0.1f * SpaceTennis3D.HEIGHT).row();
+		table.add(image1).pad(20);
+		table.add(rules1).row();
+		table.add(btnExit).spaceBottom(0.1f * SpaceTennis3D.HEIGHT).colspan(2)
+				.row();
 		stage.addActor(table);
 	}
 

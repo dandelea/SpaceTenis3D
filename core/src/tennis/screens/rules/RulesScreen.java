@@ -61,7 +61,7 @@ public class RulesScreen implements Screen {
 
 		});
 
-		btnRules2 = new TextButton("Control", skin);
+		btnRules2 = new TextButton("Cómo jugar", skin);
 		btnRules2.pad(20);
 		btnRules2.addListener(new ClickListener() {
 

@@ -5,7 +5,7 @@ import tennis.managers.bluetooth.BluetoothServer;
 import tennis.managers.physics.ParticleController;
 import tennis.objects.Difficulty;
 import tennis.objects.Scoreboard;
-import tennis.screens.splash.SplashDeveloperScreen;
+import tennis.screens.splash.SplashUsScreen;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
@@ -42,13 +42,19 @@ public class SpaceTennis3D extends Game {
 
 		WIDTH = Gdx.graphics.getWidth();
 		HEIGHT = Gdx.graphics.getHeight();
-		Gdx.app.getPreferences(TITLE).putInteger("FOV", 67);
+		Gdx.app.getPreferences(TITLE).putString("FOV", "67");
 		Gdx.app.getPreferences(TITLE).putBoolean("music", true);
 		Gdx.app.getPreferences(TITLE).putBoolean("sound", true);
+		Gdx.app.getPreferences(TITLE).putBoolean("vSync", true);
+		Gdx.app.getPreferences(TITLE).putBoolean("fullscreen", false);
+		Gdx.app.getPreferences(TITLE).putString("resolution", "800 x 600");
+		Gdx.app.getPreferences(TITLE).putString("ambient", "Space 1");
+		Gdx.app.getPreferences(TITLE).putString("difficulty",
+				Difficulty.MEDIUM.toString());
 		difficulty = Difficulty.EASY;
 		games = 0;
 
-		setScreen(new SplashDeveloperScreen());
+		setScreen(new SplashUsScreen());
 	}
 
 	@Override

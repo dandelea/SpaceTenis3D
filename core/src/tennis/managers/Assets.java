@@ -33,10 +33,12 @@ public class Assets implements Disposable {
 	public static final String URL_SPLASH_DEV = "img/splash_screen/developer.png";
 	public static final String URL_SPLASH_US = "img/splash_screen/us.png";
 
-	public static final String URL_RULES_IMAGE1 = "img/rules/image01.png";
-	public static final String URL_RULES_IMAGE2 = "img/rules/image02.png";
-	public static final String URL_RULES_IMAGE3 = "img/rules/image03.png";
-	public static final String URL_RULES_IMAGE4 = "img/rules/image04.png";
+	public static final String URL_RULES_IMAGE1 = "img/rules/swing01.png";
+	public static final String URL_RULES_IMAGE2 = "img/rules/swing02.png";
+	public static final String URL_RULES_IMAGE3 = "img/rules/red_ball.png";
+	public static final String URL_RULES_IMAGE4 = "img/rules/pause.png";
+	public static final String URL_RULES_IMAGE5 = "img/rules/bluetooth.png";
+	public static final String URL_RULES_IMAGE6 = "img/rules/tennis.png";
 
 	private static final String URL_MUSIC1 = "music/mess.ogg";
 	private static final String URL_MUSIC2 = "music/mess2.ogg";
@@ -139,6 +141,8 @@ public class Assets implements Disposable {
 		assetManager.load(URL_RULES_IMAGE2, Texture.class);
 		assetManager.load(URL_RULES_IMAGE3, Texture.class);
 		assetManager.load(URL_RULES_IMAGE4, Texture.class);
+		assetManager.load(URL_RULES_IMAGE5, Texture.class);
+		assetManager.load(URL_RULES_IMAGE6, Texture.class);
 	}
 
 	/**

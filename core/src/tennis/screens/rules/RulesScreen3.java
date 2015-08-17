@@ -57,7 +57,7 @@ public class RulesScreen3 implements Screen {
 		rules1 = new Label(RULES1, skin);
 		rules2 = new Label(RULES2, skin);
 
-		image1 = new Image(assets.get(Assets.URL_RULES_IMAGE4, Texture.class));
+		image1 = new Image(assets.get(Assets.URL_RULES_IMAGE6, Texture.class));
 
 		btnExit = new TextButton("Volver", skin);
 		btnExit.pad(20);
