@@ -76,9 +76,7 @@ public class BluetoothServer implements Runnable {
 		DataInputStream dis = connection.openDataInputStream();
 
 		connected = true;
-		float x;
-		float y;
-		float z;
+		float x, y, z;
 
 		while (true) {
 			try {
@@ -88,14 +86,12 @@ public class BluetoothServer implements Runnable {
 				if (x == MESSAGE_END) {
 					// DETECTED END OF CONNECTION
 					connected = false;
-					System.out.println("Received disconnection");
-
+					Log.info("BT: Connection aborted");
 				} else if (x == MESSAGE_PAUSE
 						&& GameScreen.state == GameScreen.GAME_RUNNING) {
 					// DETECTED PAUSE
 					paused = true;
-					System.out.println("Paused game remotely");
-
+					Log.info("BT: Game paused remotely");
 				} else {
 					// NORMAL BEHAVIOUR. SWING
 					y = dis.readFloat();
