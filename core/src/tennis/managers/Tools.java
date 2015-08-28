@@ -270,7 +270,7 @@ public class Tools {
 
 		Vector3 force = new Vector3(
 				BluetoothServer.movementZ.getLatest() < 0 ? -BluetoothServer.movementX.getLatest()
-						: BluetoothServer.movementX.getLatest(), 30,
+						: BluetoothServer.movementX.getLatest(), 50,
 				Math.abs(BluetoothServer.movementZ.standardDeviation()) * 10);
 		ball.body.setLinearVelocity(new Vector3());
 		ball.body.applyCentralForce(force);
