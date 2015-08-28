@@ -236,7 +236,7 @@ public class Tools {
 			particleController.explodeHit(2, ball.getPosition());
 		}
 
-		moveTo(ball, new Vector3(0, 0, 0), intensity);
+		moveTo(ball, new Vector3(0, 1, 0), intensity);
 		return res;
 	}
 
@@ -274,6 +274,7 @@ public class Tools {
 				Math.abs(BluetoothServer.movementZ.standardDeviation()) * 10);
 		ball.body.setLinearVelocity(new Vector3());
 		ball.body.applyCentralForce(force);
+		System.out.println(force.x + ", " + force.y + ", " + force.z);
 
 		return res;
 	}

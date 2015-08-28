@@ -3,6 +3,7 @@ package tennis.screens;
 import tennis.SpaceTennis3D;
 import tennis.managers.Assets;
 import tennis.managers.Soundbox;
+import tennis.managers.bluetooth.BluetoothServer;
 import tennis.screens.scenes3d.GameScreen;
 import tennis.tween.ActorAccessor;
 import aurelienribon.tweenengine.Timeline;
@@ -137,6 +138,12 @@ public class GameOverScreen implements Screen {
 
 		stage.act(delta);
 		stage.draw();
+		
+		if (BluetoothServer.connected && BluetoothServer.play){
+			BluetoothServer.play = false;
+			Soundbox.play("button");
+			SpaceTennis3D.goTo(new GameScreen());
+		}
 
 		tweenManager.update(delta);
 	}

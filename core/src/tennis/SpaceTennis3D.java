@@ -47,7 +47,7 @@ public class SpaceTennis3D extends Game {
 		Gdx.app.getPreferences(TITLE).putBoolean("sound", true);
 		Gdx.app.getPreferences(TITLE).putBoolean("vSync", true);
 		Gdx.app.getPreferences(TITLE).putBoolean("fullscreen", false);
-		Gdx.app.getPreferences(TITLE).putString("resolution", "800 x 600");
+		Gdx.app.getPreferences(TITLE).putString("resolution", "AJUSTADA");
 		Gdx.app.getPreferences(TITLE).putString("ambient", "Space 1");
 		Gdx.app.getPreferences(TITLE).putString("difficulty",
 				Difficulty.MEDIUM.toString());

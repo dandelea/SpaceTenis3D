@@ -7,6 +7,9 @@ import tennis.managers.Soundbox;
 import tennis.managers.Tools;
 import tennis.objects.Difficulty;
 
+import java.awt.Dimension;
+import java.awt.Toolkit;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
@@ -124,13 +127,14 @@ public class SettingsScreen implements Screen {
 
 		// RESOLUTION
 		resolution = new SelectBox<String>(skin);
-		String[] resolutions = new String[6];
-		resolutions[0] = "800 x 600";
-		resolutions[1] = "1024 x 768";
-		resolutions[2] = "1280 x 800";
-		resolutions[3] = "1280 x 1024";
-		resolutions[4] = "1366 x 768";
-		resolutions[5] = "1920 x 1080";
+		String[] resolutions = new String[7];
+		resolutions[0] = "AJUSTADA";
+		resolutions[1] = "800 x 600";
+		resolutions[2] = "1024 x 768";
+		resolutions[3] = "1280 x 800";
+		resolutions[4] = "1280 x 1024";
+		resolutions[5] = "1366 x 768";
+		resolutions[6] = "1920 x 1080";
 		resolution.setItems(resolutions);
 		resolution.setSelected(Gdx.app.getPreferences(SpaceTennis3D.TITLE)
 				.getString("resolution"));
@@ -177,10 +181,16 @@ public class SettingsScreen implements Screen {
 			public void clicked(InputEvent event, float x, float y) {
 
 				// CHANGE RESOLUTION
-				String[] parts = resolution.getSelected().split(" x ");
-				int width = Integer.parseInt(parts[0]);
-				int height = Integer.parseInt(parts[1]);
-				Gdx.graphics.setDisplayMode(width, height, Tools.fullscreen());
+				if (resolution.getSelected() == "AJUSTADA"){
+					Dimension screenDimension = Toolkit.getDefaultToolkit().getScreenSize();
+					Gdx.graphics.setDisplayMode(screenDimension.width, screenDimension.height, Tools.fullscreen());
+				} else {
+					String[] parts = resolution.getSelected().split(" x ");
+					int width = Integer.parseInt(parts[0]);
+					int height = Integer.parseInt(parts[1]);
+					Gdx.graphics.setDisplayMode(width, height, Tools.fullscreen());
+				}
+				
 				Gdx.app.getPreferences(SpaceTennis3D.TITLE).putString(
 						"resolution", resolution.getSelected());
 				Gdx.app.log(SpaceTennis3D.TITLE, "Resolution changed to "

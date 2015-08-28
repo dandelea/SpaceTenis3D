@@ -28,6 +28,7 @@ public class BluetoothServer implements Runnable {
 	private static StreamConnectionNotifier server;
 	public static boolean connected = false;
 	public static boolean paused = false;
+	public static boolean play = false;
 
 	public static WindowedMean movementX;
 	public static WindowedMean movementY;
@@ -40,6 +41,7 @@ public class BluetoothServer implements Runnable {
 
 	private final static float MESSAGE_END = Float.POSITIVE_INFINITY;
 	private final static float MESSAGE_PAUSE = Float.MAX_VALUE;
+	private final static float MESSAGE_PLAY = Float.MIN_VALUE;
 
 	@Override
 	/**
@@ -92,6 +94,10 @@ public class BluetoothServer implements Runnable {
 					// DETECTED PAUSE
 					paused = true;
 					Log.info("BT: Game paused remotely");
+				} else if (x == MESSAGE_PLAY) {
+					// DETECTED PLAY NOW
+					play = true;
+					Log.info("BT: Game set remotely");
 				} else {
 					// NORMAL BEHAVIOUR. SWING
 					y = dis.readFloat();
@@ -103,7 +109,7 @@ public class BluetoothServer implements Runnable {
 				}
 
 			} catch (EOFException e) {
-				connected = false;
+				connected = paused = play = false;
 				Log.error("Error listening. " + e.getMessage());
 				break;
 			}

@@ -71,6 +71,7 @@ public class GameScreen implements Screen {
 			Vector3 inertia = ball.body.getLinearVelocity();
 			Vector3 reaction = new Vector3(inertia.x, -BOUNCING_FACTOR
 					* inertia.y, inertia.z);
+			ball.body.setLinearVelocity(new Vector3());
 			ball.body.setLinearVelocity(reaction);
 			ball.bounces++;
 			return true;

@@ -156,6 +156,7 @@ public class MainMenuScreen implements Screen {
 
 		// UPDATE START BUTTON
 		if (BluetoothServer.connected) {
+			
 			btnStart.setText("Jugar");
 			btnStart.addListener(new ClickListener() {
 				@Override
@@ -171,6 +172,8 @@ public class MainMenuScreen implements Screen {
 
 		stage.act(delta);
 		stage.draw();
+		
+		
 
 		// DRAW TEXT 'DEVICE CONNECTED'
 		batch.begin();
@@ -180,6 +183,12 @@ public class MainMenuScreen implements Screen {
 							+ font.getBounds(device).height / 2);
 		}
 		batch.end();
+		
+		if (BluetoothServer.connected && BluetoothServer.play){
+			BluetoothServer.play = false;
+			Soundbox.play("button");
+			SpaceTennis3D.goTo(new GameScreen());
+		}
 
 		tweenManager.update(delta);
 	}
